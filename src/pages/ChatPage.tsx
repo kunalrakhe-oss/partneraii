@@ -26,7 +26,8 @@ interface ProfileInfo {
   avatar_url: string | null;
 }
 
-type ChatFilter = "all" | "media" | "links" | "shared";
+  type ChatFilter = "all" | "media" | "links" | "shared";
+  type ChatTab = "partner" | "ai";
 
 export default function ChatPage() {
   const { user } = useAuth();
@@ -40,6 +41,7 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [chatFilter, setChatFilter] = useState<ChatFilter>("all");
+  const [activeTab, setActiveTab] = useState<ChatTab>("partner");
 
   // Fetch partner profile
   useEffect(() => {
