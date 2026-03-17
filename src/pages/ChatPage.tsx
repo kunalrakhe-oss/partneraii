@@ -71,6 +71,19 @@ export default function ChatPage() {
     return () => { supabase.removeChannel(channel); };
   }, [partnerPair]);
 
+  // Inject demo data
+  useEffect(() => {
+    if (isDemoMode && messages.length === 0) {
+      setMessages(DEMO_CHAT_MESSAGES.map(m => ({
+        ...m,
+        user_id: m.user_id === "me" ? (userId || "me") : "demo-partner",
+      })));
+      if (!partnerProfile) {
+        setPartnerProfile({ display_name: DEMO_PARTNER2, avatar_url: null });
+      }
+    }
+  }, [isDemoMode, messages.length, userId]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
