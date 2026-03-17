@@ -64,6 +64,7 @@ export default function GroceryPage() {
   const { toast } = useToast();
   const { isDemoMode } = useDemo();
   const [allItems, setAllItems] = useState<GroceryRow[]>([]);
+  const [categorizingAnim, setCategorizingAnim] = useState(false);
   const [input, setInput] = useState("");
   const [showSuggestion, setShowSuggestion] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -122,7 +123,13 @@ export default function GroceryPage() {
   const addItem = async () => {
     if (!input.trim() || !userId || !partnerPair) return;
     const category = activeList === "grocery" ? categorizeGroceryItem(input.trim()) : "other";
-    // New items get sort_order higher than current max
+    
+    // Show categorization animation for grocery items
+    if (activeList === "grocery" && category !== "other") {
+      setCategorizingAnim(true);
+      setTimeout(() => setCategorizingAnim(false), 1200);
+    }
+    
     const maxOrder = items.length > 0 ? Math.max(...items.map(i => (i as any).sort_order ?? 0)) : 0;
     const { error } = await supabase.from("grocery_items").insert({
       name: input.trim(),
@@ -374,6 +381,28 @@ export default function GroceryPage() {
             </button>
           ))}
         </div>
+
+        {/* Categorization Animation */}
+        <AnimatePresence>
+          {categorizingAnim && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden mb-4"
+            >
+              <div className="flex items-center justify-center gap-2 py-3 bg-primary/10 rounded-xl border border-primary/20">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                >
+                  <Sparkles size={14} className="text-primary" />
+                </motion.div>
+                <span className="text-xs font-semibold text-primary">✨ Organizing your list...</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {items.length === 0 ? (
           <div className="text-center py-12">
