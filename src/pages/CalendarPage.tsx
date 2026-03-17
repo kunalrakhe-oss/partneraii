@@ -41,7 +41,7 @@ const CATEGORY_LABEL: Record<string, string> = {
   diet: "Diet",
 };
 
-type ViewMode = "day" | "multiday" | "month" | "list";
+type ViewMode = "day" | "multiday" | "month";
 
 interface CalendarEvent {
   id: string;
