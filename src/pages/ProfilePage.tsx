@@ -77,6 +77,69 @@ function ThemeSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   );
 }
 
+function NotificationSettingsContent() {
+  const [prefs, setPrefs] = useState(getNotificationPrefs);
+
+  const toggleSound = () => {
+    const next = !prefs.soundEnabled;
+    setNotificationPrefs({ soundEnabled: next });
+    setPrefs(p => ({ ...p, soundEnabled: next }));
+    if (next) playNotificationSound();
+  };
+
+  const toggleVibration = () => {
+    const next = !prefs.vibrationEnabled;
+    setNotificationPrefs({ vibrationEnabled: next });
+    setPrefs(p => ({ ...p, vibrationEnabled: next }));
+    if (next && navigator.vibrate) navigator.vibrate([100, 50, 100]);
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-semibold text-muted-foreground mb-1">Sound & Vibration</p>
+      <div className="flex items-center justify-between bg-muted rounded-xl px-4 py-3">
+        <div className="flex items-center gap-3">
+          <Volume2 size={16} className="text-foreground" />
+          <div>
+            <p className="text-sm font-medium text-foreground">Notification Sound</p>
+            <p className="text-[10px] text-muted-foreground">Play a chime for partner updates</p>
+          </div>
+        </div>
+        <Switch checked={prefs.soundEnabled} onCheckedChange={toggleSound} />
+      </div>
+      <div className="flex items-center justify-between bg-muted rounded-xl px-4 py-3">
+        <div className="flex items-center gap-3">
+          <Vibrate size={16} className="text-foreground" />
+          <div>
+            <p className="text-sm font-medium text-foreground">Vibration</p>
+            <p className="text-[10px] text-muted-foreground">Vibrate on notifications</p>
+          </div>
+        </div>
+        <Switch checked={prefs.vibrationEnabled} onCheckedChange={toggleVibration} />
+      </div>
+
+      <p className="text-xs font-semibold text-muted-foreground mt-4 mb-1">Notification Types</p>
+      {[
+        { label: "Daily Reminders", desc: "Get reminded of tasks & events", default: true },
+        { label: "Partner Activity", desc: "When your partner adds or completes items", default: true },
+        { label: "Mood Check-ins", desc: "Evening mood reminders", default: false },
+        { label: "Weekly Summary", desc: "Get a recap every Sunday", default: false },
+      ].map(n => (
+        <div key={n.label} className="flex items-center justify-between bg-muted rounded-xl px-4 py-3">
+          <div>
+            <p className="text-sm font-medium text-foreground">{n.label}</p>
+            <p className="text-[10px] text-muted-foreground">{n.desc}</p>
+          </div>
+          <Switch defaultChecked={n.default} />
+        </div>
+      ))}
+      <p className="text-[10px] text-muted-foreground text-center mt-2">
+        Preferences are stored locally on this device
+      </p>
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
