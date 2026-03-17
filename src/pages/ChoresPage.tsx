@@ -368,20 +368,25 @@ export default function ChoresPage() {
                       <div className="flex items-center gap-2">
                         {chore.assigned_to ? (
                           <>
-                            <span className="w-7 h-7 rounded-full bg-secondary/20 text-secondary text-[11px] font-bold flex items-center justify-center">
-                              {chore.assigned_to === userId ? "Y" : "P"}
-                            </span>
+                            <AvatarCircle profile={profiles[chore.assigned_to] || null} />
                             {isExpanded && (
                               <span className="text-xs text-muted-foreground">
-                                Assigned to {chore.assigned_to === userId ? "You" : "Partner"}
+                                Assigned to {chore.assigned_to === userId ? "You" : (profiles[chore.assigned_to]?.display_name || "Partner")}
                               </span>
                             )}
                           </>
                         ) : (
-                          <div className="flex items-center">
-                            <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground text-[11px] font-bold flex items-center justify-center">K</span>
-                            <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground text-[11px] font-bold flex items-center justify-center -ml-2 border-2 border-card">A</span>
-                          </div>
+                          (() => {
+                            const allProfiles = Object.values(profiles);
+                            const myProfile = userId ? profiles[userId] : null;
+                            const partnerProfile = allProfiles.find(p => p.user_id !== userId) || null;
+                            return (
+                              <div className="flex items-center">
+                                <AvatarCircle profile={myProfile} />
+                                <AvatarCircle profile={partnerProfile} className="-ml-2 border-2 border-card" />
+                              </div>
+                            );
+                          })()
                         )}
                       </div>
                       <div className="flex items-center gap-3">
