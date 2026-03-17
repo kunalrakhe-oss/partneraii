@@ -150,9 +150,9 @@ export default function GroceryPage() {
     fetchItems();
   };
 
-  const renameItem = async (id: string, newName: string) => {
-    await supabase.from("grocery_items").update({ name: newName }).eq("id", id);
-    setAllItems(prev => prev.map(i => i.id === id ? { ...i, name: newName } : i));
+  const saveItem = async (id: string, updates: Record<string, any>) => {
+    await supabase.from("grocery_items").update(updates as any).eq("id", id);
+    setAllItems(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i));
     setEditingItem(null);
   };
 
