@@ -41,7 +41,7 @@ const MOOD_GROUPS = [
     moods: MOODS.filter(m => ["angry", "furious"].includes(m.key)),
   },
 ];
-
+const MOOD_EMOJI_MAP: Record<string, string> = Object.fromEntries(MOODS.map(m => [m.key, m.emoji]));
 
 
 interface MoodLog {
