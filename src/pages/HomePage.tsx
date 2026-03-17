@@ -157,7 +157,7 @@ export default function HomePage() {
           {/* Quick Links */}
           <motion.div variants={item} className="grid grid-cols-3 gap-3">
             <Link to="/lists" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-              <div className="w-10 h-10 rounded-xl bg-[hsl(100,25%,78%)] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
                 <ShoppingCart size={18} className="text-foreground" />
               </div>
               <p className="text-sm font-bold text-foreground">Groceries</p>
