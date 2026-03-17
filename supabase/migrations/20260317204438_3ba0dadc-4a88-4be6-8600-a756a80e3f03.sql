@@ -1,0 +1,1 @@
+ALTER TABLE public.diet_logs ADD COLUMN IF NOT EXISTS event_time text;
