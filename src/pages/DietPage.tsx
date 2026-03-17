@@ -492,6 +492,7 @@ export default function DietPage() {
             <p className="text-xs text-muted-foreground">Tap + on any category to start planning</p>
           </div>
         )}
+      </div>
 
       {/* Form Modal */}
       <AnimatePresence>
