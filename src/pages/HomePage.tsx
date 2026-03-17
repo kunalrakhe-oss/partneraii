@@ -87,9 +87,13 @@ export default function HomePage() {
               <h1 className="text-2xl font-bold text-foreground">{greeting}, {displayName.toUpperCase()}</h1>
               <p className="text-sm text-muted-foreground">{format(new Date(), "MMMM d, yyyy")}</p>
             </div>
-            <div className="w-11 h-11 rounded-full bg-muted overflow-hidden flex items-center justify-center">
-              <span className="text-lg">👩</span>
-            </div>
+            <button onClick={() => navigate("/profile")} className="w-11 h-11 rounded-full bg-muted overflow-hidden flex items-center justify-center border-2 border-border">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-lg">👩</span>
+              )}
+            </button>
           </motion.div>
 
           {/* Partner's Mood */}
