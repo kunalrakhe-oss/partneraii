@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Copy, Heart, ChevronLeft, Loader2, CheckCircle, Users, Share2, Shield, MessageCircle, Link2, Keyboard } from "lucide-react";
+import { Copy, Heart, ChevronLeft, Loader2, CheckCircle, Users, Share2, Shield, MessageCircle, Link2, Keyboard, User, Phone, Mail, Calendar, UserMinus, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
 import onboardingHero from "@/assets/onboarding-hero.jpg";
+import { format, differenceInYears } from "date-fns";
 
 function generateLinkCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
