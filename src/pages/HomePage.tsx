@@ -260,58 +260,39 @@ export default function HomePage() {
                 <p className="text-sm text-muted-foreground">{format(new Date(), "EEEE, MMMM d")}</p>
               </div>
             </div>
-            <button onClick={() => setShowNotifications(true)} className="relative w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-              <Bell size={18} className="text-foreground" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[9px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
+            <div className="flex items-center gap-2">
+              {/* Couple Avatars */}
+              {partnerProfile && !isDemoMode && (
+                <button onClick={() => navigate("/connect")} className="flex -space-x-2.5 mr-1">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Me" className="w-9 h-9 rounded-full object-cover border-2 border-card z-10 ring-1 ring-primary/20" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-primary/15 border-2 border-card z-10 flex items-center justify-center text-xs font-bold text-primary ring-1 ring-primary/20">
+                      {firstName?.charAt(0) || "?"}
+                    </div>
+                  )}
+                  {partnerProfile.avatar_url ? (
+                    <img src={partnerProfile.avatar_url} alt="Partner" className="w-9 h-9 rounded-full object-cover border-2 border-card ring-1 ring-secondary/20" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-secondary/15 border-2 border-card flex items-center justify-center text-xs font-bold text-secondary ring-1 ring-secondary/20">
+                      {partnerProfile.display_name?.charAt(0) || "❤️"}
+                    </div>
+                  )}
+                </button>
               )}
-            </button>
+              <button onClick={() => setShowNotifications(true)} className="relative w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                <Bell size={18} className="text-foreground" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[9px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </button>
+            </div>
           </motion.div>
 
-          {/* Partner Details Card */}
-          {partnerProfile && !isDemoMode && (
-            <motion.div variants={item}>
-              <Link to="/connect" className="block bg-gradient-to-r from-secondary/15 via-primary/10 to-secondary/15 rounded-2xl p-4 border border-secondary/20 shadow-soft">
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    {partnerProfile.avatar_url ? (
-                      <img src={partnerProfile.avatar_url} alt="Partner" className="w-12 h-12 rounded-full object-cover ring-2 ring-secondary/40" />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center ring-2 ring-secondary/40">
-                        <Heart size={18} className="text-secondary" fill="currentColor" />
-                      </div>
-                    )}
-                    <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-success rounded-full border-2 border-card" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground">Connected with</p>
-                    <p className="text-sm font-bold text-foreground truncate">
-                      {partnerProfile.display_name || "Your Partner"} 💕
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{daysTogether} days together</p>
-                  </div>
-                  <div className="flex -space-x-2 shrink-0">
-                    {avatarUrl ? (
-                      <img src={avatarUrl} alt="Me" className="w-8 h-8 rounded-full object-cover border-2 border-card z-10" />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-primary/20 border-2 border-card flex items-center justify-center z-10 text-[10px] font-bold text-primary">
-                        {firstName?.charAt(0) || "?"}
-                      </div>
-                    )}
-                    {partnerProfile.avatar_url ? (
-                      <img src={partnerProfile.avatar_url} alt="Partner" className="w-8 h-8 rounded-full object-cover border-2 border-card" />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-secondary/20 border-2 border-card flex items-center justify-center text-[10px] font-bold text-secondary">
-                        {partnerProfile.display_name?.charAt(0) || "❤️"}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          )}
+
+
 
           {/* ❤️ Make it Real - Getting Started */}
           {isDemoMode && (
