@@ -15,7 +15,7 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type GroceryRow = Tables<"grocery_items">;
 
-const LIST_TABS = [
+const DEFAULT_TABS = [
   { key: "grocery", label: "Grocery", emoji: "🛒" },
   { key: "todo", label: "To-Do", emoji: "📋" },
   { key: "gift", label: "Gift Ideas", emoji: "🎁" },
@@ -23,9 +23,9 @@ const LIST_TABS = [
   { key: "date", label: "Date Ideas", emoji: "💕" },
 ] as const;
 
-type ListType = (typeof LIST_TABS)[number]["key"];
+type ListType = string;
 
-const LIST_CONFIG: Record<ListType, { placeholder: string; emptyEmoji: string; emptyText: string; emptyHint: string }> = {
+const DEFAULT_LIST_CONFIG: Record<string, { placeholder: string; emptyEmoji: string; emptyText: string; emptyHint: string }> = {
   grocery: { placeholder: "Add milk, eggs, or bread...", emptyEmoji: "🛒", emptyText: "Your grocery list is empty", emptyHint: "Items are auto-categorized by AI" },
   todo: { placeholder: "Add a task...", emptyEmoji: "📋", emptyText: "No tasks yet", emptyHint: "Add shared to-dos for you & your partner" },
   gift: { placeholder: "Add a gift idea...", emptyEmoji: "🎁", emptyText: "No gift ideas yet", emptyHint: "Save ideas for birthdays, anniversaries & more" },
@@ -65,6 +65,14 @@ export default function GroceryPage() {
   const [loading, setLoading] = useState(true);
   const [activeList, setActiveList] = useState<ListType>("grocery");
   const [editingItem, setEditingItem] = useState<GroceryRow | null>(null);
+  const [customLists, setCustomLists] = useState<{ key: string; label: string; emoji: string }[]>([]);
+  const [showNewList, setShowNewList] = useState(false);
+  const [newListName, setNewListName] = useState("");
+  const [newListEmoji, setNewListEmoji] = useState("📝");
+
+  const LIST_TABS = [...DEFAULT_TABS, ...customLists];
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const fetchItems = useCallback(async () => {
     if (!partnerPair) return;
@@ -97,7 +105,7 @@ export default function GroceryPage() {
 
   // Filter items by active list type
   const items = allItems.filter(i => (i as any).list_type === activeList || (!((i as any).list_type) && activeList === "grocery"));
-  const config = LIST_CONFIG[activeList];
+  const config = DEFAULT_LIST_CONFIG[activeList] || { placeholder: `Add to ${activeList}...`, emptyEmoji: "📝", emptyText: `Your ${activeList} list is empty`, emptyHint: "Start adding items" };
 
   const addItem = async () => {
     if (!input.trim() || !userId || !partnerPair) return;
@@ -245,10 +253,66 @@ export default function GroceryPage() {
               {tab.label}
             </button>
           ))}
+          <button
+            onClick={() => setShowNewList(true)}
+            className="flex items-center gap-1 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap shrink-0 border border-dashed border-primary/40 text-primary hover:bg-primary/5 transition-colors"
+          >
+            <Plus size={12} />
+            New List
+          </button>
         </div>
 
+        {/* New List Form */}
+        <AnimatePresence>
+          {showNewList && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+              <div className="bg-card rounded-2xl p-4 border border-border shadow-card mt-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-bold text-foreground">Create New List</p>
+                  <button onClick={() => setShowNewList(false)} className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                    <X size={12} className="text-muted-foreground" />
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      const emojis = ["📝", "🏠", "🎯", "💼", "🎮", "📚", "🎵", "🍳", "⚽", "🌱"];
+                      const idx = emojis.indexOf(newListEmoji);
+                      setNewListEmoji(emojis[(idx + 1) % emojis.length]);
+                    }}
+                    className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-xl shrink-0"
+                  >
+                    {newListEmoji}
+                  </button>
+                  <input
+                    value={newListName}
+                    onChange={e => setNewListName(e.target.value)}
+                    placeholder="List name..."
+                    className="flex-1 bg-muted rounded-xl px-3 h-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <button
+                    onClick={() => {
+                      if (!newListName.trim()) return;
+                      const key = newListName.trim().toLowerCase().replace(/\s+/g, "-");
+                      setCustomLists(prev => [...prev, { key, label: newListName.trim(), emoji: newListEmoji }]);
+                      setActiveList(key);
+                      setNewListName("");
+                      setNewListEmoji("📝");
+                      setShowNewList(false);
+                    }}
+                    disabled={!newListName.trim()}
+                    className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40"
+                  >
+                    Create
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Add input */}
-        <div className="flex gap-2 mt-4 mb-6">
+        <div className="flex gap-2 mt-4 mb-2">
           <div className="flex-1 bg-card rounded-2xl shadow-card border border-border flex items-center px-4 gap-3">
             <Plus size={18} className="text-muted-foreground shrink-0" />
             <input
@@ -262,6 +326,38 @@ export default function GroceryPage() {
           <button onClick={addItem} className="px-5 h-12 rounded-2xl bg-foreground text-background text-sm font-semibold shadow-soft">
             Add
           </button>
+        </div>
+
+        {/* AI Suggestions */}
+        <div className="flex items-center gap-2 mb-4 overflow-x-auto">
+          <button
+            onClick={async () => {
+              setAiLoading(true);
+              try {
+                const { data } = await supabase.functions.invoke("ai-assist", {
+                  body: { type: "list-suggest", context: { listType: activeList, items: items.map(i => i.name).join(", ") } },
+                });
+                if (data?.result) {
+                  setAiSuggestions(data.result.split(",").map((s: string) => s.trim()).filter(Boolean).slice(0, 5));
+                }
+              } catch { /* ignore */ }
+              setAiLoading(false);
+            }}
+            disabled={aiLoading}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium shrink-0 disabled:opacity-50"
+          >
+            <Sparkles size={12} />
+            {aiLoading ? "Thinking..." : "AI Suggest"}
+          </button>
+          {aiSuggestions.map(s => (
+            <button
+              key={s}
+              onClick={() => { setInput(s); setAiSuggestions(prev => prev.filter(x => x !== s)); }}
+              className="px-3 py-1.5 rounded-full bg-card border border-border text-xs font-medium text-foreground shrink-0 whitespace-nowrap hover:bg-muted"
+            >
+              + {s}
+            </button>
+          ))}
         </div>
 
         {items.length === 0 ? (

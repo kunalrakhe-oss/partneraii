@@ -7,7 +7,7 @@ import {
 import {
   Plus, X, Check, Coffee, ShoppingCart, Tv, Cake, CalendarPlus,
   ChevronLeft, ChevronRight, Clock, Tag, Users, Trash2,
-  List, CalendarDays, Calendar, LayoutGrid,
+  List, CalendarDays, Calendar, LayoutGrid, ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AddEventModal from "@/components/AddEventModal";
@@ -109,6 +109,7 @@ export default function CalendarPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("day");
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
+  const [showViewMenu, setShowViewMenu] = useState(false);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
@@ -395,22 +396,36 @@ export default function CalendarPage() {
               </button>
             </div>
 
-            {/* Compact view icons — top right */}
-            <div className="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
-              {viewIcons.map(({ mode, icon: Icon, label }) => (
-                <button
-                  key={mode}
-                  onClick={() => setViewMode(mode)}
-                  title={label}
-                  className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${
-                    viewMode === mode
-                      ? "bg-card shadow-sm text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Icon size={14} />
-                </button>
-              ))}
+            {/* Collapsed view picker dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowViewMenu(prev => !prev)}
+                className="flex items-center gap-1 bg-muted rounded-lg px-2.5 py-1.5 text-xs font-medium text-foreground"
+              >
+                {viewIcons.find(v => v.mode === viewMode)?.label}
+                <ChevronDown size={12} className={`text-muted-foreground transition-transform ${showViewMenu ? "rotate-180" : ""}`} />
+              </button>
+              <AnimatePresence>
+                {showViewMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+                    className="absolute right-0 top-full mt-1 bg-card rounded-xl shadow-elevated border border-border z-50 overflow-hidden min-w-[120px]"
+                  >
+                    {viewIcons.map(({ mode, icon: Icon, label }) => (
+                      <button
+                        key={mode}
+                        onClick={() => { setViewMode(mode); setShowViewMenu(false); }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-sm transition-colors ${
+                          viewMode === mode ? "bg-primary/10 text-primary font-semibold" : "text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <Icon size={14} />
+                        {label}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
           {/* Subtitle */}
@@ -465,6 +480,16 @@ export default function CalendarPage() {
             />
           )}
         </div>
+
+        {/* Today button - bottom left */}
+        {!isToday(selectedDate) && (
+          <button
+            onClick={goToToday}
+            className="fixed bottom-20 left-5 bg-card text-primary font-semibold text-xs px-4 py-2.5 rounded-full shadow-elevated border border-border z-40"
+          >
+            Today
+          </button>
+        )}
 
         {/* FAB */}
         <button
