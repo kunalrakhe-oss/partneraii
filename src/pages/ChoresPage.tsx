@@ -362,6 +362,7 @@ export default function ChoresPage() {
               )}
             </AnimatePresence>
           </div>
+          </div>
         </div>
 
         {/* Weekly Progress */}
