@@ -139,6 +139,151 @@ function expandRecurringEvents(events: CalendarEvent[]): CalendarEvent[] {
   return result;
 }
 
+const DIET_CATEGORIES = [
+  { key: "morning", label: "Morning", icon: "☀️" },
+  { key: "breakfast", label: "Breakfast", icon: "🍳" },
+  { key: "lunch", label: "Lunch", icon: "🍛" },
+  { key: "evening_snack", label: "Snack", icon: "🧃" },
+  { key: "dinner", label: "Dinner", icon: "🥘" },
+  { key: "night", label: "Night", icon: "🥛" },
+];
+const DIET_ASSIGN = [
+  { value: "me", label: "Me" },
+  { value: "partner", label: "Partner" },
+  { value: "both", label: "Both" },
+];
+const DIET_DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
+
+function CalendarDietForm({ defaultDate, onClose, onSave }: {
+  defaultDate: string;
+  onClose: () => void;
+  onSave: (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string; recurrence: string; recurrence_day: number | null }) => void;
+}) {
+  const [desc, setDesc] = useState("");
+  const [notes, setNotes] = useState("");
+  const [cal, setCal] = useState("");
+  const [cat, setCat] = useState("morning");
+  const [assignedTo, setAssignedTo] = useState("me");
+  const [logDate, setLogDate] = useState(defaultDate);
+  const [eventTime, setEventTime] = useState("");
+  const [recurrence, setRecurrence] = useState("once");
+  const [recurrenceDay, setRecurrenceDay] = useState<number | null>(new Date(defaultDate + "T00:00:00").getDay());
+
+  return (
+    <>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-foreground/50 z-[60]" onClick={onClose} />
+      <motion.div
+        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 28, stiffness: 300 }}
+        className="fixed inset-x-0 bottom-0 max-h-[72vh] bg-card rounded-t-3xl z-[60] overflow-y-auto safe-bottom"
+      >
+        <div className="w-10 h-1 rounded-full bg-muted mx-auto mt-3 mb-2" />
+        <div className="px-5 pb-8">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-lg font-bold text-foreground">Add Diet Item</h3>
+            <button onClick={onClose} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+              <X size={16} className="text-muted-foreground" />
+            </button>
+          </div>
+
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Food Name</label>
+          <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="e.g. Warm lemon water"
+            className="w-full h-11 bg-muted rounded-2xl px-4 text-sm text-foreground placeholder:text-muted-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring mb-4" />
+
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <CalendarPlus size={12} /> Date
+              </label>
+              <input type="date" value={logDate} onChange={e => setLogDate(e.target.value)}
+                className="w-full h-11 bg-muted rounded-2xl px-4 text-sm text-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <Clock size={12} /> Time
+              </label>
+              <input type="time" value={eventTime} onChange={e => setEventTime(e.target.value)}
+                className="w-full h-11 bg-muted rounded-2xl px-4 text-sm text-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+          </div>
+
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Frequency</label>
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {(["once", "daily", "weekly"] as const).map(r => (
+              <button key={r} onClick={() => setRecurrence(r)}
+                className={`px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  recurrence === r ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
+                }`}>
+                {r === "once" ? "Once" : r === "daily" ? "🔁 Daily" : "🔁 Weekly"}
+              </button>
+            ))}
+          </div>
+          {recurrence === "weekly" && (
+            <div className="flex gap-1.5 mb-4">
+              {DIET_DAY_LABELS.map((label, idx) => (
+                <button key={idx} onClick={() => setRecurrenceDay(idx)}
+                  className={`flex-1 h-9 rounded-xl text-xs font-bold transition-all ${
+                    recurrenceDay === idx ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                  }`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Category</label>
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            {DIET_CATEGORIES.map(c => (
+              <button key={c.key} onClick={() => setCat(c.key)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                  cat === c.key ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
+                }`}>
+                <span>{c.icon}</span>
+                <span className="truncate">{c.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Assigned To</label>
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            {DIET_ASSIGN.map(a => (
+              <button key={a.value} onClick={() => setAssignedTo(a.value)}
+                className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  assignedTo === a.value ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
+                }`}>
+                {a.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Notes</label>
+              <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="No sugar, etc."
+                className="w-full h-11 bg-muted rounded-2xl px-4 text-sm text-foreground placeholder:text-muted-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Calories</label>
+              <input value={cal} onChange={e => setCal(e.target.value.replace(/\D/g, ""))} placeholder="Optional"
+                className="w-full h-11 bg-muted rounded-2xl px-4 text-sm text-foreground placeholder:text-muted-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button onClick={onClose} className="flex-1 h-11 rounded-2xl bg-muted text-foreground text-sm font-semibold">Cancel</button>
+            <button onClick={() => { if (desc.trim()) onSave({ description: desc.trim(), category: cat, notes: notes.trim() || "", assigned_to: assignedTo, calories: cal ? parseInt(cal) : null, log_date: logDate, event_time: eventTime, recurrence, recurrence_day: recurrence === "weekly" ? recurrenceDay : null }); }}
+              disabled={!desc.trim()}
+              className="flex-1 h-11 rounded-2xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40">
+              Add
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
 export default function CalendarPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
