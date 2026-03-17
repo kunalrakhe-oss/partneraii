@@ -2,6 +2,7 @@ import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, Cale
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
+import AddEventModal from "@/components/AddEventModal";
 import { format, formatDistanceToNowStrict, isPast, isToday, isTomorrow, parseISO } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
