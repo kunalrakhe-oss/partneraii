@@ -139,6 +139,33 @@ export default function PartnerConnectPage() {
 
   const handleSkip = () => navigate("/");
 
+  const [removingPartner, setRemovingPartner] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState(false);
+
+  const handleRemovePartner = async () => {
+    if (!user) return;
+    setRemovingPartner(true);
+    // Get my partner_id
+    const { data: profile } = await supabase.from("profiles").select("partner_id").eq("user_id", user.id).single();
+    if (profile?.partner_id) {
+      const { data, error } = await supabase.rpc("remove_partner", { partner_profile_id: profile.partner_id });
+      if (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } else {
+        const result = data as any;
+        if (result?.success) {
+          toast({ title: "Partner removed" });
+          setAlreadyPaired(false);
+          setPartnerName(null);
+          setConfirmRemove(false);
+        } else {
+          toast({ title: "Failed", description: result?.error, variant: "destructive" });
+        }
+      }
+    }
+    setRemovingPartner(false);
+  };
+
   if (alreadyPaired) {
     return (
       <PageTransition>
@@ -156,6 +183,26 @@ export default function PartnerConnectPage() {
           >
             Go Home
           </button>
+
+          {!confirmRemove ? (
+            <button
+              onClick={() => setConfirmRemove(true)}
+              className="text-xs text-muted-foreground font-medium mt-2"
+            >
+              Remove partner
+            </button>
+          ) : (
+            <div className="bg-card rounded-2xl p-4 border border-border shadow-card w-full max-w-xs text-center space-y-3 mt-2">
+              <p className="text-sm font-semibold text-foreground">Disconnect from {partnerName}?</p>
+              <p className="text-xs text-muted-foreground">Shared data will remain but won't sync.</p>
+              <div className="flex gap-2">
+                <button onClick={() => setConfirmRemove(false)} className="flex-1 h-10 rounded-xl bg-muted text-sm font-medium text-foreground">Cancel</button>
+                <button onClick={handleRemovePartner} disabled={removingPartner} className="flex-1 h-10 rounded-xl bg-destructive text-destructive-foreground text-sm font-semibold disabled:opacity-50 flex items-center justify-center">
+                  {removingPartner ? <Loader2 size={16} className="animate-spin" /> : "Remove"}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </PageTransition>
     );
