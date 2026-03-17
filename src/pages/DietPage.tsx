@@ -109,8 +109,6 @@ function DietFormModal({
   const [recurrenceDay, setRecurrenceDay] = useState<number | null>(
     editing?.recurrence_day ?? new Date(defaultDate + "T00:00:00").getDay()
   );
-  const [logDate, setLogDate] = useState(editing?.log_date || defaultDate);
-  const [eventTime, setEventTime] = useState(editing?.event_time || "");
 
   return (
     <>
