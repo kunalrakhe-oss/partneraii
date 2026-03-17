@@ -635,13 +635,13 @@ export default function ChoresPage() {
                   <div className="w-10 h-1 rounded-full bg-border cursor-grab active:cursor-grabbing" />
                 </div>
 
-                {/* Header with Cancel / Add */}
-                <div className="flex items-center justify-between px-5 py-3 sticky top-5 bg-background z-10">
+                {/* Header with X close / Add */}
+                <div className="shrink-0 flex items-center justify-between px-5 py-3 bg-background z-10">
                   <button
                     onClick={() => { setShowAdd(false); resetForm(); }}
-                    className="text-sm text-secondary font-medium"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors"
                   >
-                    Cancel
+                    <X size={16} className="text-muted-foreground" />
                   </button>
                   <h3 className="text-base font-bold text-foreground">New Chore</h3>
                   <button
@@ -653,7 +653,7 @@ export default function ChoresPage() {
                   </button>
                 </div>
 
-                <div className="px-5 pb-8 space-y-4">
+                <div className="overflow-y-auto flex-1 px-5 pb-8 space-y-4">
                   {/* Title input — full-width, prominent */}
                   <div className="bg-card rounded-2xl border border-border overflow-hidden">
                     <input
