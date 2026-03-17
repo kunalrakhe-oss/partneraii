@@ -188,8 +188,17 @@ export default function CalendarPage() {
   };
 
   const goToToday = () => {
-    setCurrentDate(new Date());
-    setSelectedDate(new Date());
+    const today = new Date();
+    setCurrentDate(today);
+    setSelectedDate(today);
+    const todayStr = format(today, "yyyy-MM-dd");
+    const todayEvents = events.filter(e => e.event_date === todayStr && !e.is_completed);
+    if (todayEvents.length > 0) {
+      toast.success(`${todayEvents.length} event${todayEvents.length > 1 ? "s" : ""} today: ${todayEvents.map(e => e.title).join(", ")}`);
+    } else {
+      toast("No events today — enjoy your free time! ✨");
+    }
+    if (viewMode === "month") setViewMode("day");
   };
 
   const openAddForm = (date?: Date, time?: string) => {
