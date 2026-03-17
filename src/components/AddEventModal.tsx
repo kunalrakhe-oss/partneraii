@@ -26,6 +26,8 @@ export interface CalendarEventData {
   is_completed: boolean;
   user_id: string;
   partner_pair: string;
+  reminder?: string;
+  countdown_type?: string;
 }
 
 interface AddEventModalProps {
