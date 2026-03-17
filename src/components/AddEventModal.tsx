@@ -78,6 +78,8 @@ export default function AddEventModal({
     setFormReminder("none");
     setFormCountdown("none");
     setFormType("event");
+    setFormFile(null);
+    setFormFilePreview("");
   };
 
   const resetForEdit = (event: CalendarEventData) => {
