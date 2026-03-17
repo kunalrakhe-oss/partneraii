@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, Mail, Lock, User, ArrowRight, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Heart, Mail, Lock, User, ArrowRight, Loader2, ChevronDown, ChevronUp, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -15,6 +15,7 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -60,9 +61,13 @@ export default function AuthPage() {
       if (moreMode === "signup") {
         const { error } = await supabase.auth.signUp({
           email, password,
-          options: { data: { display_name: displayName }, emailRedirectTo: window.location.origin },
+          options: {
+            data: { display_name: displayName, phone },
+            emailRedirectTo: window.location.origin,
+          },
         });
         if (error) throw error;
+        // Save phone to profile after signup
         toast({ title: "Account created! 🎉", description: "Check your email to confirm your account." });
       } else if (moreMode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -182,11 +187,18 @@ export default function AuthPage() {
 
                 <form onSubmit={handlePasswordSubmit} className="space-y-3">
                   {moreMode === "signup" && (
-                    <div className="relative">
-                      <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
-                        placeholder="Your name" required className={inputClass} />
-                    </div>
+                    <>
+                      <div className="relative">
+                        <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
+                          placeholder="Your name" required className={inputClass} />
+                      </div>
+                      <div className="relative">
+                        <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
+                          placeholder="Phone number (optional)" className={inputClass} />
+                      </div>
+                    </>
                   )}
                   <div className="relative">
                     <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
