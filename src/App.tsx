@@ -13,17 +13,29 @@ import ChatPage from "@/pages/ChatPage";
 import ProfilePage from "@/pages/ProfilePage";
 import WelcomePage from "@/pages/WelcomePage";
 import NotFound from "@/pages/NotFound";
-import { useLocalStorage } from "@/lib/store";
+import { useState } from "react";
 
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const [onboarded] = useLocalStorage<string>("lovelist-onboarded", "");
+  const [onboarded, setOnboarded] = useState(() => {
+    try {
+      const val = localStorage.getItem("lovelist-onboarded");
+      return val ? JSON.parse(val) : "";
+    } catch {
+      return "";
+    }
+  });
+
+  const handleOnboard = () => {
+    localStorage.setItem("lovelist-onboarded", JSON.stringify("true"));
+    setOnboarded("true");
+  };
 
   if (!onboarded) {
     return (
       <Routes>
-        <Route path="/welcome" element={<WelcomePage />} />
+        <Route path="/welcome" element={<WelcomePage onComplete={handleOnboard} />} />
         <Route path="*" element={<Navigate to="/welcome" replace />} />
       </Routes>
     );
