@@ -92,6 +92,10 @@ export default function ProfilePage() {
   // Personal info edit state
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
+  const [editGender, setEditGender] = useState("");
+  const [editBirthday, setEditBirthday] = useState("");
+  const [gender, setGender] = useState("");
+  const [birthday, setBirthday] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -99,7 +103,7 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, partner_id, phone")
+        .select("display_name, avatar_url, partner_id, phone, gender, birthday")
         .eq("user_id", user.id)
         .single();
       if (data) {
@@ -109,6 +113,8 @@ export default function ProfilePage() {
         setDisplayName(name);
         setPhone(data.phone || "");
         setAvatarUrl(data.avatar_url || user.user_metadata?.avatar_url || null);
+        setGender((data as any).gender || "");
+        setBirthday((data as any).birthday || "");
         setPartnerId(data.partner_id);
         if (data.partner_id) {
           const { data: partner } = await supabase
@@ -156,6 +162,8 @@ export default function ProfilePage() {
   const openPersonalInfo = () => {
     setEditName(displayName);
     setEditPhone(phone);
+    setEditGender(gender);
+    setEditBirthday(birthday);
     setActiveSheet("personal");
   };
 
@@ -165,11 +173,18 @@ export default function ProfilePage() {
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({ display_name: editName.trim(), phone: editPhone.trim() || null })
+        .update({
+          display_name: editName.trim(),
+          phone: editPhone.trim() || null,
+          gender: editGender.trim() || null,
+          birthday: editBirthday || null,
+        } as any)
         .eq("user_id", user.id);
       if (error) throw error;
       setDisplayName(editName.trim());
       setPhone(editPhone.trim());
+      setGender(editGender.trim());
+      setBirthday(editBirthday);
       setActiveSheet(null);
       toast({ title: "Profile updated! ✨" });
     } catch (err: any) {
@@ -350,6 +365,24 @@ export default function ProfilePage() {
               className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder="+1 (555) 000-0000"
               type="tel"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Gender</label>
+            <div className="flex gap-2">
+              {["Male", "Female", "Non-binary", "Other"].map(g => (
+                <button key={g} onClick={() => setEditGender(g.toLowerCase())}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-medium border transition-all ${editGender === g.toLowerCase() ? "bg-primary text-primary-foreground border-primary" : "bg-muted border-border text-foreground"}`}>
+                  {g}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Birthday</label>
+            <input
+              type="date" value={editBirthday} onChange={e => setEditBirthday(e.target.value)}
+              className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
           <button
