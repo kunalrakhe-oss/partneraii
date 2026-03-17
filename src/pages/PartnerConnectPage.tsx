@@ -140,9 +140,15 @@ export default function PartnerConnectPage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background max-w-lg mx-auto px-5 pb-24">
+      <div className="bg-background max-w-lg mx-auto px-5 pb-24">
+        {/* Back button */}
+        <div className="sticky top-0 z-10 bg-background pt-4 pb-2">
+          <button onClick={() => navigate(-1)} className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
+            <ChevronLeft size={20} className="text-foreground" />
+          </button>
+        </div>
         {/* Hero Image */}
-        <div className="flex justify-center pt-8 mb-5">
+        <div className="flex justify-center mb-5">
           <div className="w-36 h-36 rounded-full overflow-hidden shadow-elevated border-4 border-card">
             <img src={partnerHero} alt="Couple together" className="w-full h-full object-cover" />
           </div>
