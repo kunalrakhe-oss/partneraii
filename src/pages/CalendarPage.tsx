@@ -108,13 +108,53 @@ export default function CalendarPage() {
 
   useEffect(() => {
     if (!partnerPair) return;
-    supabase
-      .from("calendar_events")
-      .select("*")
-      .eq("partner_pair", partnerPair)
-      .then(({ data }) => {
-        if (data) setEvents(data);
-      });
+
+    // Fetch calendar events, chores with due dates, and grocery items with due dates in parallel
+    Promise.all([
+      supabase.from("calendar_events").select("*").eq("partner_pair", partnerPair),
+      supabase.from("chores").select("*").eq("partner_pair", partnerPair).not("due_date", "is", null),
+      supabase.from("grocery_items").select("*").eq("partner_pair", partnerPair).not("due_date", "is", null),
+    ]).then(([eventsRes, choresRes, groceryRes]) => {
+      const calEvents: CalendarEvent[] = eventsRes.data || [];
+
+      // Convert chores to calendar events
+      const choreEvents: CalendarEvent[] = (choresRes.data || []).map((chore: any) => ({
+        id: `chore-${chore.id}`,
+        title: `🧹 ${chore.title}`,
+        description: chore.recurrence ? `Repeats ${chore.recurrence}` : null,
+        category: "chore",
+        event_date: chore.due_date,
+        event_time: null,
+        assigned_to: chore.assigned_to ? "assigned" : "both",
+        priority: "medium",
+        recurrence: chore.recurrence || "once",
+        is_completed: chore.is_completed,
+        user_id: chore.user_id,
+        partner_pair: chore.partner_pair,
+        _source: "chore",
+        _sourceId: chore.id,
+      }));
+
+      // Convert grocery items to calendar events
+      const groceryEvents: CalendarEvent[] = (groceryRes.data || []).map((item: any) => ({
+        id: `grocery-${item.id}`,
+        title: `🛒 ${item.name}`,
+        description: item.notes || null,
+        category: "grocery-due",
+        event_date: item.due_date,
+        event_time: null,
+        assigned_to: "both",
+        priority: item.priority || "none",
+        recurrence: "once",
+        is_completed: item.is_checked,
+        user_id: item.user_id,
+        partner_pair: item.partner_pair,
+        _source: "grocery",
+        _sourceId: item.id,
+      }));
+
+      setEvents([...calEvents, ...choreEvents, ...groceryEvents]);
+    });
   }, [partnerPair]);
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
