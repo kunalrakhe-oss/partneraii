@@ -312,7 +312,7 @@ export default function GroceryPage() {
         </AnimatePresence>
 
         {/* Add input */}
-        <div className="flex gap-2 mt-4 mb-6">
+        <div className="flex gap-2 mt-4 mb-2">
           <div className="flex-1 bg-card rounded-2xl shadow-card border border-border flex items-center px-4 gap-3">
             <Plus size={18} className="text-muted-foreground shrink-0" />
             <input
@@ -326,6 +326,38 @@ export default function GroceryPage() {
           <button onClick={addItem} className="px-5 h-12 rounded-2xl bg-foreground text-background text-sm font-semibold shadow-soft">
             Add
           </button>
+        </div>
+
+        {/* AI Suggestions */}
+        <div className="flex items-center gap-2 mb-4 overflow-x-auto">
+          <button
+            onClick={async () => {
+              setAiLoading(true);
+              try {
+                const { data } = await supabase.functions.invoke("ai-assist", {
+                  body: { type: "list-suggest", context: { listType: activeList, items: items.map(i => i.name).join(", ") } },
+                });
+                if (data?.result) {
+                  setAiSuggestions(data.result.split(",").map((s: string) => s.trim()).filter(Boolean).slice(0, 5));
+                }
+              } catch { /* ignore */ }
+              setAiLoading(false);
+            }}
+            disabled={aiLoading}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium shrink-0 disabled:opacity-50"
+          >
+            <Sparkles size={12} />
+            {aiLoading ? "Thinking..." : "AI Suggest"}
+          </button>
+          {aiSuggestions.map(s => (
+            <button
+              key={s}
+              onClick={() => { setInput(s); setAiSuggestions(prev => prev.filter(x => x !== s)); }}
+              className="px-3 py-1.5 rounded-full bg-card border border-border text-xs font-medium text-foreground shrink-0 whitespace-nowrap hover:bg-muted"
+            >
+              + {s}
+            </button>
+          ))}
         </div>
 
         {items.length === 0 ? (
