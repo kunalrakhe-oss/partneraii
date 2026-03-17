@@ -169,7 +169,14 @@ export default function HomePage() {
             <motion.div variants={item}>
               <Link to="/calendar" className="block love-gradient rounded-2xl p-4 shadow-elevated relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary-foreground/10 rounded-full -translate-y-8 translate-x-8" />
-                <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider mb-1">Next Up</p>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">Next Up</p>
+                  {getCountdownBadge(nextEvent) && (
+                    <span className="text-[10px] font-bold bg-primary-foreground/20 text-primary-foreground px-2 py-0.5 rounded-full">
+                      {getCountdownBadge(nextEvent)}
+                    </span>
+                  )}
+                </div>
                 <p className="text-lg font-bold text-primary-foreground leading-tight">{nextEvent.title}</p>
                 <div className="flex items-center gap-3 mt-2">
                   <div className="flex items-center gap-1.5">
