@@ -62,6 +62,7 @@ const CATEGORY_COLOR: Record<string, string> = {
 export default function GroceryPage() {
   const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
   const { toast } = useToast();
+  const { isDemoMode } = useDemo();
   const [allItems, setAllItems] = useState<GroceryRow[]>([]);
   const [input, setInput] = useState("");
   const [showSuggestion, setShowSuggestion] = useState(true);
