@@ -338,15 +338,30 @@ function ItemRow({
   item,
   onToggle,
   onMove,
+  onRename,
   isFirst,
   isLast,
 }: {
   item: GroceryRow;
   onToggle: (id: string, checked: boolean) => void;
   onMove: (id: string, direction: "up" | "down") => void;
+  onRename: (id: string, newName: string) => void;
   isFirst: boolean;
   isLast: boolean;
 }) {
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState(item.name);
+
+  const commitEdit = () => {
+    const trimmed = editValue.trim();
+    if (trimmed && trimmed !== item.name) {
+      onRename(item.id, trimmed);
+    } else {
+      setEditValue(item.name);
+    }
+    setEditing(false);
+  };
+
   return (
     <motion.div
       layout
@@ -363,10 +378,24 @@ function ItemRow({
       >
         {item.is_checked && <Check size={14} className="text-success-foreground" />}
       </button>
-      <span className={`flex-1 text-sm font-medium ${item.is_checked ? "line-through text-muted-foreground" : "text-foreground"}`}>
-        {item.name}
-      </span>
-      {!item.is_checked && (
+      {editing ? (
+        <input
+          autoFocus
+          value={editValue}
+          onChange={e => setEditValue(e.target.value)}
+          onBlur={commitEdit}
+          onKeyDown={e => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") { setEditValue(item.name); setEditing(false); } }}
+          className="flex-1 text-sm font-medium text-foreground bg-transparent border-b border-primary focus:outline-none"
+        />
+      ) : (
+        <span
+          onClick={() => { if (!item.is_checked) { setEditing(true); setEditValue(item.name); } }}
+          className={`flex-1 text-sm font-medium cursor-pointer ${item.is_checked ? "line-through text-muted-foreground" : "text-foreground"}`}
+        >
+          {item.name}
+        </span>
+      )}
+      {!item.is_checked && !editing && (
         <div className="flex items-center gap-0.5 shrink-0">
           <button
             onClick={() => onMove(item.id, "up")}
