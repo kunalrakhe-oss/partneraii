@@ -168,8 +168,10 @@ export default function GroceryPage() {
           ))}
         </div>
 
+        </div>
+
         {/* Add input */}
-        <div className="flex gap-2 mt-5 mb-6">
+        <div className="flex gap-2 mt-4 mb-6">
           <div className="flex-1 bg-card rounded-2xl shadow-card border border-border flex items-center px-4 gap-3">
             <Plus size={18} className="text-muted-foreground shrink-0" />
             <input
