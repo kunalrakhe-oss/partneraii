@@ -185,6 +185,7 @@ function CategorySection({
   onToggle,
   onEdit,
   onDelete,
+  onAdd,
   expanded,
   onExpand,
 }: {
@@ -195,6 +196,7 @@ function CategorySection({
   onToggle: (id: string) => void;
   onEdit: (item: DietItem) => void;
   onDelete: (id: string) => void;
+  onAdd: () => void;
   expanded: boolean;
   onExpand: () => void;
 }) {
