@@ -85,7 +85,7 @@ export default function ChatPage() {
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "chat_messages", filter: `partner_pair=eq.${partnerPair}` },
         (payload) => { setMessages(prev => prev.filter(m => m.id !== (payload.old as any).id)); })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "message_reactions", filter: `partner_pair=eq.${partnerPair}` },
-        (payload) => { setReactions(prev => [...prev, payload.new as Reaction]); })
+        (payload) => { const r = payload.new as Reaction; setReactions(prev => prev.some(x => x.id === r.id) ? prev : [...prev, r]); })
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "message_reactions", filter: `partner_pair=eq.${partnerPair}` },
         (payload) => { setReactions(prev => prev.filter(r => r.id !== (payload.old as any).id)); })
       .subscribe();
