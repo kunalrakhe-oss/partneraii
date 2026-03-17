@@ -590,12 +590,13 @@ export default function ChoresPage() {
                         checked={hasDueDate}
                         onCheckedChange={(checked) => {
                           setHasDueDate(checked);
+                          setShowCalendar(true);
                           if (checked && !newDueDate) setNewDueDate(new Date());
                         }}
                       />
                     </div>
 
-                    {/* Due Date picker — inline calendar */}
+                    {/* Due Date picker — inline calendar, collapses after selection */}
                     <AnimatePresence>
                       {hasDueDate && (
                         <motion.div
@@ -605,17 +606,39 @@ export default function ChoresPage() {
                           transition={{ duration: 0.2 }}
                           className="overflow-hidden"
                         >
-                          <div className="px-2 py-2 flex flex-col items-center">
-                            <p className="text-xs text-primary font-medium mb-1">
-                              {newDueDate ? format(newDueDate, "EEE, MMM d, yyyy") : "Select date"}
-                            </p>
-                            <Calendar
-                              mode="single"
-                              selected={newDueDate}
-                              onSelect={setNewDueDate}
-                              className="p-2 pointer-events-auto"
-                            />
+                          <div className="px-4 py-2">
+                            <button
+                              type="button"
+                              onClick={() => setShowCalendar(!showCalendar)}
+                              className="w-full flex items-center justify-between py-1.5 text-sm"
+                            >
+                              <span className="text-primary font-medium">
+                                {newDueDate ? format(newDueDate, "EEE, MMM d, yyyy") : "Select date"}
+                              </span>
+                              <span className="text-xs text-muted-foreground">{showCalendar ? "Done" : "Change"}</span>
+                            </button>
                           </div>
+                          <AnimatePresence>
+                            {showCalendar && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="overflow-hidden flex justify-center"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  selected={newDueDate}
+                                  onSelect={(date) => {
+                                    setNewDueDate(date);
+                                    setShowCalendar(false);
+                                  }}
+                                  className="p-2 pointer-events-auto"
+                                />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </motion.div>
                       )}
                     </AnimatePresence>
