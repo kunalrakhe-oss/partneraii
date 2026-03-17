@@ -19,6 +19,7 @@ import PartnerConnectPage from "@/pages/PartnerConnectPage";
 import AuthPage from "@/pages/AuthPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NotFound from "@/pages/NotFound";
+import OnboardingFlow from "@/pages/OnboardingFlow";
 
 const queryClient = new QueryClient();
 
@@ -34,19 +35,25 @@ function AppRoutes() {
   }
 
   // Not authenticated — show auth pages only
+  const onboardingDone = localStorage.getItem("lovelist-onboarding-done") === "true";
+
   if (!user) {
     return (
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="*" element={<Navigate to="/auth" replace />} />
+        <Route path="/onboarding" element={<OnboardingFlow />} />
+        <Route path="*" element={<Navigate to={onboardingDone ? "/auth" : "/onboarding"} replace />} />
       </Routes>
     );
   }
 
-  // Authenticated
+  // Authenticated — check if onboarding needed
+  const onboardingDone2 = localStorage.getItem("lovelist-onboarding-done") === "true";
+
   return (
     <Routes>
+      <Route path="/onboarding" element={<OnboardingFlow />} />
       <Route element={<AppLayout />}>
         <Route path="/connect" element={<PartnerConnectPage />} />
         <Route path="/" element={<HomePage />} />
@@ -58,7 +65,7 @@ function AppRoutes() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/memories" element={<MemoriesPage />} />
       </Route>
-      <Route path="/auth" element={<Navigate to="/" replace />} />
+      <Route path="/auth" element={<Navigate to={onboardingDone2 ? "/" : "/onboarding"} replace />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
