@@ -379,15 +379,17 @@ export default function CalendarPage() {
           </div>
         )}
 
-        {/* Day view - just show the selected date header */}
+        {/* Day view - scrollable horizontal date strip with past + future */}
         {viewMode === "day" && (
-          <div className="mb-4">
-            <p className="text-sm font-semibold text-foreground">
-              {isToday(selectedDate)
-                ? "Today"
-                : format(selectedDate, "EEEE, MMMM d")}
-            </p>
-          </div>
+          <DayStrip
+            selectedDate={selectedDate}
+            currentDate={currentDate}
+            events={events}
+            onSelect={(day) => {
+              setSelectedDate(day);
+              setCurrentDate(day);
+            }}
+          />
         )}
 
         {/* Selected date events */}
