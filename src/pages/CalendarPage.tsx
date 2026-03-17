@@ -111,21 +111,21 @@ export default function CalendarPage() {
   useEffect(() => {
     if (!partnerPair) return;
 
-    // Fetch calendar events, chores with due dates, and grocery items with due dates in parallel
+    // Fetch calendar events, ALL chores, and grocery items with due dates in parallel
     Promise.all([
       supabase.from("calendar_events").select("*").eq("partner_pair", partnerPair),
-      supabase.from("chores").select("*").eq("partner_pair", partnerPair).not("due_date", "is", null),
+      supabase.from("chores").select("*").eq("partner_pair", partnerPair),
       supabase.from("grocery_items").select("*").eq("partner_pair", partnerPair).not("due_date", "is", null),
     ]).then(([eventsRes, choresRes, groceryRes]) => {
       const calEvents: CalendarEvent[] = eventsRes.data || [];
 
-      // Convert chores to calendar events
+      // Convert chores to calendar events — use due_date if set, otherwise created_at date
       const choreEvents: CalendarEvent[] = (choresRes.data || []).map((chore: any) => ({
         id: `chore-${chore.id}`,
         title: `🧹 ${chore.title}`,
         description: chore.recurrence ? `Repeats ${chore.recurrence}` : null,
         category: "chore",
-        event_date: chore.due_date,
+        event_date: chore.due_date || chore.created_at.split("T")[0],
         event_time: null,
         assigned_to: chore.assigned_to ? "assigned" : "both",
         priority: "medium",
