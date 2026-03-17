@@ -4,6 +4,9 @@ import { motion } from "framer-motion";
 import { useLocalStorage, MOOD_EMOJIS, type MoodLog, type CalendarEvent, type Chore, type GroceryItem, type ChatMessage } from "@/lib/store";
 import PageTransition from "@/components/PageTransition";
 import { format } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const container = {
   hidden: { opacity: 0 },
@@ -16,6 +19,33 @@ const item = {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [displayName, setDisplayName] = useState("");
+
+  useEffect(() => {
+    if (!user) return;
+    // Try profile first, fall back to user metadata
+    supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setDisplayName(
+          data?.display_name ||
+          user.user_metadata?.display_name ||
+          user.email?.split("@")[0] ||
+          "there"
+        );
+      });
+  }, [user]);
+
+  const greeting = (() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  })();
   const [moods] = useLocalStorage<MoodLog[]>("lovelist-moods", []);
   const [events] = useLocalStorage<CalendarEvent[]>("lovelist-events", []);
   const [chores, setChores] = useLocalStorage<Chore[]>("lovelist-chores", []);
@@ -39,7 +69,7 @@ export default function HomePage() {
           {/* Header */}
           <motion.div variants={item} className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Good morning, Sarah</h1>
+              <h1 className="text-2xl font-bold text-foreground">{greeting}, {displayName}</h1>
               <p className="text-sm text-muted-foreground">{format(new Date(), "MMMM d, yyyy")}</p>
             </div>
             <div className="w-11 h-11 rounded-full bg-muted overflow-hidden flex items-center justify-center">
