@@ -75,11 +75,22 @@ function countdownBadge(event: CalendarEvent): string | null {
 }
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const SLOT_HEIGHT = 60; // 60px per hour = 1px per minute
 
 function timeToMinutes(time: string | null): number {
   if (!time) return -1;
   const [h, m] = time.split(":").map(Number);
   return h * 60 + (m || 0);
+}
+
+function minutesToTime(minutes: number): string {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+}
+
+function snapTo15(minutes: number): number {
+  return Math.round(minutes / 15) * 15;
 }
 
 function formatHour(h: number): string {
