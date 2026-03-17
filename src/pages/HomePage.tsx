@@ -44,6 +44,7 @@ export default function HomePage() {
   const [moodReaction, setMoodReaction] = useState("");
   const [sendingReaction, setSendingReaction] = useState(false);
   const [reactionMessage, setReactionMessage] = useState("");
+  const [showMoodEmojiPicker, setShowMoodEmojiPicker] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showAddChore, setShowAddChore] = useState(false);
   const [newChoreTitle, setNewChoreTitle] = useState("");
