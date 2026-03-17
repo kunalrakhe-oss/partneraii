@@ -74,6 +74,7 @@ function AppRoutes() {
       <Route path="/onboarding" element={<OnboardingFlow />} />
       <Route element={<AppLayout />}>
         <Route path="/connect" element={<PartnerConnectPage />} />
+        <Route path="/couple" element={<CoupleProfilePage />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/lists" element={<GroceryPage />} />
