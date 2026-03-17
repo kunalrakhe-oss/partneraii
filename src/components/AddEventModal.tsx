@@ -237,6 +237,49 @@ export default function AddEventModal({
                       </select>
                     </div>
                   </div>
+                  {/* Reminder */}
+                  <div>
+                    <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                      <Bell size={12} /> Reminder
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: "none", label: "None" },
+                        { value: "at-time", label: "At time" },
+                        { value: "5min", label: "5 min before" },
+                        { value: "15min", label: "15 min" },
+                        { value: "1hour", label: "1 hour" },
+                        { value: "1day", label: "1 day" },
+                      ].map((r) => (
+                        <button key={r.value} type="button" onClick={() => setFormReminder(r.value)}
+                          className={`rounded-btn px-3 py-1.5 text-xs font-medium transition-colors ${
+                            formReminder === r.value ? "love-gradient text-primary-foreground" : "bg-muted text-muted-foreground"
+                          }`}>
+                          {r.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Countdown */}
+                  <div>
+                    <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                      <Timer size={12} /> Countdown
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: "none", label: "None" },
+                        { value: "days-until", label: "Days until" },
+                        { value: "days-since", label: "Days since" },
+                      ].map((c) => (
+                        <button key={c.value} type="button" onClick={() => setFormCountdown(c.value)}
+                          className={`rounded-btn px-3 py-1.5 text-xs font-medium transition-colors ${
+                            formCountdown === c.value ? "love-gradient text-primary-foreground" : "bg-muted text-muted-foreground"
+                          }`}>
+                          {c.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="shrink-0 border-t border-border bg-card px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
