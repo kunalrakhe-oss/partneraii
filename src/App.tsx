@@ -49,8 +49,10 @@ function AppRoutes() {
     );
   }
 
-  // Authenticated — check if onboarding needed
-  const onboardingDone2 = localStorage.getItem("lovelist-onboarding-done") === "true";
+  // Authenticated — mark onboarding done (user has an account, no need for onboarding)
+  if (localStorage.getItem("lovelist-onboarding-done") !== "true") {
+    localStorage.setItem("lovelist-onboarding-done", "true");
+  }
 
   return (
     <Routes>
