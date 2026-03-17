@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Search, MoreVertical, Mic, Paperclip, Smile, ShoppingCart, CheckSquare, SmilePlus, Image as ImageIcon, X } from "lucide-react";
+import { Send, Search, MoreVertical, ShoppingCart, CheckSquare, SmilePlus, Image as ImageIcon, X, Plus, Camera, FileText, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import { format } from "date-fns";
@@ -34,6 +34,7 @@ export default function ChatPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [partnerProfile, setPartnerProfile] = useState<ProfileInfo | null>(null);
   const [sending, setSending] = useState(false);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
 
   // Fetch partner profile
   useEffect(() => {
@@ -217,16 +218,61 @@ export default function ChatPage() {
           ))}
         </div>
 
+        {/* Attachment Menu Overlay */}
+        <AnimatePresence>
+          {showAttachMenu && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-40"
+                onClick={() => setShowAttachMenu(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="absolute bottom-20 left-5 z-50 bg-card rounded-2xl shadow-elevated border border-border p-3 grid grid-cols-3 gap-4 w-[220px]"
+              >
+                {[
+                  { icon: Camera, label: "Camera", color: "hsl(var(--primary))", bg: "bg-primary/15", action: () => { fileRef.current?.setAttribute("capture", "environment"); fileRef.current?.click(); } },
+                  { icon: ImageIcon, label: "Gallery", color: "hsl(340,65%,55%)", bg: "bg-[hsl(340,65%,90%)]", action: () => { fileRef.current?.removeAttribute("capture"); fileRef.current?.click(); } },
+                  { icon: FileText, label: "Document", color: "hsl(220,60%,55%)", bg: "bg-[hsl(220,60%,90%)]", action: () => { fileRef.current?.removeAttribute("capture"); fileRef.current?.click(); } },
+                  { icon: MapPin, label: "Location", color: "hsl(140,50%,45%)", bg: "bg-[hsl(140,50%,90%)]", action: () => { toast.info("Location sharing coming soon"); } },
+                  { icon: SmilePlus, label: "Mood", color: "hsl(35,80%,55%)", bg: "bg-[hsl(35,80%,90%)]", action: () => navigate("/mood") },
+                  { icon: ShoppingCart, label: "Grocery", color: "hsl(270,50%,55%)", bg: "bg-[hsl(270,50%,90%)]", action: () => navigate("/lists") },
+                ].map(item => (
+                  <button
+                    key={item.label}
+                    onClick={() => { setShowAttachMenu(false); item.action(); }}
+                    className="flex flex-col items-center gap-1.5"
+                  >
+                    <div className={`w-11 h-11 rounded-full ${item.bg} flex items-center justify-center`}>
+                      <item.icon size={18} style={{ color: item.color }} />
+                    </div>
+                    <span className="text-[10px] font-medium text-muted-foreground">{item.label}</span>
+                  </button>
+                ))}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
         {/* Input */}
-        <div className="px-5 py-3 bg-card border-t border-border">
-          <input ref={fileRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+        <div className="px-5 py-3 bg-card border-t border-border relative">
+          <input ref={fileRef} type="file" accept="image/*" onChange={(e) => { handleImageUpload(e); setShowAttachMenu(false); }} className="hidden" />
           <div className="flex gap-2 items-center">
-            <button
-              onClick={() => fileRef.current?.click()}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setShowAttachMenu(prev => !prev)}
               className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center shrink-0"
             >
-              <ImageIcon size={16} className="text-primary" />
-            </button>
+              <motion.div animate={{ rotate: showAttachMenu ? 45 : 0 }} transition={{ duration: 0.15 }}>
+                <Plus size={18} className="text-primary" />
+              </motion.div>
+            </motion.button>
             <div className="flex-1 bg-muted rounded-full flex items-center px-4 gap-2">
               <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && sendMessage()}
                 placeholder={`Message ${partnerProfile?.display_name || "your partner"}...`}
@@ -234,8 +280,8 @@ export default function ChatPage() {
             </div>
             <motion.button whileTap={{ scale: 0.95 }} onClick={() => sendMessage()}
               disabled={sending || !input.trim()}
-              className="w-10 h-10 rounded-full bg-[hsl(100,20%,55%)] flex items-center justify-center shadow-soft shrink-0 disabled:opacity-50">
-              <Send size={16} className="text-card" />
+              className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-soft shrink-0 disabled:opacity-50">
+              <Send size={16} className="text-primary-foreground" />
             </motion.button>
           </div>
         </div>
