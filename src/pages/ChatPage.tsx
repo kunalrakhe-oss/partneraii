@@ -214,39 +214,82 @@ export default function ChatPage() {
     <PageTransition>
       <div className="flex flex-col h-[calc(100vh-4rem)]">
         {/* Header */}
-        <div className="px-4 pt-8 pb-2 flex items-center gap-2 border-b border-border/50 shrink-0">
-          <button
-            onClick={() => setActiveTab("partner")}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
-              activeTab === "partner" ? "bg-primary/15 text-foreground" : "text-muted-foreground"
-            }`}
-          >
-            <div className="w-7 h-7 rounded-full bg-muted overflow-hidden flex items-center justify-center relative shrink-0">
-              {partnerProfile?.avatar_url ? (
-                <img src={partnerProfile.avatar_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-[10px] font-bold text-muted-foreground">{partnerInitial}</span>
-              )}
-              <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-success border-[1.5px] border-card" />
-            </div>
-            <span className="truncate max-w-[100px]">{partnerFirstName}</span>
-          </button>
+        <div className="px-4 pt-8 pb-2 shrink-0">
+          <AnimatePresence mode="wait">
+            {searchOpen ? (
+              <motion.div
+                key="search"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                className="flex items-center gap-2"
+              >
+                <div className="flex-1 bg-muted rounded-full flex items-center px-3 gap-2">
+                  <Search size={14} className="text-muted-foreground shrink-0" />
+                  <input
+                    ref={searchInputRef}
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Search messages..."
+                    autoFocus
+                    className="flex-1 h-10 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  />
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery("")} className="shrink-0">
+                      <X size={14} className="text-muted-foreground" />
+                    </button>
+                  )}
+                </div>
+                <button onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
+                  className="text-xs font-semibold text-primary px-2 py-2">
+                  Cancel
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div key="tabs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="flex items-center gap-1.5">
+                <div className="flex bg-muted rounded-2xl p-1 gap-1">
+                  <button
+                    onClick={() => setActiveTab("partner")}
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all ${
+                      activeTab === "partner" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    <div className="w-6 h-6 rounded-full bg-muted overflow-hidden flex items-center justify-center relative shrink-0">
+                      {partnerProfile?.avatar_url ? (
+                        <img src={partnerProfile.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[9px] font-bold text-muted-foreground">{partnerInitial}</span>
+                      )}
+                      {activeTab === "partner" && (
+                        <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-success border border-card" />
+                      )}
+                    </div>
+                    <span className="truncate max-w-[80px]">{partnerFirstName}</span>
+                  </button>
 
-          <button
-            onClick={() => setActiveTab("ai")}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
-              activeTab === "ai" ? "bg-primary/15 text-foreground" : "text-muted-foreground"
-            }`}
-          >
-            <img src={aiAssistantIcon} alt="AI" className="w-5 h-5" />
-            <span>Your AI</span>
-          </button>
+                  <button
+                    onClick={() => setActiveTab("ai")}
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-semibold transition-all ${
+                      activeTab === "ai" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"
+                    }`}
+                  >
+                    <img src={aiAssistantIcon} alt="AI" className="w-5 h-5" />
+                    <span>Your AI</span>
+                  </button>
+                </div>
 
-          <div className="flex-1" />
+                <div className="flex-1" />
 
-          <button className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0">
-            <Search size={16} className="text-foreground" />
-          </button>
+                <button
+                  onClick={() => { setSearchOpen(true); setTimeout(() => searchInputRef.current?.focus(), 100); }}
+                  className="w-9 h-9 rounded-full bg-muted flex items-center justify-center shrink-0 hover:bg-muted/80 transition-colors"
+                >
+                  <Search size={16} className="text-foreground" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {activeTab === "ai" ? (
