@@ -340,6 +340,7 @@ export default function MemoriesPage() {
                 onClick={e => e.stopPropagation()}
                 className="bg-card w-full max-w-lg rounded-t-3xl shadow-elevated max-h-[90vh] flex flex-col"
               >
+                <div className="overflow-y-auto flex-1 p-5 pb-10">
                 <h3 className="text-lg font-bold text-foreground mb-4">New Memory</h3>
 
                 {/* Type selector */}
