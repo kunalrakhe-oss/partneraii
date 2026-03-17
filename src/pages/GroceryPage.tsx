@@ -96,6 +96,14 @@ export default function GroceryPage() {
     fetchItems();
   }, [partnerPair, pairLoading, fetchItems]);
 
+  // Inject demo data when in demo mode and no real data
+  useEffect(() => {
+    if (isDemoMode && !pairLoading && allItems.length === 0) {
+      setAllItems(DEMO_GROCERY_ITEMS as any);
+      setLoading(false);
+    }
+  }, [isDemoMode, pairLoading, allItems.length]);
+
   useEffect(() => {
     if (!partnerPair) return;
     const channel = supabase
