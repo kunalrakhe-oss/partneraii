@@ -272,18 +272,18 @@ export default function HomePage() {
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Partnership Stats</p>
             <div className="grid grid-cols-4 gap-2">
               {[
-                { label: "Days", value: daysTogether, icon: Heart, color: "bg-secondary/15 text-secondary" },
-                { label: "Events", value: totalEvents, icon: CalendarDays, color: "bg-primary/15 text-primary" },
-                { label: "Memories", value: totalMemories, icon: Image, color: "bg-accent/20 text-accent-foreground" },
-                { label: "Done", value: completedChores, icon: Trophy, color: "bg-success/15 text-success" },
+                { label: "Days", value: daysTogether, icon: Heart, color: "bg-secondary/15 text-secondary", link: "/memories" },
+                { label: "Events", value: totalEvents, icon: CalendarDays, color: "bg-primary/15 text-primary", link: "/calendar" },
+                { label: "Memories", value: totalMemories, icon: Image, color: "bg-accent/20 text-accent-foreground", link: "/memories" },
+                { label: "Done", value: completedChores, icon: Trophy, color: "bg-success/15 text-success", link: "/chores" },
               ].map(stat => (
-                <div key={stat.label} className="bg-card rounded-2xl p-3 shadow-card flex flex-col items-center gap-1.5">
+                <button key={stat.label} onClick={() => navigate(stat.link)} className="bg-card rounded-2xl p-3 shadow-card flex flex-col items-center gap-1.5 hover:bg-muted transition-colors">
                   <div className={`w-8 h-8 rounded-xl ${stat.color} flex items-center justify-center`}>
                     <stat.icon size={14} />
                   </div>
                   <p className="text-base font-bold text-foreground leading-none">{stat.value}</p>
                   <p className="text-[10px] text-muted-foreground">{stat.label}</p>
-                </div>
+                </button>
               ))}
             </div>
           </motion.div>
