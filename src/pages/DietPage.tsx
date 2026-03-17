@@ -536,6 +536,7 @@ export default function DietPage() {
           <DietFormModal
             editing={editingItem}
             category={formCategory}
+            defaultDate={today}
             onSave={editingItem ? updateItem : addItem}
             onClose={() => { setShowForm(false); setEditingItem(null); }}
           />
