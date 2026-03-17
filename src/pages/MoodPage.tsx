@@ -219,10 +219,10 @@ export default function MoodPage() {
         </div>
 
         <p className="text-sm font-bold text-foreground text-center mb-4">Current Mood</p>
-        <div className="grid grid-cols-5 gap-2 mb-6">
+        <div className="flex flex-wrap justify-center gap-2 mb-6">
           {MOODS.map(mood => (
             <motion.button key={mood.key} whileTap={{ scale: 0.9 }} onClick={() => logMood(mood.key)}
-              className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all ${todayLog?.mood === mood.key ? "bg-primary/25 shadow-soft ring-2 ring-primary/40" : "hover:bg-muted"}`}>
+              className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all w-[60px] ${todayLog?.mood === mood.key ? "bg-primary/25 shadow-soft ring-2 ring-primary/40" : "hover:bg-muted"}`}>
               <span className="text-2xl">{mood.emoji}</span>
               <span className="text-[9px] font-medium text-muted-foreground leading-tight">{mood.label}</span>
             </motion.button>
