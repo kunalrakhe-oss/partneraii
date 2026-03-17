@@ -46,8 +46,8 @@ function AppRoutes() {
   // Authenticated
   return (
     <Routes>
-      <Route path="/connect" element={<PartnerConnectPage />} />
       <Route element={<AppLayout />}>
+        <Route path="/connect" element={<PartnerConnectPage />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/lists" element={<GroceryPage />} />
