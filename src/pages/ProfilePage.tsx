@@ -398,25 +398,7 @@ export default function ProfilePage() {
 
       {/* Notifications Sheet */}
       <BottomSheet open={activeSheet === "notifications"} onClose={() => setActiveSheet(null)} title="Notifications">
-        <div className="space-y-3">
-          {[
-            { label: "Daily Reminders", desc: "Get reminded of tasks & events", default: true },
-            { label: "Partner Activity", desc: "When your partner adds or completes items", default: true },
-            { label: "Mood Check-ins", desc: "Evening mood reminders", default: false },
-            { label: "Weekly Summary", desc: "Get a recap every Sunday", default: false },
-          ].map(n => (
-            <div key={n.label} className="flex items-center justify-between bg-muted rounded-xl px-4 py-3">
-              <div>
-                <p className="text-sm font-medium text-foreground">{n.label}</p>
-                <p className="text-[10px] text-muted-foreground">{n.desc}</p>
-              </div>
-              <Switch defaultChecked={n.default} />
-            </div>
-          ))}
-          <p className="text-[10px] text-muted-foreground text-center mt-2">
-            Notification preferences are stored locally
-          </p>
-        </div>
+        <NotificationSettingsContent />
       </BottomSheet>
 
       {/* Theme Sheet */}
