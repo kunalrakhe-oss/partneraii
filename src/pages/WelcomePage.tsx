@@ -8,6 +8,13 @@ interface WelcomePageProps {
 }
 
 export default function WelcomePage({ onComplete }: WelcomePageProps) {
+  const navigate = useNavigate();
+
+  const handleCreate = () => {
+    onComplete();
+    navigate("/connect");
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto">
       {/* Top section */}
