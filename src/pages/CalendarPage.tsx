@@ -293,7 +293,7 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showAdd, setShowAdd] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [viewMode, setViewMode] = useState<ViewMode>("day");
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [showFabMenu, setShowFabMenu] = useState(false);
   const [showViewMenu, setShowViewMenu] = useState(false);
