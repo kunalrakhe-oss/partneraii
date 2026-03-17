@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Settings, Check, Clock, Sparkles, Droplets, HelpCircle, UtensilsCrossed, Loader2, ChevronDown } from "lucide-react";
+import { Plus, Settings, Check, Clock, Sparkles, Droplets, HelpCircle, UtensilsCrossed, Loader2, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
@@ -220,7 +220,7 @@ export default function ChoresPage() {
               const isLoadingThis = loadingSteps === chore.id;
 
               return (
-                <motion.div key={chore.id} layout className="bg-card rounded-2xl shadow-card overflow-hidden border border-border">
+                <motion.div key={chore.id} layout className={`bg-card rounded-2xl shadow-card overflow-hidden border ${isExpanded ? "border-border shadow-elevated" : "border-border"}`}>
                   {/* Top section: icon, title, status */}
                   <div className="px-4 py-3.5 flex items-start gap-3">
                     <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0 mt-0.5">
@@ -231,7 +231,17 @@ export default function ChoresPage() {
                         <p className={`text-sm font-bold ${chore.is_completed ? "line-through text-muted-foreground" : "text-foreground"}`}>
                           {chore.title}
                         </p>
-                        {chore.is_completed ? (
+                        {isExpanded ? (
+                          <button
+                            onClick={() => toggleComplete(chore.id, chore.is_completed)}
+                            className="shrink-0 ml-2"
+                          >
+                            <CheckCircle2
+                              size={24}
+                              className={chore.is_completed ? "text-success fill-success/20" : "text-muted-foreground/40"}
+                            />
+                          </button>
+                        ) : chore.is_completed ? (
                           <span className="flex items-center gap-1 text-[10px] font-medium text-success bg-success/10 px-2 py-0.5 rounded-full">
                             <Check size={10} /> Done
                           </span>
@@ -242,7 +252,7 @@ export default function ChoresPage() {
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        📅 {RECURRENCE_LABEL[chore.recurrence || ""] || chore.recurrence || "One-time"}
+                        {RECURRENCE_LABEL[chore.recurrence || ""] || chore.recurrence || "One-time"}
                       </p>
                     </div>
                   </div>
@@ -267,7 +277,7 @@ export default function ChoresPage() {
                               <span className="text-xs text-muted-foreground">Generating steps…</span>
                             </div>
                           ) : steps && steps.length > 0 ? (
-                            <ol className="space-y-2">
+                            <ol className="space-y-2.5">
                               {steps.map((step, i) => (
                                 <li key={i} className="flex items-start gap-2.5">
                                   <span className="flex items-center justify-center w-5 h-5 rounded-md bg-secondary/20 text-secondary text-[10px] font-bold shrink-0 mt-0.5">
@@ -285,39 +295,50 @@ export default function ChoresPage() {
                     )}
                   </AnimatePresence>
 
-                  {/* Bottom bar: assigned avatars, view steps, mark done */}
+                  {/* Bottom bar */}
                   <div className="border-t border-border/50 mx-4" />
                   <div className="px-4 py-2.5 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       {chore.assigned_to ? (
-                        <span className="w-6 h-6 rounded-full bg-accent text-accent-foreground text-[10px] font-bold flex items-center justify-center">
-                          {chore.assigned_to === userId ? "Me" : "P"}
-                        </span>
+                        <>
+                          <span className="w-6 h-6 rounded-full bg-secondary/30 text-secondary text-[10px] font-bold flex items-center justify-center">
+                            {chore.assigned_to === userId ? "Y" : "P"}
+                          </span>
+                          {isExpanded && (
+                            <span className="text-xs text-muted-foreground">
+                              Assigned to {chore.assigned_to === userId ? "You" : "Partner"}
+                            </span>
+                          )}
+                        </>
                       ) : (
                         <>
                           <span className="w-6 h-6 rounded-full bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center">K</span>
-                          <span className="w-6 h-6 rounded-full bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center -ml-1">A</span>
+                          <span className="w-6 h-6 rounded-full bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center -ml-1.5">A</span>
                         </>
                       )}
                     </div>
                     <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => handleToggleExpand(chore)}
-                        className="flex items-center gap-1 text-xs text-muted-foreground font-medium hover:text-foreground transition-colors"
-                      >
-                        <Sparkles size={12} />
-                        {isExpanded ? "Hide Steps" : "View Steps"}
-                      </button>
-                      <button
-                        onClick={() => toggleComplete(chore.id, chore.is_completed)}
-                        className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                          chore.is_completed
-                            ? "bg-muted text-muted-foreground"
-                            : "bg-foreground text-background"
-                        }`}
-                      >
-                        {chore.is_completed ? "Undo" : "Mark Done"}
-                      </button>
+                      {!isExpanded && (
+                        <button
+                          onClick={() => handleToggleExpand(chore)}
+                          className="flex items-center gap-1 text-xs text-muted-foreground font-medium hover:text-foreground transition-colors"
+                        >
+                          <Sparkles size={12} />
+                          View Steps
+                        </button>
+                      )}
+                      {isExpanded && (
+                        <button
+                          onClick={() => toggleComplete(chore.id, chore.is_completed)}
+                          className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                            chore.is_completed
+                              ? "bg-muted text-muted-foreground"
+                              : "bg-foreground text-background"
+                          }`}
+                        >
+                          {chore.is_completed ? "Undo" : "Mark Done"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </motion.div>
