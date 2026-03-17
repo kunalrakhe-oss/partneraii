@@ -19,6 +19,7 @@ import PartnerConnectPage from "@/pages/PartnerConnectPage";
 import AuthPage from "@/pages/AuthPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NotFound from "@/pages/NotFound";
+import OnboardingFlow from "@/pages/OnboardingFlow";
 
 const queryClient = new QueryClient();
 
