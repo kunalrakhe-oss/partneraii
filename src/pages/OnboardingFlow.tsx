@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Heart, ArrowRight, ChevronRight, ChevronLeft, Sparkles, Users, MessageCircle, Brain, Camera, ClipboardList, Smile, Send, Copy, Keyboard, Link2 } from "lucide-react";
+import { Heart, ArrowRight, ArrowLeft, ChevronRight, ChevronLeft, Sparkles, Users, MessageCircle, Brain, Camera, ClipboardList, Smile, Send, Copy, Keyboard, Link2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import onboardingHero from "@/assets/onboarding-hero.jpg";
 
-type Step = "entry" | "slides" | "mode" | "demo" | "setup-names" | "setup-connect" | "setup-start" | "done";
+type Step = "entry" | "slides" | "mode" | "demo" | "setup-names" | "setup-relationship" | "setup-connect" | "setup-start" | "done";
 
 const slides = [
   {
@@ -31,12 +31,60 @@ const slides = [
   },
 ];
 
+const LOVE_LANGUAGES = [
+  { value: "words", label: "Words of Affirmation", emoji: "💬" },
+  { value: "acts", label: "Acts of Service", emoji: "🤝" },
+  { value: "gifts", label: "Receiving Gifts", emoji: "🎁" },
+  { value: "time", label: "Quality Time", emoji: "⏰" },
+  { value: "touch", label: "Physical Touch", emoji: "🫂" },
+];
+
+const RELATIONSHIP_STATUSES = [
+  { value: "dating", label: "Dating" },
+  { value: "long-distance", label: "Long Distance" },
+  { value: "engaged", label: "Engaged" },
+  { value: "married", label: "Married" },
+  { value: "living-together", label: "Living Together" },
+];
+
+const RELATIONSHIP_GOALS = [
+  { value: "communicate", label: "Communicate better", emoji: "💬" },
+  { value: "quality-time", label: "More quality time", emoji: "🕐" },
+  { value: "organize", label: "Organize life together", emoji: "📋" },
+  { value: "reduce-stress", label: "Reduce daily stress", emoji: "🧘" },
+  { value: "stay-connected", label: "Stay connected", emoji: "❤️" },
+];
+
+const SHARED_INTERESTS = [
+  "Cooking", "Travel", "Movies", "Fitness", "Gaming", "Music", "Reading", "Hiking", "Photography", "Art",
+];
+
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -20 },
   transition: { duration: 0.35, ease: [0.2, 0, 0, 1] as [number, number, number, number] },
 };
+
+// Step ordering for back navigation
+const STEP_ORDER: Step[] = ["entry", "slides", "mode", "setup-names", "setup-relationship", "setup-connect", "setup-start"];
+
+function getPrevStep(current: Step): Step | null {
+  const idx = STEP_ORDER.indexOf(current);
+  if (idx <= 0) return null;
+  return STEP_ORDER[idx - 1];
+}
+
+function BackButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="absolute top-4 left-4 z-10 w-10 h-10 rounded-full bg-card/80 backdrop-blur border border-border flex items-center justify-center"
+    >
+      <ArrowLeft size={18} className="text-foreground" />
+    </button>
+  );
+}
 
 export default function OnboardingFlow() {
   const navigate = useNavigate();
@@ -45,7 +93,6 @@ export default function OnboardingFlow() {
   const { toast } = useToast();
 
   const [step, setStep] = useState<Step>(() => {
-    // Resume at setup-names if user just authenticated via "real" path
     if (user && localStorage.getItem("lovelist-demo-dismissed") === "true" && localStorage.getItem("lovelist-onboarding-done") !== "true") {
       return "setup-names";
     }
@@ -60,7 +107,14 @@ export default function OnboardingFlow() {
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [showSuggestion, setShowSuggestion] = useState(false);
 
-  // Check if onboarding already completed — redirect once on mount only
+  // Relationship details
+  const [anniversaryDate, setAnniversaryDate] = useState("");
+  const [relationshipStatus, setRelationshipStatus] = useState("dating");
+  const [loveLanguage, setLoveLanguage] = useState("");
+  const [partnerLoveLanguage, setPartnerLoveLanguage] = useState("");
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [relationshipGoal, setRelationshipGoal] = useState("");
+
   useEffect(() => {
     const done = localStorage.getItem("lovelist-onboarding-done");
     if (done === "true") {
@@ -69,9 +123,17 @@ export default function OnboardingFlow() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const goBack = () => {
+    if (step === "slides" && slideIndex > 0) {
+      setSlideIndex(slideIndex - 1);
+      return;
+    }
+    const prev = getPrevStep(step);
+    if (prev) setStep(prev);
+  };
+
   const completeOnboarding = () => {
     localStorage.setItem("lovelist-onboarding-done", "true");
-    // Show AI suggestion after a delay
     setShowSuggestion(true);
     setTimeout(() => {
       navigate("/", { replace: true });
@@ -79,7 +141,6 @@ export default function OnboardingFlow() {
   };
 
   const enterDemoMode = () => {
-    // Don't exit demo — it's already active by default
     localStorage.setItem("lovelist-onboarding-done", "true");
     navigate("/", { replace: true });
   };
@@ -100,6 +161,30 @@ export default function OnboardingFlow() {
         .update({ display_name: yourName.trim() })
         .eq("user_id", user.id);
     }
+    setStep("setup-relationship");
+  };
+
+  const handleSaveRelationship = async () => {
+    if (user) {
+      let pair: string | null = null;
+      try {
+        const { data } = await supabase.rpc("get_partner_pair", { uid: user.id });
+        pair = data;
+      } catch {}
+      if (!pair) pair = "solo:" + user.id;
+
+      await supabase.from("relationship_details" as any).upsert({
+        user_id: user.id,
+        partner_pair: pair,
+        anniversary_date: anniversaryDate || null,
+        relationship_status: relationshipStatus,
+        love_language: loveLanguage || null,
+        partner_love_language: partnerLoveLanguage || null,
+        shared_interests: selectedInterests.length > 0 ? selectedInterests : null,
+        relationship_goal: relationshipGoal || null,
+      } as any, { onConflict: "user_id" });
+    }
+
     // Generate invite code
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     const code = Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
@@ -115,7 +200,6 @@ export default function OnboardingFlow() {
       `Join me on LoveList! 💕 Use my code: ${inviteCode}\n\nDownload: ${window.location.origin}`
     );
     const url = `https://wa.me/?text=${text}`;
-    // Use anchor click to avoid popup blockers in iframe/preview
     const a = document.createElement("a");
     a.href = url;
     a.target = "_blank";
@@ -152,7 +236,6 @@ export default function OnboardingFlow() {
     } catch {}
     if (!pair) pair = user.id;
 
-    // Seed 1 sample task
     await supabase.from("chores").insert({
       title: "Plan something special ❤️",
       user_id: user.id,
@@ -160,7 +243,6 @@ export default function OnboardingFlow() {
       assigned_to: "me",
     });
 
-    // Seed 1 placeholder memory
     await supabase.from("memories").insert({
       title: "Our Story Begins 💕",
       type: "milestone",
@@ -177,6 +259,12 @@ export default function OnboardingFlow() {
     else if (action === "task") navigate("/chores", { replace: true });
     else if (action === "mood") navigate("/mood", { replace: true });
     else navigate("/", { replace: true });
+  };
+
+  const toggleInterest = (interest: string) => {
+    setSelectedInterests((prev) =>
+      prev.includes(interest) ? prev.filter((i) => i !== interest) : [...prev, interest]
+    );
   };
 
   // ─── RENDER ─────────────────────────────────────────────
@@ -250,7 +338,8 @@ export default function OnboardingFlow() {
 
         {/* ─── STEP 1: Onboarding Slides ─── */}
         {step === "slides" && (
-          <motion.div key="slides" {...fadeUp} className="flex-1 flex flex-col px-6 py-12">
+          <motion.div key="slides" {...fadeUp} className="flex-1 flex flex-col px-6 py-12 relative">
+            <BackButton onClick={goBack} />
             <div className="flex-1 flex flex-col items-center justify-center">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -308,7 +397,8 @@ export default function OnboardingFlow() {
 
         {/* ─── STEP 2: Mode Selection ─── */}
         {step === "mode" && (
-          <motion.div key="mode" {...fadeUp} className="flex-1 flex flex-col items-center justify-center px-6">
+          <motion.div key="mode" {...fadeUp} className="flex-1 flex flex-col items-center justify-center px-6 relative">
+            <BackButton onClick={goBack} />
             <motion.div
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
@@ -323,12 +413,10 @@ export default function OnboardingFlow() {
             <div className="w-full space-y-3">
               <button
                 onClick={() => {
-                  // Exit demo mode since user chose the real path
                   exitDemo();
                   if (user) {
                     setStep("setup-names");
                   } else {
-                    // Need to auth first — store intent
                     localStorage.setItem("lovelist-onboard-intent", "real");
                     navigate("/auth", { replace: true });
                   }
@@ -349,7 +437,8 @@ export default function OnboardingFlow() {
 
         {/* ─── STEP 3B-1: Names ─── */}
         {step === "setup-names" && (
-          <motion.div key="names" {...fadeUp} className="flex-1 flex flex-col px-6 py-12">
+          <motion.div key="names" {...fadeUp} className="flex-1 flex flex-col px-6 py-12 relative">
+            <BackButton onClick={goBack} />
             <div className="flex-1 flex flex-col justify-center">
               <h2 className="text-2xl font-bold text-foreground mb-1">Tell us about you</h2>
               <p className="text-sm text-muted-foreground mb-8">Just the basics to get started</p>
@@ -387,9 +476,157 @@ export default function OnboardingFlow() {
           </motion.div>
         )}
 
+        {/* ─── STEP 3B-1.5: Relationship Details ─── */}
+        {step === "setup-relationship" && (
+          <motion.div key="relationship" {...fadeUp} className="flex-1 flex flex-col px-6 py-12 relative">
+            <BackButton onClick={goBack} />
+            <div className="flex-1 flex flex-col overflow-y-auto pt-8 pb-4 scrollbar-hide">
+              <h2 className="text-2xl font-bold text-foreground mb-1">About your relationship</h2>
+              <p className="text-sm text-muted-foreground mb-6">Helps us give personalized advice ✨</p>
+
+              {/* Anniversary */}
+              <div className="mb-5">
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Anniversary / When did you start dating?</label>
+                <input
+                  type="date"
+                  value={anniversaryDate}
+                  onChange={(e) => setAnniversaryDate(e.target.value)}
+                  className="w-full h-12 px-4 rounded-xl bg-card border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+
+              {/* Relationship Status */}
+              <div className="mb-5">
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">Relationship status</label>
+                <div className="flex flex-wrap gap-2">
+                  {RELATIONSHIP_STATUSES.map((s) => (
+                    <button
+                      key={s.value}
+                      onClick={() => setRelationshipStatus(s.value)}
+                      className={`px-3.5 py-2 rounded-xl text-xs font-medium border transition-all ${
+                        relationshipStatus === s.value
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-card border-border text-foreground"
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Love Language */}
+              <div className="mb-5">
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">Your love language</label>
+                <div className="flex flex-wrap gap-2">
+                  {LOVE_LANGUAGES.map((l) => (
+                    <button
+                      key={l.value}
+                      onClick={() => setLoveLanguage(l.value)}
+                      className={`px-3 py-2 rounded-xl text-xs font-medium border transition-all flex items-center gap-1.5 ${
+                        loveLanguage === l.value
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-card border-border text-foreground"
+                      }`}
+                    >
+                      <span>{l.emoji}</span> {l.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Partner Love Language */}
+              <div className="mb-5">
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">Partner's love language (if you know)</label>
+                <div className="flex flex-wrap gap-2">
+                  {LOVE_LANGUAGES.map((l) => (
+                    <button
+                      key={l.value}
+                      onClick={() => setPartnerLoveLanguage(l.value)}
+                      className={`px-3 py-2 rounded-xl text-xs font-medium border transition-all flex items-center gap-1.5 ${
+                        partnerLoveLanguage === l.value
+                          ? "bg-secondary text-secondary-foreground border-secondary"
+                          : "bg-card border-border text-foreground"
+                      }`}
+                    >
+                      <span>{l.emoji}</span> {l.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Shared Interests */}
+              <div className="mb-5">
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">Shared interests</label>
+                <div className="flex flex-wrap gap-2">
+                  {SHARED_INTERESTS.map((interest) => (
+                    <button
+                      key={interest}
+                      onClick={() => toggleInterest(interest)}
+                      className={`px-3 py-2 rounded-xl text-xs font-medium border transition-all ${
+                        selectedInterests.includes(interest)
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-card border-border text-foreground"
+                      }`}
+                    >
+                      {interest}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Relationship Goal */}
+              <div className="mb-4">
+                <label className="text-xs font-medium text-muted-foreground mb-2 block">Main relationship goal</label>
+                <div className="flex flex-wrap gap-2">
+                  {RELATIONSHIP_GOALS.map((g) => (
+                    <button
+                      key={g.value}
+                      onClick={() => setRelationshipGoal(g.value)}
+                      className={`px-3 py-2 rounded-xl text-xs font-medium border transition-all flex items-center gap-1.5 ${
+                        relationshipGoal === g.value
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-card border-border text-foreground"
+                      }`}
+                    >
+                      <span>{g.emoji}</span> {g.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={handleSaveRelationship}
+                className="flex-1 h-14 rounded-2xl bg-primary text-primary-foreground font-semibold text-base flex items-center justify-center gap-2 shadow-elevated"
+              >
+                Continue
+                <ArrowRight size={18} />
+              </button>
+            </div>
+            <button
+              onClick={() => {
+                // Skip but still generate invite code
+                const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+                const code = Array.from({ length: 5 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+                if (user) {
+                  supabase.from("partner_invites").insert({ inviter_id: user.id, invite_code: code });
+                }
+                setInviteCode(code);
+                setStep("setup-connect");
+              }}
+              className="text-sm text-muted-foreground text-center py-3"
+            >
+              Skip for now →
+            </button>
+          </motion.div>
+        )}
+
         {/* ─── STEP 3B-2: Connect Partner ─── */}
         {step === "setup-connect" && (
-          <motion.div key="connect" {...fadeUp} className="flex-1 flex flex-col px-6 py-12">
+          <motion.div key="connect" {...fadeUp} className="flex-1 flex flex-col px-6 py-12 relative">
+            <BackButton onClick={goBack} />
             <div className="flex-1 flex flex-col justify-center items-center text-center">
               <div className="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mb-4">
                 <Heart size={28} className="text-secondary" />
@@ -466,7 +703,8 @@ export default function OnboardingFlow() {
 
         {/* ─── STEP 3B-3: Start Your Journey ─── */}
         {step === "setup-start" && (
-          <motion.div key="start" {...fadeUp} className="flex-1 flex flex-col px-6 py-12">
+          <motion.div key="start" {...fadeUp} className="flex-1 flex flex-col px-6 py-12 relative">
+            <BackButton onClick={goBack} />
             <div className="flex-1 flex flex-col justify-center items-center text-center">
               <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
                 <Sparkles size={28} className="text-primary" />
