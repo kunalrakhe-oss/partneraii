@@ -502,6 +502,7 @@ export default function HomePage() {
             </>
           )}
         </AnimatePresence>
+        <NotificationsPanel open={showNotifications} onClose={() => setShowNotifications(false)} />
       </div>
     </PageTransition>
   );
