@@ -94,6 +94,21 @@ export default function ChoresPage() {
   const [stepsCache, setStepsCache] = useState<Record<string, string[]>>({});
   const [loadingSteps, setLoadingSteps] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<Record<string, ProfileInfo>>({});
+  const [showSettings, setShowSettings] = useState(false);
+  const [sortBy, setSortBy] = useState<"created" | "due">("created");
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  // Close settings on outside click
+  useEffect(() => {
+    if (!showSettings) return;
+    const handler = (e: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setShowSettings(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showSettings]);
 
   const fetchChores = useCallback(async () => {
     if (!partnerPair) return;
