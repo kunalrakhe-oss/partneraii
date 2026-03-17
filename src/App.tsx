@@ -68,7 +68,7 @@ function AppRoutes() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/memories" element={<MemoriesPage />} />
       </Route>
-      <Route path="/auth" element={<Navigate to={onboardingDone2 ? "/" : "/onboarding"} replace />} />
+      <Route path="/auth" element={<Navigate to="/" replace />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
