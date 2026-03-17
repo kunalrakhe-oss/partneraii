@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { uploadAttachment } from "@/components/MediaPicker";
 import AIChatbot from "@/components/AIChatbot";
+import aiAssistantIcon from "@/assets/ai-assistant-icon.png";
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_CHAT_MESSAGES, DEMO_PARTNER2 } from "@/lib/demoData";
 
@@ -169,6 +170,7 @@ export default function ChatPage() {
 
   const isMe = (msg: ChatMsg) => msg.user_id === user?.id;
   const partnerInitial = partnerProfile?.display_name?.charAt(0).toUpperCase() || "P";
+  const partnerFirstName = partnerProfile?.display_name?.split(" ")[0] || "Partner";
 
   const getReactionsForMsg = (msgId: string) => {
     const msgReactions = reactions.filter(r => r.message_id === msgId);
@@ -224,7 +226,7 @@ export default function ChatPage() {
               )}
               <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-success border-[1.5px] border-card" />
             </div>
-            <span className="truncate max-w-[100px]">{partnerProfile?.display_name || "Partner"}</span>
+            <span className="truncate max-w-[100px]">{partnerFirstName}</span>
           </button>
 
           <button
@@ -233,8 +235,8 @@ export default function ChatPage() {
               activeTab === "ai" ? "bg-primary/15 text-foreground" : "text-muted-foreground"
             }`}
           >
-            <MessageCircleHeart size={16} />
-            <span>LoveBot</span>
+            <img src={aiAssistantIcon} alt="AI" className="w-5 h-5" />
+            <span>Your AI</span>
           </button>
 
           <div className="flex-1" />
@@ -254,7 +256,7 @@ export default function ChatPage() {
             <div className="text-center py-12">
               <p className="text-4xl mb-3">💬</p>
               <p className="text-sm font-semibold text-foreground mb-1">Start your conversation</p>
-              <p className="text-xs text-muted-foreground">Messages are private between you and {partnerProfile?.display_name || "your partner"}</p>
+              <p className="text-xs text-muted-foreground">Messages are private between you and {partnerFirstName}</p>
             </div>
           )}
 
