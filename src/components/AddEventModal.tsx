@@ -175,23 +175,55 @@ export default function AddEventModal({
             onClick={(e) => e.stopPropagation()}
             className="bg-card w-full max-w-lg rounded-t-3xl shadow-elevated h-[85vh] max-h-[90vh] flex flex-col overflow-hidden"
           >
-            <div className="shrink-0 border-b border-border bg-card px-5 pt-4 pb-3">
-              <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-muted" />
-              <div className="flex items-center justify-between">
+            <div className="shrink-0 bg-card px-5 pt-4 pb-0">
+              <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-muted" />
+              <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-foreground">
-                  {editingEvent ? "Edit Event" : "New Event"}
+                  {editingEvent ? "Edit" : "New"}
                 </h3>
                 <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
                   <X size={16} className="text-muted-foreground" />
                 </button>
+              </div>
+              {/* Type tabs */}
+              <div className="flex gap-1 rounded-2xl bg-muted p-1">
+                {([
+                  { value: "event" as const, label: "Event", icon: CalendarDays },
+                  { value: "reminder" as const, label: "Reminder", icon: Bell },
+                  { value: "countdown" as const, label: "Countdown", icon: Timer },
+                  { value: "birthday" as const, label: "Birthday", icon: Cake },
+                ]).map((tab) => (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => {
+                      setFormType(tab.value);
+                      if (tab.value === "reminder") { setFormReminder("15min"); setFormCountdown("none"); }
+                      else if (tab.value === "countdown") { setFormCountdown("days-until"); setFormReminder("none"); }
+                      else if (tab.value === "birthday") { setFormCategory("birthday"); setFormCountdown("days-until"); setFormReminder("1day"); }
+                      else { setFormReminder("none"); setFormCountdown("none"); }
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-1 rounded-xl py-2 text-[11px] font-semibold transition-colors ${
+                      formType === tab.value
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    <tab.icon size={13} />
+                    {tab.label}
+                  </button>
+                ))}
               </div>
             </div>
             <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4">
                 <div className="space-y-3 pb-4">
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-muted-foreground">Title</label>
-                    <input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required placeholder="Event title"
+                    <label className="mb-1 block text-xs font-semibold text-muted-foreground">
+                      {formType === "birthday" ? "Whose Birthday" : "Title"}
+                    </label>
+                    <input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required
+                      placeholder={formType === "birthday" ? "e.g. Sarah's Birthday" : formType === "reminder" ? "Remind me to..." : "Event title"}
                       className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
                   </div>
                   <div>
