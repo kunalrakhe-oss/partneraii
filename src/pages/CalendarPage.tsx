@@ -108,6 +108,7 @@ function formatHour(h: number): string {
 }
 
 export default function CalendarPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { partnerPair, loading: ppLoading } = usePartnerPair();
   const { isDemoMode } = useDemo();
