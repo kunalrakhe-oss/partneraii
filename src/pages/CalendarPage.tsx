@@ -365,45 +365,46 @@ export default function CalendarPage() {
       <div className="flex flex-col h-full">
         {/* Sticky header */}
         <div className="px-5 pt-10 pb-3 bg-background">
-          {/* Title row */}
-          <div className="flex items-center justify-between mb-3">
-            <button onClick={goToToday} className="text-left">
-              <h1 className="text-xl font-bold text-foreground">
-                {viewMode === "day" || viewMode === "multiday"
-                  ? format(selectedDate, "MMMM d, yyyy")
-                  : format(currentDate, "MMMM yyyy")}
-              </h1>
-              <p className="text-[10px] text-primary font-semibold uppercase tracking-wider">
-                {isToday(selectedDate) ? "Today" : format(selectedDate, "EEEE")}
-              </p>
-            </button>
-            <div className="flex items-center gap-1.5">
-              <button onClick={navigatePrev} className="w-8 h-8 rounded-full bg-card shadow-soft flex items-center justify-center">
-                <ChevronLeft size={16} className="text-foreground" />
+          {/* Title row with inline view picker — Apple Calendar style */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button onClick={navigatePrev} className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                <ChevronLeft size={18} />
               </button>
-              <button onClick={navigateNext} className="w-8 h-8 rounded-full bg-card shadow-soft flex items-center justify-center">
-                <ChevronRight size={16} className="text-foreground" />
+              <button onClick={goToToday} className="text-left">
+                <h1 className="text-lg font-bold text-foreground leading-tight">
+                  {viewMode === "day" || viewMode === "multiday"
+                    ? format(selectedDate, "MMM d, yyyy")
+                    : format(currentDate, "MMMM yyyy")}
+                </h1>
+              </button>
+              <button onClick={navigateNext} className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                <ChevronRight size={18} />
               </button>
             </div>
-          </div>
 
-          {/* View mode segmented control — Apple style */}
-          <div className="flex bg-muted rounded-xl p-0.5">
-            {viewIcons.map(({ mode, icon: Icon, label }) => (
-              <button
-                key={mode}
-                onClick={() => setViewMode(mode)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[10px] text-xs font-semibold transition-all ${
-                  viewMode === mode
-                    ? "bg-card shadow-soft text-foreground"
-                    : "text-muted-foreground"
-                }`}
-              >
-                <Icon size={13} />
-                {label}
-              </button>
-            ))}
+            {/* Compact view icons — top right */}
+            <div className="flex items-center gap-0.5 bg-muted rounded-lg p-0.5">
+              {viewIcons.map(({ mode, icon: Icon, label }) => (
+                <button
+                  key={mode}
+                  onClick={() => setViewMode(mode)}
+                  title={label}
+                  className={`w-7 h-7 rounded-md flex items-center justify-center transition-all ${
+                    viewMode === mode
+                      ? "bg-card shadow-sm text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Icon size={14} />
+                </button>
+              ))}
+            </div>
           </div>
+          {/* Subtitle */}
+          <p className="text-[10px] text-primary font-semibold uppercase tracking-wider mt-0.5 ml-9">
+            {isToday(selectedDate) ? "Today" : format(selectedDate, "EEEE")}
+          </p>
         </div>
 
         {/* Content area */}
