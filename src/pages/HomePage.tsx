@@ -32,6 +32,7 @@ export default function HomePage() {
   const [firstName, setFirstName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [partnerMood, setPartnerMood] = useState<{ mood: string; note: string | null } | null>(null);
+  const [myMood, setMyMood] = useState<{ mood: string; note: string | null } | null>(null);
   const [todayEvents, setTodayEvents] = useState<{ id: string; title: string; event_time: string | null }[]>([]);
   const [urgentChores, setUrgentChores] = useState<{ id: string; title: string; is_completed: boolean; recurrence: string | null }[]>([]);
   const [uncheckedGroceries, setUncheckedGroceries] = useState(0);
