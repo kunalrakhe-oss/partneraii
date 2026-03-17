@@ -597,18 +597,63 @@ export default function CalendarPage() {
         <div className="flex-1 overflow-y-auto">
           {viewMode === "day" && (
             <>
-              <DayView
-                date={selectedDate}
-                events={dayEvents}
-                onAddEvent={(time) => openAddForm(selectedDate, time)}
-                onEditEvent={openEditForm}
-                onToggle={toggleComplete}
-                onScheduleItem={scheduleItem}
-              />
+              {/* Today's / Selected day's events */}
+              {dayEvents.length > 0 ? (
+                <div className="px-5 pb-2">
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">
+                    {isToday(selectedDate) ? "Today's Events" : format(selectedDate, "EEEE's Events")}
+                  </p>
+                  <div className="space-y-1.5">
+                    {dayEvents
+                      .sort((a, b) => (a.event_time || "").localeCompare(b.event_time || ""))
+                      .map((evt) => (
+                        <div
+                          key={evt.id}
+                          onClick={() => openEditForm(evt)}
+                          className={`w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-card shadow-soft border border-border cursor-pointer ${evt.is_completed ? "opacity-50" : ""}`}
+                        >
+                          <div className={`w-1 self-stretch rounded-full ${CATEGORY_COLORS[evt.category] || "bg-primary/50"}`} />
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-semibold text-foreground ${evt.is_completed ? "line-through" : ""}`}>
+                              {evt.title}
+                            </p>
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-[10px] text-muted-foreground">
+                                {evt.event_time || "All day"} • {CATEGORY_LABEL[evt.category] || evt.category}
+                                {evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
+                              </p>
+                              {countdownBadge(evt) && (
+                                <span className="text-[9px] font-bold bg-primary/15 text-primary px-1.5 py-0.5 rounded-full">
+                                  {countdownBadge(evt)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); toggleComplete(evt); }}
+                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                              evt.is_completed ? "bg-success border-success" : "border-border"
+                            }`}
+                          >
+                            {evt.is_completed && <Check size={10} className="text-success-foreground" />}
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="px-5 py-8 text-center">
+                  <CalendarPlus size={28} className="text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm font-semibold text-foreground mb-1">No events {isToday(selectedDate) ? "today" : "this day"}</p>
+                  <p className="text-xs text-muted-foreground">Tap + to add one</p>
+                </div>
+              )}
+
+              {/* Upcoming Events (future from selected date) */}
               <div className="mt-4">
                 <p className="px-5 text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Upcoming Events</p>
                 <ListView
-                  events={events}
+                  events={events.filter(e => e.event_date > selectedDateStr)}
                   onEditEvent={openEditForm}
                   onToggle={toggleComplete}
                   onAddEvent={() => openAddForm()}
