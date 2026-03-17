@@ -228,6 +228,11 @@ export default function CalendarPage() {
   };
 
   const openEditForm = (event: CalendarEvent) => {
+    // Diet items — navigate to diet page
+    if (event.category === "diet") {
+      navigate("/diet");
+      return;
+    }
     // Chore/grocery items are view-only on calendar — just toggle completion
     if (event._source === "chore" || event._source === "grocery") {
       toast.info(`${event._source === "chore" ? "Chore" : "Grocery item"} — tap ✓ to toggle completion`);
