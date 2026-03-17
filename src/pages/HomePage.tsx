@@ -274,23 +274,25 @@ export default function HomePage() {
           {/* Partner's Mood */}
           <motion.div variants={item}>
             <p className="text-sm font-semibold text-foreground mb-2">Partner's Mood</p>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 bg-primary/20 rounded-2xl px-4 py-3 flex items-center gap-3">
-                <span className="text-xl">✨</span>
-                <div>
-                  <p className="text-xs text-foreground/70">Your partner is feeling</p>
-                  <p className="text-sm font-bold text-foreground">
-                    {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : "—"}
-                  </p>
-                  {partnerMood?.note && (
-                    <p className="text-xs text-foreground/50 mt-0.5">"{partnerMood.note}"</p>
-                  )}
+            <button onClick={() => partnerMood && setShowMoodPopup(true)} className="w-full text-left">
+              <div className="flex items-center gap-3">
+                <div className="flex-1 bg-primary/20 rounded-2xl px-4 py-3 flex items-center gap-3">
+                  <span className="text-xl">✨</span>
+                  <div>
+                    <p className="text-xs text-foreground/70">Your partner is feeling</p>
+                    <p className="text-sm font-bold text-foreground">
+                      {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : "—"}
+                    </p>
+                    {partnerMood?.note && (
+                      <p className="text-xs text-foreground/50 mt-0.5">"{partnerMood.note}"</p>
+                    )}
+                  </div>
+                </div>
+                <div className="w-12 h-12 rounded-btn bg-secondary/20 flex items-center justify-center shrink-0">
+                  <Heart size={20} className="text-secondary" fill="currentColor" />
                 </div>
               </div>
-              <button onClick={() => navigate("/mood")} className="w-12 h-12 rounded-btn bg-secondary/20 flex items-center justify-center">
-                <Heart size={20} className="text-secondary" fill="currentColor" />
-              </button>
-            </div>
+            </button>
           </motion.div>
 
           {/* Today's Agenda Card */}
