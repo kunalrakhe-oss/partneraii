@@ -59,6 +59,7 @@ export default function HomePage() {
 
   // AI Insight
   const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [insightDismissed, setInsightDismissed] = useState(false);
   const [insightLoading, setInsightLoading] = useState(false);
 
   useEffect(() => {
