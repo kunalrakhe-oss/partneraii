@@ -155,12 +155,11 @@ export default function MoodPage() {
           </div>
         </div>
 
-        <div className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3">
-          <Lightbulb size={16} className="text-primary shrink-0 mt-0.5" />
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            <span className="text-primary font-medium">Pro-tip:</span> Check in with your partner's mood daily to stay connected!
-          </p>
-        </div>
+        <AiMoodTip
+          myMood={todayLog?.mood || null}
+          partnerMood={partnerLog?.mood || null}
+          weekHistory={last7.map(d => d.me?.mood || "none").join(", ")}
+        />
       </div>
     </PageTransition>
   );
