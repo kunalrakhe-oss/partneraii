@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Trash2, Bell, Timer } from "lucide-react";
+import { X, Trash2, Bell, Timer, CalendarDays, Cake } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,6 +61,7 @@ export default function AddEventModal({
   const [formDate, setFormDate] = useState("");
   const [formReminder, setFormReminder] = useState("none");
   const [formCountdown, setFormCountdown] = useState("none");
+  const [formType, setFormType] = useState<"event" | "reminder" | "countdown" | "birthday">("event");
 
   // Reset form when modal opens
   const resetForAdd = () => {
@@ -73,6 +74,7 @@ export default function AddEventModal({
     setFormDate(format(defaultDate || new Date(), "yyyy-MM-dd"));
     setFormReminder("none");
     setFormCountdown("none");
+    setFormType("event");
   };
 
   const resetForEdit = (event: CalendarEventData) => {
@@ -85,6 +87,11 @@ export default function AddEventModal({
     setFormDate(event.event_date);
     setFormReminder(event.reminder || "none");
     setFormCountdown(event.countdown_type || "none");
+    // Infer type from stored data
+    if (event.countdown_type === "days-until" || event.countdown_type === "days-since") setFormType("countdown");
+    else if (event.category === "birthday") setFormType("birthday");
+    else if (event.reminder && event.reminder !== "none") setFormType("reminder");
+    else setFormType("event");
   };
 
   // Use a ref-like pattern: reset when open changes
@@ -168,23 +175,55 @@ export default function AddEventModal({
             onClick={(e) => e.stopPropagation()}
             className="bg-card w-full max-w-lg rounded-t-3xl shadow-elevated h-[85vh] max-h-[90vh] flex flex-col overflow-hidden"
           >
-            <div className="shrink-0 border-b border-border bg-card px-5 pt-4 pb-3">
-              <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-muted" />
-              <div className="flex items-center justify-between">
+            <div className="shrink-0 bg-card px-5 pt-4 pb-0">
+              <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-muted" />
+              <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-foreground">
-                  {editingEvent ? "Edit Event" : "New Event"}
+                  {editingEvent ? "Edit" : "New"}
                 </h3>
                 <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
                   <X size={16} className="text-muted-foreground" />
                 </button>
+              </div>
+              {/* Type tabs */}
+              <div className="flex gap-1 rounded-2xl bg-muted p-1">
+                {([
+                  { value: "event" as const, label: "Event", icon: CalendarDays },
+                  { value: "reminder" as const, label: "Reminder", icon: Bell },
+                  { value: "countdown" as const, label: "Countdown", icon: Timer },
+                  { value: "birthday" as const, label: "Birthday", icon: Cake },
+                ]).map((tab) => (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => {
+                      setFormType(tab.value);
+                      if (tab.value === "reminder") { setFormReminder("15min"); setFormCountdown("none"); }
+                      else if (tab.value === "countdown") { setFormCountdown("days-until"); setFormReminder("none"); }
+                      else if (tab.value === "birthday") { setFormCategory("birthday"); setFormCountdown("days-until"); setFormReminder("1day"); }
+                      else { setFormReminder("none"); setFormCountdown("none"); }
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-1 rounded-xl py-2 text-[11px] font-semibold transition-colors ${
+                      formType === tab.value
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    <tab.icon size={13} />
+                    {tab.label}
+                  </button>
+                ))}
               </div>
             </div>
             <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4">
                 <div className="space-y-3 pb-4">
                   <div>
-                    <label className="mb-1 block text-xs font-semibold text-muted-foreground">Title</label>
-                    <input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required placeholder="Event title"
+                    <label className="mb-1 block text-xs font-semibold text-muted-foreground">
+                      {formType === "birthday" ? "Whose Birthday" : "Title"}
+                    </label>
+                    <input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required
+                      placeholder={formType === "birthday" ? "e.g. Sarah's Birthday" : formType === "reminder" ? "Remind me to..." : "Event title"}
                       className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
                   </div>
                   <div>
@@ -237,49 +276,51 @@ export default function AddEventModal({
                       </select>
                     </div>
                   </div>
-                  {/* Reminder */}
-                  <div>
-                    <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                      <Bell size={12} /> Reminder
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { value: "none", label: "None" },
-                        { value: "at-time", label: "At time" },
-                        { value: "5min", label: "5 min before" },
-                        { value: "15min", label: "15 min" },
-                        { value: "1hour", label: "1 hour" },
-                        { value: "1day", label: "1 day" },
-                      ].map((r) => (
-                        <button key={r.value} type="button" onClick={() => setFormReminder(r.value)}
-                          className={`rounded-btn px-3 py-1.5 text-xs font-medium transition-colors ${
-                            formReminder === r.value ? "love-gradient text-primary-foreground" : "bg-muted text-muted-foreground"
-                          }`}>
-                          {r.label}
-                        </button>
-                      ))}
+                  {/* Reminder options - shown for reminder & birthday types */}
+                  {(formType === "reminder" || formType === "birthday") && (
+                    <div>
+                      <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                        <Bell size={12} /> Remind me
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { value: "at-time", label: "At time" },
+                          { value: "5min", label: "5 min before" },
+                          { value: "15min", label: "15 min" },
+                          { value: "1hour", label: "1 hour" },
+                          { value: "1day", label: "1 day" },
+                        ].map((r) => (
+                          <button key={r.value} type="button" onClick={() => setFormReminder(r.value)}
+                            className={`rounded-btn px-3 py-1.5 text-xs font-medium transition-colors ${
+                              formReminder === r.value ? "love-gradient text-primary-foreground" : "bg-muted text-muted-foreground"
+                            }`}>
+                            {r.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  {/* Countdown */}
-                  <div>
-                    <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                      <Timer size={12} /> Countdown
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        { value: "none", label: "None" },
-                        { value: "days-until", label: "Days until" },
-                        { value: "days-since", label: "Days since" },
-                      ].map((c) => (
-                        <button key={c.value} type="button" onClick={() => setFormCountdown(c.value)}
-                          className={`rounded-btn px-3 py-1.5 text-xs font-medium transition-colors ${
-                            formCountdown === c.value ? "love-gradient text-primary-foreground" : "bg-muted text-muted-foreground"
-                          }`}>
-                          {c.label}
-                        </button>
-                      ))}
+                  )}
+                  {/* Countdown options - shown for countdown & birthday types */}
+                  {(formType === "countdown" || formType === "birthday") && (
+                    <div>
+                      <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                        <Timer size={12} /> Countdown
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          { value: "days-until", label: "Days until" },
+                          { value: "days-since", label: "Days since" },
+                        ].map((c) => (
+                          <button key={c.value} type="button" onClick={() => setFormCountdown(c.value)}
+                            className={`rounded-btn px-3 py-1.5 text-xs font-medium transition-colors ${
+                              formCountdown === c.value ? "love-gradient text-primary-foreground" : "bg-muted text-muted-foreground"
+                            }`}>
+                            {c.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
               <div className="shrink-0 border-t border-border bg-card px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
