@@ -179,6 +179,7 @@ export default function PartnerNotifications() {
         (payload) => {
           const mem = payload.new as { user_id: string; title: string };
           if (mem.user_id !== user.id) {
+            notifyPartnerAction();
             toast("New memory added 📸", {
               description: mem.title,
               icon: <Camera size={16} className="text-primary" />,
