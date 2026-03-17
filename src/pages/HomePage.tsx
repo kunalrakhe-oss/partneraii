@@ -100,7 +100,7 @@ export default function HomePage() {
           <motion.div variants={item}>
             <p className="text-sm font-semibold text-foreground mb-2">Partner's Mood</p>
             <div className="flex items-center gap-3">
-              <div className="flex-1 bg-[hsl(100,25%,78%)] rounded-2xl px-4 py-3 flex items-center gap-3">
+              <div className="flex-1 bg-primary/20 rounded-2xl px-4 py-3 flex items-center gap-3">
                 <span className="text-xl">✨</span>
                 <div>
                   <p className="text-xs text-foreground/70">James is feeling</p>
@@ -109,8 +109,8 @@ export default function HomePage() {
                   </p>
                 </div>
               </div>
-              <button className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center">
-                <Heart size={20} className="text-primary" fill="hsl(346, 77%, 60%)" />
+              <button className="w-12 h-12 rounded-btn bg-secondary/20 flex items-center justify-center">
+                <Heart size={20} className="text-secondary" fill="currentColor" />
               </button>
             </div>
           </motion.div>
