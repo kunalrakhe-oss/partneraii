@@ -13,6 +13,8 @@ import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
 import type { Tables } from "@/integrations/supabase/types";
+import { useDemo } from "@/contexts/DemoContext";
+import { DEMO_GROCERY_ITEMS } from "@/lib/demoData";
 
 type GroceryRow = Tables<"grocery_items">;
 
@@ -60,6 +62,7 @@ const CATEGORY_COLOR: Record<string, string> = {
 export default function GroceryPage() {
   const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
   const { toast } = useToast();
+  const { isDemoMode } = useDemo();
   const [allItems, setAllItems] = useState<GroceryRow[]>([]);
   const [input, setInput] = useState("");
   const [showSuggestion, setShowSuggestion] = useState(true);
@@ -92,6 +95,14 @@ export default function GroceryPage() {
     if (!partnerPair) { setLoading(false); return; }
     fetchItems();
   }, [partnerPair, pairLoading, fetchItems]);
+
+  // Inject demo data when in demo mode and no real data
+  useEffect(() => {
+    if (isDemoMode && !pairLoading && allItems.length === 0) {
+      setAllItems(DEMO_GROCERY_ITEMS as any);
+      setLoading(false);
+    }
+  }, [isDemoMode, pairLoading, allItems.length]);
 
   useEffect(() => {
     if (!partnerPair) return;

@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
 import { format, parseISO } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
+import { useDemo } from "@/contexts/DemoContext";
+import { DEMO_MEMORIES } from "@/lib/demoData";
 
 type MemoryRow = Tables<"memories">;
 
@@ -29,6 +31,7 @@ export default function MemoriesPage() {
   const navigate = useNavigate();
   const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
   const { toast } = useToast();
+  const { isDemoMode } = useDemo();
   const [memories, setMemories] = useState<MemoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -61,6 +64,14 @@ export default function MemoriesPage() {
     if (!partnerPair) { setLoading(false); return; }
     fetchMemories();
   }, [partnerPair, pairLoading, fetchMemories]);
+
+  // Inject demo memories
+  useEffect(() => {
+    if (isDemoMode && !pairLoading && memories.length === 0) {
+      setMemories(DEMO_MEMORIES as any);
+      setLoading(false);
+    }
+  }, [isDemoMode, pairLoading, memories.length]);
 
   // Realtime
   useEffect(() => {

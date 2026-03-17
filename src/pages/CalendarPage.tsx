@@ -17,6 +17,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useDemo } from "@/contexts/DemoContext";
+import { DEMO_CALENDAR_EVENTS } from "@/lib/demoData";
 
 const CATEGORIES = ["date-night", "groceries", "cleaning", "bills", "travel", "family", "chore", "reminder", "birthday", "grocery-due"] as const;
 const CATEGORY_ICONS: Record<string, any> = {
@@ -104,6 +106,7 @@ function formatHour(h: number): string {
 export default function CalendarPage() {
   const { user } = useAuth();
   const { partnerPair, loading: ppLoading } = usePartnerPair();
+  const { isDemoMode } = useDemo();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -171,6 +174,13 @@ export default function CalendarPage() {
       setEvents([...calEvents, ...choreEvents, ...groceryEvents]);
     });
   }, [partnerPair]);
+
+  // Inject demo events when in demo mode and no real data
+  useEffect(() => {
+    if (isDemoMode && events.length === 0) {
+      setEvents(DEMO_CALENDAR_EVENTS as CalendarEvent[]);
+    }
+  }, [isDemoMode, events.length]);
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
   const dayEvents = events.filter((e) => e.event_date === selectedDateStr);

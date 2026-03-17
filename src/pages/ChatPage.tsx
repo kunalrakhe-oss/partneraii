@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { uploadAttachment } from "@/components/MediaPicker";
 import AIChatbot from "@/components/AIChatbot";
+import { useDemo } from "@/contexts/DemoContext";
+import { DEMO_CHAT_MESSAGES, DEMO_PARTNER2 } from "@/lib/demoData";
 
 interface ChatMsg {
   id: string;
@@ -31,6 +33,7 @@ interface ProfileInfo {
 export default function ChatPage() {
   const { user } = useAuth();
   const { partnerPair, loading: ppLoading, userId } = usePartnerPair();
+  const { isDemoMode } = useDemo();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
@@ -67,6 +70,19 @@ export default function ChatPage() {
 
     return () => { supabase.removeChannel(channel); };
   }, [partnerPair]);
+
+  // Inject demo data
+  useEffect(() => {
+    if (isDemoMode && messages.length === 0) {
+      setMessages(DEMO_CHAT_MESSAGES.map(m => ({
+        ...m,
+        user_id: m.user_id === "me" ? (userId || "me") : "demo-partner",
+      })));
+      if (!partnerProfile) {
+        setPartnerProfile({ display_name: DEMO_PARTNER2, avatar_url: null });
+      }
+    }
+  }, [isDemoMode, messages.length, userId]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

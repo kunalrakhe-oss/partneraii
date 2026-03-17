@@ -10,6 +10,8 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import NotificationsPanel, { useNotificationCount } from "@/components/NotificationsPanel";
+import { useDemo } from "@/contexts/DemoContext";
+import { DEMO_STATS, DEMO_PARTNER_MOOD, DEMO_MOOD_MESSAGE, DEMO_AI_INSIGHT, DEMO_TODAY_EVENTS, DEMO_PARTNER1, DEMO_PARTNER2, DEMO_CHORES } from "@/lib/demoData";
 
 const container = {
   hidden: { opacity: 0 },
@@ -26,6 +28,7 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { partnerPair } = usePartnerPair();
+  const { isDemoMode } = useDemo();
   const [firstName, setFirstName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [partnerMood, setPartnerMood] = useState<{ mood: string; note: string | null } | null>(null);
@@ -164,10 +167,29 @@ export default function HomePage() {
 
   // Auto-fetch insight once data is loaded
   useEffect(() => {
+    if (isDemoMode && !aiInsight) {
+      setAiInsight(DEMO_AI_INSIGHT);
+      return;
+    }
     if (partnerPair && !aiInsight && !insightLoading && daysTogether > 0) {
       fetchInsight();
     }
-  }, [partnerPair, daysTogether, fetchInsight, aiInsight, insightLoading]);
+  }, [partnerPair, daysTogether, fetchInsight, aiInsight, insightLoading, isDemoMode]);
+
+  // Apply demo data when in demo mode and no real data
+  useEffect(() => {
+    if (!isDemoMode) return;
+    if (daysTogether === 0) setDaysTogether(DEMO_STATS.daysTogether);
+    if (totalEvents === 0) setTotalEvents(DEMO_STATS.totalEvents);
+    if (totalMemories === 0) setTotalMemories(DEMO_STATS.totalMemories);
+    if (completedChores === 0) setCompletedChores(DEMO_STATS.completedChores);
+    if (!partnerMood) setPartnerMood(DEMO_PARTNER_MOOD);
+    if (todayEvents.length === 0) setTodayEvents(DEMO_TODAY_EVENTS as any);
+    if (urgentChores.length === 0) setUrgentChores(DEMO_CHORES.map(c => ({ id: c.id, title: c.title, is_completed: c.is_completed, recurrence: c.recurrence })));
+    if (uncheckedGroceries === 0) setUncheckedGroceries(6);
+    if (messageCount === 0) setMessageCount(3);
+    if (!firstName || firstName === "there") setFirstName(DEMO_PARTNER1);
+  }, [isDemoMode]);
 
   const greeting = (() => {
     const hour = new Date().getHours();

@@ -11,6 +11,8 @@ import ProfileButton from "@/components/ProfileButton";
 import { Calendar } from "@/components/ui/calendar";
 import { Switch } from "@/components/ui/switch";
 import type { Tables } from "@/integrations/supabase/types";
+import { useDemo } from "@/contexts/DemoContext";
+import { DEMO_CHORES, DEMO_PARTNER1, DEMO_PARTNER2 } from "@/lib/demoData";
 
 type ChoreRow = Tables<"chores">;
 
@@ -86,6 +88,7 @@ AvatarCircle.displayName = "AvatarCircle";
 export default function ChoresPage() {
   const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
   const { toast } = useToast();
+  const { isDemoMode } = useDemo();
   const [chores, setChores] = useState<ChoreRow[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -127,6 +130,22 @@ export default function ChoresPage() {
     if (!partnerPair) { setLoading(false); return; }
     fetchChores();
   }, [partnerPair, pairLoading, fetchChores]);
+
+  // Inject demo chores
+  useEffect(() => {
+    if (isDemoMode && !pairLoading && chores.length === 0) {
+      const demoProfiles: Record<string, ProfileInfo> = {
+        "demo-kunal": { user_id: "demo-kunal", display_name: DEMO_PARTNER1, avatar_url: null },
+        "demo-neelam": { user_id: "demo-neelam", display_name: DEMO_PARTNER2, avatar_url: null },
+      };
+      setProfiles(demoProfiles);
+      setChores(DEMO_CHORES.map(c => ({
+        ...c,
+        assigned_to: c.assigned_to === "me" ? "demo-kunal" : c.assigned_to === "partner" ? "demo-neelam" : null,
+      })) as any);
+      setLoading(false);
+    }
+  }, [isDemoMode, pairLoading, chores.length]);
 
   // Fetch profiles for user + partner
   useEffect(() => {
