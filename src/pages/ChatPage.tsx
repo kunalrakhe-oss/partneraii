@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { uploadAttachment } from "@/components/MediaPicker";
 import AIChatbot from "@/components/AIChatbot";
+import { useDemo } from "@/contexts/DemoContext";
+import { DEMO_CHAT_MESSAGES, DEMO_PARTNER2 } from "@/lib/demoData";
 
 interface ChatMsg {
   id: string;
