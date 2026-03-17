@@ -110,6 +110,8 @@ export default function AddEventModal({
           assigned_to: formAssigned,
           priority: formPriority,
           event_date: formDate,
+          reminder: formReminder,
+          countdown_type: formCountdown,
         })
         .eq("id", editingEvent.id)
         .select()
