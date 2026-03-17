@@ -235,8 +235,8 @@ export default function ChatPage() {
               activeTab === "ai" ? "bg-primary/15 text-foreground" : "text-muted-foreground"
             }`}
           >
-            <MessageCircleHeart size={16} />
-            <span>LoveBot</span>
+            <img src={aiAssistantIcon} alt="AI" className="w-5 h-5" />
+            <span>Your AI</span>
           </button>
 
           <div className="flex-1" />
