@@ -1,9 +1,14 @@
-import { useState, useRef } from "react";
-import { Plus, Camera, Heart, Star, Calendar, MapPin, X, Image as ImageIcon, Award, BookOpen } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Plus, Camera, Heart, Star, Calendar, X, Image as ImageIcon, Award, BookOpen, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLocalStorage, generateId, type Memory } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
+import { usePartnerPair } from "@/hooks/usePartnerPair";
+import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
 import { format, parseISO } from "date-fns";
+import type { Tables } from "@/integrations/supabase/types";
+
+type MemoryRow = Tables<"memories">;
 
 const MILESTONE_OPTIONS = [
   { label: "Anniversary", emoji: "💍" },
@@ -16,47 +21,110 @@ const MILESTONE_OPTIONS = [
 ];
 
 type FilterType = "all" | "photo" | "milestone" | "note";
+type MemoryType = "photo" | "milestone" | "note";
 
 export default function MemoriesPage() {
-  const [memories, setMemories] = useLocalStorage<Memory[]>("lovelist-memories", []);
+  const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
+  const { toast } = useToast();
+  const [memories, setMemories] = useState<MemoryRow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [filter, setFilter] = useState<FilterType>("all");
+  const [submitting, setSubmitting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
   const [formDesc, setFormDesc] = useState("");
   const [formDate, setFormDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [formType, setFormType] = useState<Memory["type"]>("photo");
-  const [formPhoto, setFormPhoto] = useState<string>("");
+  const [formType, setFormType] = useState<MemoryType>("photo");
+  const [formFile, setFormFile] = useState<File | null>(null);
+  const [formPreview, setFormPreview] = useState("");
   const [formMilestone, setFormMilestone] = useState("");
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const fetchMemories = useCallback(async () => {
+    if (!partnerPair) return;
+    const { data } = await supabase
+      .from("memories")
+      .select("*")
+      .eq("partner_pair", partnerPair)
+      .order("memory_date", { ascending: false });
+    if (data) setMemories(data);
+    setLoading(false);
+  }, [partnerPair]);
+
+  useEffect(() => {
+    if (pairLoading) return;
+    if (!partnerPair) { setLoading(false); return; }
+    fetchMemories();
+  }, [partnerPair, pairLoading, fetchMemories]);
+
+  // Realtime
+  useEffect(() => {
+    if (!partnerPair) return;
+    const channel = supabase
+      .channel("memories-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "memories" }, () => {
+        fetchMemories();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [partnerPair, fetchMemories]);
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Photo must be under 5MB");
+    if (file.size > 10 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Photo must be under 10MB", variant: "destructive" });
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => setFormPhoto(reader.result as string);
-    reader.readAsDataURL(file);
+    setFormFile(file);
+    setFormPreview(URL.createObjectURL(file));
   };
 
-  const handleAdd = () => {
-    if (!formTitle.trim()) return;
-    const newMemory: Memory = {
-      id: generateId(),
+  const uploadPhoto = async (file: File): Promise<string | null> => {
+    if (!userId) return null;
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${userId}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage
+      .from("memory-photos")
+      .upload(path, file, { cacheControl: "3600", upsert: false });
+    if (error) {
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+      return null;
+    }
+    const { data: urlData } = supabase.storage.from("memory-photos").getPublicUrl(path);
+    return urlData.publicUrl;
+  };
+
+  const handleAdd = async () => {
+    if (!formTitle.trim() || !userId || !partnerPair) return;
+    setSubmitting(true);
+
+    let photoUrl: string | null = null;
+    if (formFile) {
+      photoUrl = await uploadPhoto(formFile);
+      if (!photoUrl && formFile) { setSubmitting(false); return; }
+    }
+
+    const { error } = await supabase.from("memories").insert({
       title: formTitle.trim(),
-      description: formDesc.trim(),
-      date: formDate,
+      description: formDesc.trim() || null,
+      memory_date: formDate,
       type: formType,
-      photo: formPhoto || undefined,
-      milestone: formMilestone || undefined,
-    };
-    setMemories([...memories, newMemory]);
-    resetForm();
-    setShowAdd(false);
+      photo_url: photoUrl,
+      user_id: userId,
+      partner_pair: partnerPair,
+    });
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      resetForm();
+      setShowAdd(false);
+      fetchMemories();
+    }
+    setSubmitting(false);
   };
 
   const resetForm = () => {
@@ -64,24 +132,45 @@ export default function MemoriesPage() {
     setFormDesc("");
     setFormDate(format(new Date(), "yyyy-MM-dd"));
     setFormType("photo");
-    setFormPhoto("");
+    setFormFile(null);
+    setFormPreview("");
     setFormMilestone("");
   };
 
-  const deleteMemory = (id: string) => {
-    setMemories(memories.filter(m => m.id !== id));
+  const deleteMemory = async (id: string) => {
+    await supabase.from("memories").delete().eq("id", id);
+    fetchMemories();
   };
 
-  const filtered = memories
-    .filter(m => filter === "all" || m.type === filter)
-    .sort((a, b) => b.date.localeCompare(a.date));
+  const filtered = memories.filter(m => filter === "all" || m.type === filter);
 
   // Group by year-month
-  const grouped: Record<string, Memory[]> = {};
+  const grouped: Record<string, MemoryRow[]> = {};
   filtered.forEach(m => {
-    const key = format(parseISO(m.date), "MMMM yyyy");
+    const key = format(parseISO(m.memory_date), "MMMM yyyy");
     (grouped[key] = grouped[key] || []).push(m);
   });
+
+  if (pairLoading || loading) {
+    return (
+      <PageTransition>
+        <div className="px-5 pt-10 pb-6 flex items-center justify-center min-h-[60vh]">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      </PageTransition>
+    );
+  }
+
+  if (!partnerPair) {
+    return (
+      <PageTransition>
+        <div className="px-5 pt-10 pb-6 text-center">
+          <p className="text-4xl mb-3">🔗</p>
+          <p className="text-sm text-muted-foreground">Connect with your partner to start sharing memories</p>
+        </div>
+      </PageTransition>
+    );
+  }
 
   return (
     <PageTransition>
@@ -160,14 +249,12 @@ export default function MemoriesPage() {
           <div className="space-y-6">
             {Object.entries(grouped).map(([monthYear, monthMemories]) => (
               <div key={monthYear}>
-                {/* Month header */}
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-2 h-2 rounded-full bg-primary" />
                   <h2 className="text-sm font-bold text-foreground">{monthYear}</h2>
                   <div className="flex-1 h-px bg-border" />
                 </div>
 
-                {/* Cards */}
                 <div className="space-y-3 pl-4 border-l-2 border-border ml-0.5">
                   {monthMemories.map(memory => (
                     <motion.div
@@ -176,27 +263,21 @@ export default function MemoriesPage() {
                       animate={{ opacity: 1, y: 0 }}
                       className="bg-card rounded-2xl shadow-card border border-border overflow-hidden relative"
                     >
-                      {/* Photo */}
-                      {memory.photo && (
+                      {memory.photo_url && (
                         <div className="h-44 overflow-hidden">
-                          <img
-                            src={memory.photo}
-                            alt={memory.title}
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={memory.photo_url} alt={memory.title} className="w-full h-full object-cover" />
                         </div>
                       )}
 
-                      {/* Content */}
                       <div className="p-4">
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1">
-                            {memory.type === "milestone" && memory.milestone && (
+                            {memory.type === "milestone" && (
                               <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full mb-2">
-                                {MILESTONE_OPTIONS.find(m => m.label === memory.milestone)?.emoji || "⭐"} {memory.milestone}
+                                ⭐ Milestone
                               </span>
                             )}
-                            {memory.type === "photo" && !memory.milestone && (
+                            {memory.type === "photo" && (
                               <span className="inline-flex items-center gap-1 text-[10px] font-bold text-success bg-success/10 px-2 py-0.5 rounded-full mb-2">
                                 📷 Photo
                               </span>
@@ -221,7 +302,7 @@ export default function MemoriesPage() {
                         <div className="flex items-center gap-2 mt-2.5">
                           <Calendar size={10} className="text-muted-foreground" />
                           <span className="text-[10px] text-muted-foreground">
-                            {format(parseISO(memory.date), "EEEE, MMMM d, yyyy")}
+                            {format(parseISO(memory.memory_date), "EEEE, MMMM d, yyyy")}
                           </span>
                         </div>
                       </div>
@@ -264,10 +345,10 @@ export default function MemoriesPage() {
                 {/* Type selector */}
                 <div className="flex gap-2 mb-4">
                   {([
-                    { key: "photo", label: "Photo", icon: Camera },
-                    { key: "milestone", label: "Milestone", icon: Award },
-                    { key: "note", label: "Note", icon: Star },
-                  ] as { key: Memory["type"]; label: string; icon: any }[]).map(t => (
+                    { key: "photo" as MemoryType, label: "Photo", icon: Camera },
+                    { key: "milestone" as MemoryType, label: "Milestone", icon: Award },
+                    { key: "note" as MemoryType, label: "Note", icon: Star },
+                  ]).map(t => (
                     <button
                       key={t.key}
                       onClick={() => setFormType(t.key)}
@@ -290,14 +371,14 @@ export default function MemoriesPage() {
                       ref={fileRef}
                       type="file"
                       accept="image/*"
-                      onChange={handlePhotoUpload}
+                      onChange={handlePhotoSelect}
                       className="hidden"
                     />
-                    {formPhoto ? (
+                    {formPreview ? (
                       <div className="relative rounded-xl overflow-hidden h-40">
-                        <img src={formPhoto} alt="Upload preview" className="w-full h-full object-cover" />
+                        <img src={formPreview} alt="Upload preview" className="w-full h-full object-cover" />
                         <button
-                          onClick={() => setFormPhoto("")}
+                          onClick={() => { setFormFile(null); setFormPreview(""); }}
                           className="absolute top-2 right-2 w-7 h-7 rounded-full bg-foreground/60 flex items-center justify-center"
                         >
                           <X size={14} className="text-background" />
@@ -368,10 +449,10 @@ export default function MemoriesPage() {
                 {/* Submit */}
                 <button
                   onClick={handleAdd}
-                  disabled={!formTitle.trim()}
-                  className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm shadow-soft disabled:opacity-40 transition-opacity"
+                  disabled={!formTitle.trim() || submitting}
+                  className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm shadow-soft disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
                 >
-                  Save Memory
+                  {submitting ? <Loader2 size={18} className="animate-spin" /> : "Save Memory"}
                 </button>
               </motion.div>
             </motion.div>
