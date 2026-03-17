@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import { format, subDays } from "date-fns";
-import { Heart, Sparkles, Lightbulb, Users, RefreshCw, Loader2, X } from "lucide-react";
+import { Heart, Sparkles, Lightbulb, Users, RefreshCw, Loader2, X, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,11 +11,18 @@ import { useNavigate } from "react-router-dom";
 
 const MOODS = [
   { key: "happy", emoji: "😊", label: "Happy" },
+  { key: "excited", emoji: "🤩", label: "Excited" },
+  { key: "neutral", emoji: "🥰", label: "Loved" },
+  { key: "calm", emoji: "😌", label: "Calm" },
   { key: "tired", emoji: "😵‍💫", label: "Tired" },
   { key: "sad", emoji: "😢", label: "Sad" },
   { key: "angry", emoji: "😫", label: "Stressed" },
-  { key: "neutral", emoji: "🥰", label: "Loved" },
+  { key: "anxious", emoji: "😰", label: "Anxious" },
+  { key: "grateful", emoji: "🙏", label: "Grateful" },
+  { key: "silly", emoji: "🤪", label: "Silly" },
 ] as const;
+
+const MOOD_EMOJI_MAP: Record<string, string> = Object.fromEntries(MOODS.map(m => [m.key, m.emoji]));
 
 interface MoodLog {
   id: string;
@@ -46,9 +53,7 @@ function AiMoodTip({ myMood, partnerMood, weekHistory }: { myMood: string | null
     }
   }, [myMood, partnerMood, weekHistory]);
 
-  useEffect(() => {
-    fetchTip();
-  }, []);
+  useEffect(() => { fetchTip(); }, []);
 
   return (
     <div className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3">
@@ -80,6 +85,13 @@ export default function MoodPage() {
   const [note, setNote] = useState("");
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState("there");
+  const [reactionMessage, setReactionMessage] = useState("");
+  const [moodReaction, setMoodReaction] = useState("");
+  const [sendingReaction, setSendingReaction] = useState(false);
+
+  // Swipe-down dismiss
+  const dragY = useMotionValue(0);
+  const sheetOpacity = useTransform(dragY, [0, 300], [1, 0.3]);
 
   const today = format(new Date(), "yyyy-MM-dd");
   const todayLog = logs.find(l => l.log_date === today && l.user_id === user?.id);
@@ -118,7 +130,6 @@ export default function MoodPage() {
   const logMood = async (mood: string) => {
     if (!user || !partnerPair) return;
     if (todayLog) {
-      // Update existing
       const { data, error } = await supabase.from("mood_logs").update({ mood, note: note || null }).eq("id", todayLog.id).select().single();
       if (error) { toast.error("Failed to update mood"); return; }
       setLogs(prev => prev.map(l => l.id === todayLog.id ? data : l));
@@ -139,8 +150,24 @@ export default function MoodPage() {
     toast.success("Mood updated!");
   };
 
-  // Last 7 days for chart
-  const moodToHeight: Record<string, number> = { happy: 90, neutral: 75, tired: 50, sad: 35, angry: 25 };
+  const sendPartnerReaction = async () => {
+    if ((!moodReaction && !reactionMessage.trim()) || !user || !partnerPair || !partnerLog) return;
+    setSendingReaction(true);
+    const moodEmoji = MOOD_EMOJI_MAP[partnerLog.mood] || "😊";
+    const parts = [
+      moodReaction ? `${moodReaction} Reacted to your mood ${moodEmoji}` : "",
+      reactionMessage.trim(),
+    ].filter(Boolean);
+    await supabase.from("chat_messages").insert({
+      user_id: user.id, partner_pair: partnerPair, message: parts.join("\n"), type: "text",
+    });
+    setSendingReaction(false);
+    setMoodReaction("");
+    setReactionMessage("");
+    toast.success("Reaction sent! 💕");
+  };
+
+  const moodToHeight: Record<string, number> = { happy: 95, excited: 90, neutral: 75, calm: 70, grateful: 80, silly: 85, tired: 50, sad: 35, angry: 25, anxious: 40 };
   const last7 = Array.from({ length: 7 }, (_, i) => {
     const date = format(subDays(new Date(), 6 - i), "yyyy-MM-dd");
     return {
@@ -153,7 +180,21 @@ export default function MoodPage() {
 
   return (
     <PageTransition>
-      <div className="px-5 pt-10 pb-6">
+      <motion.div
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0, bottom: 0.6 }}
+        style={{ y: dragY, opacity: sheetOpacity }}
+        onDragEnd={(_, info) => {
+          if (info.offset.y > 120) navigate(-1);
+        }}
+        className="px-5 pt-4 pb-6 min-h-screen bg-background"
+      >
+        {/* Swipe indicator */}
+        <div className="flex justify-center mb-4">
+          <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+        </div>
+
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-foreground">How are you, {displayName}?</h1>
@@ -165,37 +206,64 @@ export default function MoodPage() {
         </div>
 
         <p className="text-sm font-bold text-foreground text-center mb-4">Current Mood</p>
-        <div className="flex justify-center gap-3 mb-6 flex-wrap">
+        <div className="grid grid-cols-5 gap-2 mb-6">
           {MOODS.map(mood => (
             <motion.button key={mood.key} whileTap={{ scale: 0.9 }} onClick={() => logMood(mood.key)}
-              className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all min-w-[60px] ${todayLog?.mood === mood.key ? "bg-primary/25 shadow-soft ring-2 ring-primary/40" : "hover:bg-muted"}`}>
-              <span className="text-3xl">{mood.emoji}</span>
-              <span className="text-[10px] font-medium text-muted-foreground">{mood.label}</span>
+              className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all ${todayLog?.mood === mood.key ? "bg-primary/25 shadow-soft ring-2 ring-primary/40" : "hover:bg-muted"}`}>
+              <span className="text-2xl">{mood.emoji}</span>
+              <span className="text-[9px] font-medium text-muted-foreground leading-tight">{mood.label}</span>
             </motion.button>
           ))}
         </div>
 
         <p className="text-sm font-semibold text-foreground mb-2">Add a note (optional)</p>
-        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="What's on your mind?" rows={3}
-          className="w-full px-4 py-3 rounded-2xl bg-card shadow-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none border border-border mb-4" />
-        <button onClick={updateNote} className="w-full h-12 rounded-btn love-gradient text-primary-foreground font-semibold text-sm shadow-soft mb-6">Update My Mood</button>
+        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="What's on your mind?" rows={2}
+          className="w-full px-4 py-3 rounded-2xl bg-card shadow-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none border border-border mb-3" />
+        <button onClick={updateNote} className="w-full h-11 rounded-btn love-gradient text-primary-foreground font-semibold text-sm shadow-soft mb-6">Update My Mood</button>
 
-        {/* Partner's Status */}
+        {/* Partner's Status with Reaction */}
         <div className="flex items-center gap-2 mb-3">
           <Users size={16} className="text-foreground" />
           <p className="text-sm font-bold text-foreground">Partner's Status</p>
         </div>
-        <div className="bg-card rounded-2xl p-4 shadow-card border border-border mb-6 flex items-start gap-3">
-          <div className="relative shrink-0">
-            <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center"><span className="text-sm font-bold text-muted-foreground">P</span></div>
-            <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-success border-2 border-card" />
+        <div className="bg-card rounded-2xl p-4 shadow-card border border-border mb-4">
+          <div className="flex items-start gap-3 mb-3">
+            <div className="relative shrink-0">
+              <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center"><span className="text-sm font-bold text-muted-foreground">P</span></div>
+              <div className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-success border-2 border-card" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-foreground">
+                Partner is feeling {partnerLog ? (MOOD_EMOJI_MAP[partnerLog.mood] || "") + " " + partnerLog.mood.charAt(0).toUpperCase() + partnerLog.mood.slice(1) : "—"}
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{partnerLog?.note || "No mood logged yet today"}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-bold text-foreground">
-              Partner is feeling {partnerLog ? partnerLog.mood.charAt(0).toUpperCase() + partnerLog.mood.slice(1) : "—"}
-            </p>
-            <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{partnerLog?.note || "No mood logged yet today"}</p>
-          </div>
+
+          {partnerLog && (
+            <>
+              <p className="text-xs text-muted-foreground mb-2">React to their mood</p>
+              <div className="flex gap-2 mb-3">
+                {["❤️", "🤗", "💪", "😘", "🥺", "🔥"].map(emoji => (
+                  <button key={emoji} onClick={() => setMoodReaction(prev => prev === emoji ? "" : emoji)}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center text-lg transition-all ${moodReaction === emoji ? "scale-110 bg-primary/20 ring-2 ring-primary" : "bg-muted"}`}>
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input value={reactionMessage} onChange={e => setReactionMessage(e.target.value)}
+                  placeholder="Add a message..."
+                  className="flex-1 bg-muted rounded-xl px-3 h-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                <button onClick={sendPartnerReaction}
+                  disabled={(!moodReaction && !reactionMessage.trim()) || sendingReaction}
+                  className="h-9 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold flex items-center gap-1.5 disabled:opacity-40">
+                  <Send size={12} />
+                  Send
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Weekly Harmony */}
@@ -223,7 +291,7 @@ export default function MoodPage() {
           partnerMood={partnerLog?.mood || null}
           weekHistory={last7.map(d => d.me?.mood || "none").join(", ")}
         />
-      </div>
+      </motion.div>
     </PageTransition>
   );
 }

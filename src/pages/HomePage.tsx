@@ -427,13 +427,12 @@ export default function HomePage() {
 
         </motion.div>
 
-        {/* Floating New Event FAB */}
+        {/* Floating New Event FAB - icon only */}
         <button
           onClick={() => setShowAddEvent(true)}
-          className="fixed bottom-20 right-5 max-w-lg love-gradient text-primary-foreground px-5 py-3 rounded-btn flex items-center gap-2 shadow-elevated text-sm font-semibold z-40"
+          className="fixed bottom-20 right-5 max-w-lg love-gradient text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-elevated z-40"
         >
-          <Plus size={16} />
-          New Event
+          <Plus size={20} />
         </button>
 
         <AddEventModal
