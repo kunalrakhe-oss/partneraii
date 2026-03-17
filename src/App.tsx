@@ -11,6 +11,7 @@ import MoodPage from "@/pages/MoodPage";
 import ChoresPage from "@/pages/ChoresPage";
 import ChatPage from "@/pages/ChatPage";
 import ProfilePage from "@/pages/ProfilePage";
+import MemoriesPage from "@/pages/MemoriesPage";
 import WelcomePage from "@/pages/WelcomePage";
 import PartnerConnectPage from "@/pages/PartnerConnectPage";
 import NotFound from "@/pages/NotFound";
