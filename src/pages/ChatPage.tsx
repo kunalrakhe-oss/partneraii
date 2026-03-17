@@ -34,6 +34,7 @@ export default function ChatPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [partnerProfile, setPartnerProfile] = useState<ProfileInfo | null>(null);
   const [sending, setSending] = useState(false);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
 
   // Fetch partner profile
   useEffect(() => {
