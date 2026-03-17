@@ -939,10 +939,10 @@ function MultiDayView({ startDate, events, onSelectDate, onAddEvent, onEditEvent
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`flex-1 border-l border-border/30 px-0.5 py-0.5 cursor-pointer hover:bg-muted/20 transition-colors ${
+                    className={`flex-1 border-l border-border/30 px-0.5 py-0.5 transition-colors ${
                       isToday(day) ? "bg-primary/[0.03]" : ""
                     } ${dropDayIdx === dayIdx && Math.floor((dropMinutes || 0) / 60) === hour && draggingEvent ? "bg-primary/10" : ""}`}
-                    onClick={() => onAddEvent(day, `${hour.toString().padStart(2, "0")}:00`)}
+                  >
                   >
                     {hourEvents.map((evt) => (
                       <div
