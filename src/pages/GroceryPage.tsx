@@ -418,7 +418,7 @@ function EditSheet({
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 28, stiffness: 350 }}
-      className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto"
+      className="fixed bottom-20 left-0 right-0 z-[60] max-w-lg mx-auto"
     >
       <div className="bg-card rounded-t-3xl border border-border border-b-0 shadow-lg max-h-[90vh] flex flex-col">
         {/* Header */}
