@@ -26,6 +26,7 @@ type FilterType = "all" | "photo" | "milestone" | "note";
 type MemoryType = "photo" | "milestone" | "note";
 
 export default function MemoriesPage() {
+  const navigate = useNavigate();
   const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
   const { toast } = useToast();
   const [memories, setMemories] = useState<MemoryRow[]>([]);
