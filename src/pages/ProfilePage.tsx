@@ -33,7 +33,7 @@ function BottomSheet({ open, onClose, title, children }: { open: boolean; onClos
               <p className="text-sm font-bold text-foreground">{title}</p>
               <div className="w-8" />
             </div>
-            <div className="px-5 py-4 pb-8">
+            <div className="px-5 py-4 pb-10 overflow-y-auto flex-1">
               {children}
             </div>
           </motion.div>
