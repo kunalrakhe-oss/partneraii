@@ -77,6 +77,23 @@ export default function ChoresPage() {
     fetchChores();
   }, [partnerPair, pairLoading, fetchChores]);
 
+  // Fetch profiles for user + partner
+  useEffect(() => {
+    if (!userId) return;
+    const fetchProfiles = async () => {
+      // Fetch own profile + partner profile (if exists)
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url");
+      if (data) {
+        const map: Record<string, ProfileInfo> = {};
+        data.forEach(p => { map[p.user_id] = p; });
+        setProfiles(map);
+      }
+    };
+    fetchProfiles();
+  }, [userId]);
+
   useEffect(() => {
     if (!partnerPair) return;
     const channel = supabase
