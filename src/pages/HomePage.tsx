@@ -19,6 +19,33 @@ const item = {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [displayName, setDisplayName] = useState("");
+
+  useEffect(() => {
+    if (!user) return;
+    // Try profile first, fall back to user metadata
+    supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        setDisplayName(
+          data?.display_name ||
+          user.user_metadata?.display_name ||
+          user.email?.split("@")[0] ||
+          "there"
+        );
+      });
+  }, [user]);
+
+  const greeting = (() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  })();
   const [moods] = useLocalStorage<MoodLog[]>("lovelist-moods", []);
   const [events] = useLocalStorage<CalendarEvent[]>("lovelist-events", []);
   const [chores, setChores] = useLocalStorage<Chore[]>("lovelist-chores", []);
