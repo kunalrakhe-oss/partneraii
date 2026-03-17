@@ -137,6 +137,7 @@ export type Database = {
           created_at: string
           id: string
           is_checked: boolean
+          list_type: string
           name: string
           partner_pair: string
           user_id: string
@@ -146,6 +147,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_checked?: boolean
+          list_type?: string
           name: string
           partner_pair: string
           user_id: string
@@ -155,6 +157,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_checked?: boolean
+          list_type?: string
           name?: string
           partner_pair?: string
           user_id?: string

@@ -1,0 +1,1 @@
+ALTER TABLE public.grocery_items ADD COLUMN list_type TEXT NOT NULL DEFAULT 'grocery';
