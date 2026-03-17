@@ -309,58 +309,52 @@ export default function CalendarPage() {
   const [formPriority, setFormPriority] = useState("medium");
   const [formDate, setFormDate] = useState("");
 
-  useEffect(() => {
+  const refreshEvents = async () => {
     if (!partnerPair) return;
-
-    // Fetch calendar events, ALL chores, and grocery items with due dates in parallel
-    Promise.all([
+    const [eventsRes, choresRes, groceryRes] = await Promise.all([
       supabase.from("calendar_events").select("*").eq("partner_pair", partnerPair),
       supabase.from("chores").select("*").eq("partner_pair", partnerPair),
       supabase.from("grocery_items").select("*").eq("partner_pair", partnerPair).not("due_date", "is", null),
-    ]).then(([eventsRes, choresRes, groceryRes]) => {
-      const calEvents: CalendarEvent[] = eventsRes.data || [];
+    ]);
+    const calEvents: CalendarEvent[] = eventsRes.data || [];
+    const choreEvents: CalendarEvent[] = (choresRes.data || []).map((chore: any) => ({
+      id: `chore-${chore.id}`,
+      title: `🧹 ${chore.title}`,
+      description: chore.recurrence ? `Repeats ${chore.recurrence}` : null,
+      category: "chore",
+      event_date: chore.due_date || chore.created_at.split("T")[0],
+      event_time: null,
+      assigned_to: chore.assigned_to ? "assigned" : "both",
+      priority: "medium",
+      recurrence: chore.recurrence || "once",
+      is_completed: chore.is_completed,
+      user_id: chore.user_id,
+      partner_pair: chore.partner_pair,
+      _source: "chore" as const,
+      _sourceId: chore.id,
+    }));
+    const groceryEvents: CalendarEvent[] = (groceryRes.data || []).map((item: any) => ({
+      id: `grocery-${item.id}`,
+      title: `🛒 ${item.name}`,
+      description: item.notes || null,
+      category: "grocery-due",
+      event_date: item.due_date,
+      event_time: null,
+      assigned_to: "both",
+      priority: item.priority || "none",
+      recurrence: "once",
+      is_completed: item.is_checked,
+      user_id: item.user_id,
+      partner_pair: item.partner_pair,
+      _source: "grocery" as const,
+      _sourceId: item.id,
+    }));
+    const baseEvents = [...calEvents, ...choreEvents, ...groceryEvents];
+    setEvents(expandRecurringEvents(baseEvents));
+  };
 
-      // Convert chores to calendar events — use due_date if set, otherwise created_at date
-      const choreEvents: CalendarEvent[] = (choresRes.data || []).map((chore: any) => ({
-        id: `chore-${chore.id}`,
-        title: `🧹 ${chore.title}`,
-        description: chore.recurrence ? `Repeats ${chore.recurrence}` : null,
-        category: "chore",
-        event_date: chore.due_date || chore.created_at.split("T")[0],
-        event_time: null,
-        assigned_to: chore.assigned_to ? "assigned" : "both",
-        priority: "medium",
-        recurrence: chore.recurrence || "once",
-        is_completed: chore.is_completed,
-        user_id: chore.user_id,
-        partner_pair: chore.partner_pair,
-        _source: "chore",
-        _sourceId: chore.id,
-      }));
-
-      // Convert grocery items to calendar events
-      const groceryEvents: CalendarEvent[] = (groceryRes.data || []).map((item: any) => ({
-        id: `grocery-${item.id}`,
-        title: `🛒 ${item.name}`,
-        description: item.notes || null,
-        category: "grocery-due",
-        event_date: item.due_date,
-        event_time: null,
-        assigned_to: "both",
-        priority: item.priority || "none",
-        recurrence: "once",
-        is_completed: item.is_checked,
-        user_id: item.user_id,
-        partner_pair: item.partner_pair,
-        _source: "grocery",
-        _sourceId: item.id,
-      }));
-
-      // Expand recurring events into virtual instances for a 90-day window
-      const baseEvents = [...calEvents, ...choreEvents, ...groceryEvents];
-      const expanded = expandRecurringEvents(baseEvents);
-      setEvents(expanded);
-    });
+  useEffect(() => {
+    refreshEvents();
   }, [partnerPair]);
 
   // Inject demo events when in demo mode and no real data
@@ -438,7 +432,7 @@ export default function CalendarPage() {
     if (!user || !partnerPair || !formTitle.trim()) return;
 
     if (editingEvent) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("calendar_events")
         .update({
           title: formTitle.trim(),
@@ -449,14 +443,11 @@ export default function CalendarPage() {
           priority: formPriority,
           event_date: formDate,
         })
-        .eq("id", editingEvent.id)
-        .select()
-        .single();
+        .eq("id", editingEvent.id);
       if (error) { toast.error("Failed to update event"); return; }
-      setEvents((prev) => prev.map((ev) => (ev.id === editingEvent.id ? data : ev)));
       toast.success("Event updated ✨");
     } else {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("calendar_events")
         .insert({
           title: formTitle.trim(),
@@ -469,105 +460,60 @@ export default function CalendarPage() {
           recurrence: "once",
           user_id: user.id,
           partner_pair: partnerPair,
-        })
-        .select()
-        .single();
+        });
       if (error) { toast.error("Failed to add event"); return; }
-      setEvents((prev) => [...prev, data]);
       toast.success("Event added 🎉");
     }
     setShowAdd(false);
+    await refreshEvents();
   };
 
   const deleteEvent = async (id: string) => {
     const { error } = await supabase.from("calendar_events").delete().eq("id", id);
     if (error) { toast.error("Failed to delete"); return; }
-    setEvents((prev) => prev.filter((e) => e.id !== id));
     toast.success("Event removed");
+    await refreshEvents();
   };
 
   const toggleComplete = async (event: CalendarEvent) => {
     if (event._source === "chore") {
       await supabase.from("chores").update({ is_completed: !event.is_completed }).eq("id", event._sourceId!);
-      setEvents((prev) => prev.map((ev) => (ev.id === event.id ? { ...ev, is_completed: !ev.is_completed } : ev)));
-      return;
-    }
-    if (event._source === "grocery") {
+    } else if (event._source === "grocery") {
       await supabase.from("grocery_items").update({ is_checked: !event.is_completed }).eq("id", event._sourceId!);
-      setEvents((prev) => prev.map((ev) => (ev.id === event.id ? { ...ev, is_completed: !ev.is_completed } : ev)));
-      return;
+    } else {
+      await supabase.from("calendar_events").update({ is_completed: !event.is_completed }).eq("id", event.id);
     }
-    const { data, error } = await supabase
-      .from("calendar_events")
-      .update({ is_completed: !event.is_completed })
-      .eq("id", event.id)
-      .select()
-      .single();
-    if (error) return;
-    setEvents((prev) => prev.map((ev) => (ev.id === event.id ? data : ev)));
+    await refreshEvents();
   };
 
-  // Schedule/reschedule an item to a specific time slot (15-min granularity)
   const scheduleItem = async (event: CalendarEvent, time: string, targetDate?: string) => {
     const newDate = targetDate || event.event_date;
-    if (event._source === "chore") {
+    if (event._source === "chore" || event._source === "grocery") {
       if (!user || !partnerPair) return;
-      const { data, error } = await supabase
-        .from("calendar_events")
-        .insert({
-          title: event.title,
-          description: event.description,
-          category: "chore",
-          event_date: newDate,
-          event_time: time,
-          assigned_to: event.assigned_to,
-          priority: event.priority,
-          recurrence: "once",
-          user_id: user.id,
-          partner_pair: partnerPair,
-        })
-        .select()
-        .single();
+      const { error } = await supabase.from("calendar_events").insert({
+        title: event.title,
+        description: event.description,
+        category: event._source === "chore" ? "chore" : "grocery-due",
+        event_date: newDate,
+        event_time: time,
+        assigned_to: event._source === "grocery" ? "both" : event.assigned_to,
+        priority: event.priority,
+        recurrence: "once",
+        user_id: user.id,
+        partner_pair: partnerPair,
+      });
       if (error) { toast.error("Failed to schedule"); return; }
-      setEvents((prev) => [...prev.filter((e) => e.id !== event.id), data]);
       toast.success(`Scheduled at ${time} ⏰`);
-      return;
-    }
-    if (event._source === "grocery") {
-      if (!user || !partnerPair) return;
-      const { data, error } = await supabase
-        .from("calendar_events")
-        .insert({
-          title: event.title,
-          description: event.description,
-          category: "grocery-due",
-          event_date: newDate,
-          event_time: time,
-          assigned_to: "both",
-          priority: event.priority,
-          recurrence: "once",
-          user_id: user.id,
-          partner_pair: partnerPair,
-        })
-        .select()
-        .single();
-      if (error) { toast.error("Failed to schedule"); return; }
-      setEvents((prev) => [...prev.filter((e) => e.id !== event.id), data]);
-      toast.success(`Scheduled at ${time} ⏰`);
+      await refreshEvents();
       return;
     }
     // Regular calendar event — update time (and optionally date)
     const updatePayload: any = { event_time: time };
     if (targetDate) updatePayload.event_date = targetDate;
-    const { data, error } = await supabase
-      .from("calendar_events")
-      .update(updatePayload)
-      .eq("id", event.id)
-      .select()
-      .single();
+    const { error } = await supabase.from("calendar_events").update(updatePayload).eq("id", event.id);
     if (error) { toast.error("Failed to reschedule"); return; }
-    setEvents((prev) => prev.map((ev) => (ev.id === event.id ? data : ev)));
     toast.success(`Moved to ${time} ⏰`);
+    await refreshEvents();
   };
   if (ppLoading) {
     return (
@@ -755,9 +701,7 @@ export default function CalendarPage() {
                     user_id: user.id,
                     partner_pair: partnerPair,
                   });
-                  // Refresh events
-                  const { data: freshEvents } = await supabase.from("calendar_events").select("*").eq("partner_pair", partnerPair);
-                  if (freshEvents) setEvents(expandRecurringEvents(freshEvents as CalendarEvent[]));
+                  await refreshEvents();
                   toast.success("Diet item added!");
                   setShowDietForm(false);
                 } else {
@@ -777,15 +721,11 @@ export default function CalendarPage() {
           editingEvent={editingEvent}
           defaultDate={selectedDate}
           defaultTime={formTime}
-          onEventSaved={(data) => {
-            if (editingEvent) {
-              setEvents((prev) => prev.map((ev) => (ev.id === editingEvent.id ? data : ev)));
-            } else {
-              setEvents((prev) => [...prev, data]);
-            }
+          onEventSaved={async () => {
+            await refreshEvents();
           }}
-          onEventDeleted={(id) => {
-            setEvents((prev) => prev.filter((e) => e.id !== id));
+          onEventDeleted={async () => {
+            await refreshEvents();
           }}
         />
       </div>
