@@ -106,20 +106,27 @@ export default function HomePage() {
           </motion.div>
 
           {/* Quick Links */}
-          <motion.div variants={item} className="grid grid-cols-2 gap-3">
+          <motion.div variants={item} className="grid grid-cols-3 gap-3">
             <Link to="/lists" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
               <div className="w-10 h-10 rounded-xl bg-[hsl(100,25%,78%)] flex items-center justify-center">
                 <ShoppingCart size={18} className="text-foreground" />
               </div>
               <p className="text-sm font-bold text-foreground">Groceries</p>
-              <p className="text-xs text-muted-foreground">{uncheckedGroceries} items needed</p>
+              <p className="text-xs text-muted-foreground">{uncheckedGroceries} items</p>
             </Link>
             <Link to="/chat" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
               <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
                 <MessageSquare size={18} className="text-primary" />
               </div>
               <p className="text-sm font-bold text-foreground">Chat</p>
-              <p className="text-xs text-muted-foreground">{messages.length} new messages</p>
+              <p className="text-xs text-muted-foreground">{messages.length} msgs</p>
+            </Link>
+            <Link to="/memories" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+              <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
+                <Camera size={18} className="text-accent" />
+              </div>
+              <p className="text-sm font-bold text-foreground">Memories</p>
+              <p className="text-xs text-muted-foreground">Timeline</p>
             </Link>
           </motion.div>
 
