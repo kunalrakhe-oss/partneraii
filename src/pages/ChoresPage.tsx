@@ -503,7 +503,7 @@ export default function ChoresPage() {
           </motion.button>
         </div>
 
-        {/* Add Chore Modal */}
+        {/* Add Chore Modal — Apple Calendar style */}
         <AnimatePresence>
           {showAdd && (
             <motion.div
@@ -511,7 +511,7 @@ export default function ChoresPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-[60] flex items-end justify-center bg-foreground/25 backdrop-blur-sm"
-              onClick={() => setShowAdd(false)}
+              onClick={() => { setShowAdd(false); resetForm(); }}
             >
               <motion.div
                 initial={{ y: "100%" }}
@@ -519,56 +519,139 @@ export default function ChoresPage() {
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 28, stiffness: 300 }}
                 onClick={e => e.stopPropagation()}
-                className="bg-card w-full max-w-lg rounded-t-3xl p-6 shadow-elevated"
+                className="bg-background w-full max-w-lg rounded-t-3xl shadow-elevated max-h-[85vh] overflow-y-auto"
               >
                 {/* Drag handle */}
-                <div className="flex justify-center mb-4">
+                <div className="flex justify-center pt-3 pb-1 sticky top-0 bg-background z-10">
                   <div className="w-10 h-1 rounded-full bg-border" />
                 </div>
 
-                <div className="flex items-center justify-between mb-5">
-                  <h3 className="text-lg font-bold text-foreground font-heading">New Chore</h3>
+                {/* Header with Cancel / Add */}
+                <div className="flex items-center justify-between px-5 py-3 sticky top-5 bg-background z-10">
                   <button
-                    onClick={() => setShowAdd(false)}
-                    className="w-8 h-8 rounded-full bg-muted flex items-center justify-center"
+                    onClick={() => { setShowAdd(false); resetForm(); }}
+                    className="text-sm text-secondary font-medium"
                   >
-                    <X size={14} className="text-muted-foreground" />
+                    Cancel
+                  </button>
+                  <h3 className="text-base font-bold text-foreground">New Chore</h3>
+                  <button
+                    onClick={addChore}
+                    disabled={submitting || !newTitle.trim()}
+                    className="text-sm font-bold text-primary disabled:text-muted-foreground disabled:opacity-50"
+                  >
+                    {submitting ? <Loader2 size={14} className="animate-spin" /> : "Add"}
                   </button>
                 </div>
 
-                <form onSubmit={addChore} className="space-y-4">
-                  {/* Chore name */}
-                  <div>
-                    <label className="text-xs font-semibold text-foreground/70 mb-1.5 block">Chore Name</label>
+                <div className="px-5 pb-8 space-y-4">
+                  {/* Title input — full-width, prominent */}
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden">
                     <input
-                      name="name"
-                      required
-                      placeholder="e.g. Mop the floors"
-                      className="w-full h-12 px-4 rounded-xl bg-muted/60 text-sm text-foreground placeholder:text-muted-foreground/50 border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/30 transition-all"
+                      value={newTitle}
+                      onChange={e => setNewTitle(e.target.value)}
+                      placeholder="Chore name"
+                      autoFocus
+                      className="w-full px-4 py-3.5 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none font-medium"
+                    />
+                    <div className="border-t border-border/50 mx-4" />
+                    <textarea
+                      placeholder="Notes (optional)"
+                      rows={2}
+                      className="w-full px-4 py-3 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none resize-none"
                     />
                   </div>
 
-                  {/* Frequency & Assignment */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-semibold text-foreground/70 mb-1.5 block">Frequency</label>
+                  {/* Grouped rows — iOS Settings style */}
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden divide-y divide-border/50">
+                    {/* Due Date toggle */}
+                    <div className="px-4 py-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-secondary/15 flex items-center justify-center">
+                          <CalendarIcon size={16} className="text-secondary" />
+                        </div>
+                        <span className="text-sm text-foreground font-medium">Due Date</span>
+                      </div>
+                      <Switch
+                        checked={hasDueDate}
+                        onCheckedChange={(checked) => {
+                          setHasDueDate(checked);
+                          if (checked && !newDueDate) setNewDueDate(new Date());
+                        }}
+                      />
+                    </div>
+
+                    {/* Due Date picker — expands when toggled */}
+                    <AnimatePresence>
+                      {hasDueDate && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-4 py-2">
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <button className="w-full flex items-center justify-between py-2 text-sm">
+                                  <span className="text-primary font-medium">
+                                    {newDueDate ? format(newDueDate, "EEE, MMM d, yyyy") : "Select date"}
+                                  </span>
+                                  <ChevronRight size={16} className="text-muted-foreground" />
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="center" side="top">
+                                <Calendar
+                                  mode="single"
+                                  selected={newDueDate}
+                                  onSelect={setNewDueDate}
+                                  initialFocus
+                                  className={cn("p-3 pointer-events-auto")}
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    {/* Repeat / Frequency */}
+                    <div className="px-4 py-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
+                          <Repeat size={16} className="text-primary" />
+                        </div>
+                        <span className="text-sm text-foreground font-medium">Repeat</span>
+                      </div>
                       <select
-                        name="frequency"
-                        className="w-full h-12 px-4 rounded-xl bg-muted/60 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/30 transition-all appearance-none"
+                        value={newFrequency}
+                        onChange={e => setNewFrequency(e.target.value)}
+                        className="text-sm text-primary font-medium bg-transparent text-right appearance-none focus:outline-none cursor-pointer pr-0"
                       >
-                        <option value="weekly">Weekly</option>
-                        <option value="daily">Daily</option>
-                        <option value="monthly">Monthly</option>
-                        <option value="">One-time</option>
+                        <option value="daily">Every Day</option>
+                        <option value="weekly">Every Week</option>
+                        <option value="monthly">Every Month</option>
+                        <option value="">Never</option>
                       </select>
                     </div>
-                    <div>
-                      <label className="text-xs font-semibold text-foreground/70 mb-1.5 block">Assign To</label>
+                  </div>
+
+                  {/* Assignment section */}
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden divide-y divide-border/50">
+                    <div className="px-4 py-3 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-accent/60 flex items-center justify-center">
+                          <Users size={16} className="text-foreground/70" />
+                        </div>
+                        <span className="text-sm text-foreground font-medium">Assign To</span>
+                      </div>
                       <select
-                        name="assignedTo"
-                        className="w-full h-12 px-4 rounded-xl bg-muted/60 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/30 transition-all appearance-none"
+                        value={newAssign}
+                        onChange={e => setNewAssign(e.target.value)}
+                        className="text-sm text-primary font-medium bg-transparent text-right appearance-none focus:outline-none cursor-pointer pr-0"
                       >
-                        <option value="">Both of us</option>
+                        <option value="">Both</option>
                         <option value="me">{myProfile?.display_name || "Me"}</option>
                         {partnerProfile && (
                           <option value="partner">{partnerProfile.display_name || "Partner"}</option>
@@ -577,11 +660,11 @@ export default function ChoresPage() {
                     </div>
                   </div>
 
-                  {/* Submit */}
+                  {/* Add button (secondary, for users who scroll) */}
                   <button
-                    type="submit"
-                    disabled={submitting}
-                    className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-bold text-sm shadow-soft flex items-center justify-center gap-2 disabled:opacity-60 transition-all active:scale-[0.98]"
+                    onClick={addChore}
+                    disabled={submitting || !newTitle.trim()}
+                    className="w-full h-12 rounded-2xl love-gradient text-primary-foreground font-bold text-sm shadow-soft flex items-center justify-center gap-2 disabled:opacity-50 transition-all active:scale-[0.98]"
                   >
                     {submitting ? <Loader2 size={18} className="animate-spin" /> : (
                       <>
@@ -589,7 +672,7 @@ export default function ChoresPage() {
                       </>
                     )}
                   </button>
-                </form>
+                </div>
               </motion.div>
             </motion.div>
           )}
