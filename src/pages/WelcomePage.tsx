@@ -1,19 +1,17 @@
 import { Heart, PlusCircle, Users } from "lucide-react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import onboardingHero from "@/assets/onboarding-hero.jpg";
+import { useLocalStorage } from "@/lib/store";
 
 export default function WelcomePage() {
-  const navigate = useNavigate();
+  const [, setOnboarded] = useLocalStorage<string>("lovelist-onboarded", "");
 
   const handleCreate = () => {
-    localStorage.setItem("lovelist-onboarded", "true");
-    navigate("/");
+    setOnboarded("true");
   };
 
   const handleJoin = () => {
-    localStorage.setItem("lovelist-onboarded", "true");
-    navigate("/");
+    setOnboarded("true");
   };
 
   return (
