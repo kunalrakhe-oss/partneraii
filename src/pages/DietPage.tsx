@@ -469,25 +469,19 @@ export default function DietPage() {
         {CATEGORIES.map(cat => {
           const catItems = items.filter(i => i.meal_type === cat.key);
           return (
-            <div key={cat.key}>
-              <CategorySection
-                category={cat}
-                items={catItems}
-                userId={user?.id || ""}
-                partnerName={partnerName}
-                onToggle={toggleComplete}
-                onEdit={openEdit}
-                onDelete={deleteItem}
-                expanded={expandedCats.includes(cat.key)}
-                onExpand={() => toggleExpand(cat.key)}
-              />
-              {expandedCats.includes(cat.key) && (
-                <button onClick={() => openAdd(cat.key)}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 mb-3 text-xs font-semibold text-primary hover:bg-primary/5 rounded-xl transition-colors">
-                  <Plus size={14} /> Add to {cat.label.split(" ")[0]}
-                </button>
-              )}
-            </div>
+            <CategorySection
+              key={cat.key}
+              category={cat}
+              items={catItems}
+              userId={user?.id || ""}
+              partnerName={partnerName}
+              onToggle={toggleComplete}
+              onEdit={openEdit}
+              onDelete={deleteItem}
+              onAdd={() => openAdd(cat.key)}
+              expanded={expandedCats.includes(cat.key)}
+              onExpand={() => toggleExpand(cat.key)}
+            />
           );
         })}
 
@@ -495,18 +489,9 @@ export default function DietPage() {
           <div className="text-center py-10">
             <span className="text-4xl mb-3 block">🥗</span>
             <p className="text-sm text-muted-foreground mb-1">No diet items for today</p>
-            <p className="text-xs text-muted-foreground">Tap + below to start planning</p>
+            <p className="text-xs text-muted-foreground">Tap + on any category to start planning</p>
           </div>
         )}
-      </div>
-
-      {/* Sticky Add Button */}
-      <div className="fixed bottom-20 right-5 z-50">
-        <button onClick={() => openAdd("morning")}
-          className="w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-elevated flex items-center justify-center active:scale-95 transition-transform">
-          <Plus size={24} />
-        </button>
-      </div>
 
       {/* Form Modal */}
       <AnimatePresence>
