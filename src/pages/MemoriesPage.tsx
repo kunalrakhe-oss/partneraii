@@ -331,14 +331,14 @@ export default function MemoriesPage() {
           {showAdd && (
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-foreground/30 z-50 flex items-end justify-center"
+              className="fixed inset-0 z-[60] flex items-end justify-center bg-foreground/30 pb-20 sm:pb-0"
               onClick={() => { setShowAdd(false); resetForm(); }}
             >
               <motion.div
                 initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 28, stiffness: 300 }}
                 onClick={e => e.stopPropagation()}
-                className="bg-card w-full max-w-lg rounded-t-3xl shadow-elevated max-h-[90vh] flex flex-col"
+                className="bg-card w-full max-w-lg rounded-t-3xl shadow-elevated max-h-[85vh] flex flex-col"
               >
                 <div className="overflow-y-auto flex-1 p-5 pb-10">
                 <h3 className="text-lg font-bold text-foreground mb-4">New Memory</h3>
