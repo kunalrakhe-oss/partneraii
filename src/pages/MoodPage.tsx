@@ -147,7 +147,7 @@ export default function MoodPage() {
               const h = day.me ? moodToHeight[day.me.mood] || 50 : 30;
               return (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="w-full rounded-t-lg bg-[hsl(100,25%,78%)] transition-all" style={{ height: `${h}%` }} />
+                  <div className="w-full rounded-t-lg bg-primary/30 transition-all" style={{ height: `${h}%` }} />
                   <span className="text-[10px] text-muted-foreground">{day.day}</span>
                 </div>
               );
