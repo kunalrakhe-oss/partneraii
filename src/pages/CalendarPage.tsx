@@ -10,6 +10,7 @@ import {
   List, CalendarDays, Calendar, LayoutGrid, ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import ProfileButton from "@/components/ProfileButton";
 import AddEventModal from "@/components/AddEventModal";
 import PageTransition from "@/components/PageTransition";
 import { supabase } from "@/integrations/supabase/client";
@@ -427,6 +428,7 @@ export default function CalendarPage() {
                 )}
               </AnimatePresence>
             </div>
+            <ProfileButton />
           </div>
           {/* Subtitle */}
           <p className="text-[10px] text-primary font-semibold uppercase tracking-wider mt-0.5 ml-9">

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
+import ProfileButton from "@/components/ProfileButton";
 import { Calendar } from "@/components/ui/calendar";
 import { Switch } from "@/components/ui/switch";
 import type { Tables } from "@/integrations/supabase/types";
@@ -316,7 +317,9 @@ export default function ChoresPage() {
             <h1 className="text-2xl font-bold text-foreground font-heading">Chore Manager</h1>
             <p className="text-xs text-muted-foreground">Keeping our home cozy, together</p>
           </div>
-          <div className="relative" ref={settingsRef}>
+          <div className="flex items-center gap-2">
+            <ProfileButton />
+            <div className="relative" ref={settingsRef}>
             <button
               onClick={() => setShowSettings(s => !s)}
               className="w-10 h-10 rounded-full bg-card shadow-card flex items-center justify-center border border-border transition-transform active:scale-95"
@@ -358,6 +361,7 @@ export default function ChoresPage() {
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
           </div>
         </div>
 

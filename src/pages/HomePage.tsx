@@ -505,7 +505,7 @@ export default function HomePage() {
 
                 <div className="flex flex-col items-center py-4">
                   <span className="text-5xl mb-3">
-                    {partnerMood.mood === "happy" ? "😊" : partnerMood.mood === "tired" ? "😵‍💫" : partnerMood.mood === "sad" ? "😢" : partnerMood.mood === "angry" ? "😫" : "🥰"}
+                    {{ happy: "😊", excited: "🤩", neutral: "🥰", calm: "😌", grateful: "🙏", silly: "🤪", tired: "😵‍💫", sad: "😢", stressed: "😫", anxious: "😰", angry: "😠", furious: "🤬", lonely: "🥺", hopeful: "🌟", confused: "😕" }[partnerMood.mood] || "🥰"}
                   </span>
                   <p className="text-lg font-bold text-foreground">
                     {partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1)}
@@ -545,7 +545,7 @@ export default function HomePage() {
                   onClick={async () => {
                     if ((!moodReaction && !reactionMessage.trim()) || !user || !partnerPair) return;
                     setSendingReaction(true);
-                    const moodEmoji = partnerMood.mood === "happy" ? "😊" : partnerMood.mood === "tired" ? "😵‍💫" : partnerMood.mood === "sad" ? "😢" : partnerMood.mood === "angry" ? "😫" : "🥰";
+                    const moodEmoji = { happy: "😊", excited: "🤩", neutral: "🥰", calm: "😌", grateful: "🙏", silly: "🤪", tired: "😵‍💫", sad: "😢", stressed: "😫", anxious: "😰", angry: "😠", furious: "🤬", lonely: "🥺", hopeful: "🌟", confused: "😕" }[partnerMood.mood] || "🥰";
                     const parts = [
                       moodReaction ? `${moodReaction} Reacted to your mood ${moodEmoji}` : "",
                       reactionMessage.trim(),

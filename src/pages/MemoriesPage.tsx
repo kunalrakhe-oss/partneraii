@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Plus, Camera, Heart, Star, Calendar, X, Image as ImageIcon, Award, BookOpen, Loader2 } from "lucide-react";
+import { Plus, Camera, Heart, Star, Calendar, X, Image as ImageIcon, Award, BookOpen, Loader2, ChevronLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import ProfileButton from "@/components/ProfileButton";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
@@ -24,6 +26,7 @@ type FilterType = "all" | "photo" | "milestone" | "note";
 type MemoryType = "photo" | "milestone" | "note";
 
 export default function MemoriesPage() {
+  const navigate = useNavigate();
   const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
   const { toast } = useToast();
   const [memories, setMemories] = useState<MemoryRow[]>([]);
@@ -177,16 +180,21 @@ export default function MemoriesPage() {
       <div className="px-5 pt-10 pb-24">
         {/* Header */}
         <div className="flex items-center justify-between mb-1">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Memories</h1>
-            <p className="text-xs text-muted-foreground">Your love story, one moment at a time 💕</p>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+              <ChevronLeft size={18} className="text-foreground" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Memories</h1>
+              <p className="text-xs text-muted-foreground">Your love story, one moment at a time 💕</p>
+            </div>
           </div>
-          <button
-            onClick={() => setShowAdd(true)}
-            className="w-10 h-10 rounded-full love-gradient flex items-center justify-center shadow-soft"
-          >
-            <Plus size={18} className="text-primary-foreground" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+              <X size={16} className="text-muted-foreground" />
+            </button>
+            <ProfileButton />
+          </div>
         </div>
 
         {/* Stats banner */}
@@ -315,16 +323,12 @@ export default function MemoriesPage() {
         )}
 
         {/* FAB */}
-        {memories.length > 0 && (
-          <div className="flex justify-end mt-6">
-            <button
-              onClick={() => setShowAdd(true)}
-              className="bg-foreground text-background px-5 py-3 rounded-full flex items-center gap-2 shadow-elevated text-sm font-semibold"
-            >
-              <Plus size={16} /> Add Memory
-            </button>
-          </div>
-        )}
+        <button
+          onClick={() => setShowAdd(true)}
+          className="fixed bottom-20 right-5 max-w-lg love-gradient text-primary-foreground w-14 h-14 rounded-full flex items-center justify-center shadow-elevated z-40"
+        >
+          <Plus size={22} />
+        </button>
 
         {/* Add Memory Modal */}
         <AnimatePresence>

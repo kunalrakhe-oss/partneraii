@@ -14,12 +14,17 @@ const MOODS = [
   { key: "excited", emoji: "🤩", label: "Excited" },
   { key: "neutral", emoji: "🥰", label: "Loved" },
   { key: "calm", emoji: "😌", label: "Calm" },
-  { key: "tired", emoji: "😵‍💫", label: "Tired" },
-  { key: "sad", emoji: "😢", label: "Sad" },
-  { key: "angry", emoji: "😫", label: "Stressed" },
-  { key: "anxious", emoji: "😰", label: "Anxious" },
   { key: "grateful", emoji: "🙏", label: "Grateful" },
   { key: "silly", emoji: "🤪", label: "Silly" },
+  { key: "tired", emoji: "😵‍💫", label: "Tired" },
+  { key: "sad", emoji: "😢", label: "Sad" },
+  { key: "stressed", emoji: "😫", label: "Stressed" },
+  { key: "anxious", emoji: "😰", label: "Anxious" },
+  { key: "angry", emoji: "😠", label: "Angry" },
+  { key: "furious", emoji: "🤬", label: "Furious" },
+  { key: "lonely", emoji: "🥺", label: "Lonely" },
+  { key: "hopeful", emoji: "🌟", label: "Hopeful" },
+  { key: "confused", emoji: "😕", label: "Confused" },
 ] as const;
 
 const MOOD_EMOJI_MAP: Record<string, string> = Object.fromEntries(MOODS.map(m => [m.key, m.emoji]));
@@ -88,6 +93,7 @@ export default function MoodPage() {
   const [reactionMessage, setReactionMessage] = useState("");
   const [moodReaction, setMoodReaction] = useState("");
   const [sendingReaction, setSendingReaction] = useState(false);
+  const [partnerName, setPartnerName] = useState("Partner");
 
   // Swipe-down dismiss
   const dragY = useMotionValue(0);
@@ -125,6 +131,13 @@ export default function MoodPage() {
         const name = data?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "there";
         setDisplayName(name.split(" ")[0]);
       });
+    // Fetch partner name
+    supabase.from("profiles").select("display_name, user_id").then(({ data }) => {
+      if (data) {
+        const partner = data.find(p => p.user_id !== user.id);
+        if (partner?.display_name) setPartnerName(partner.display_name.split(" ")[0]);
+      }
+    });
   }, [user]);
 
   const logMood = async (mood: string) => {
@@ -167,7 +180,7 @@ export default function MoodPage() {
     toast.success("Reaction sent! 💕");
   };
 
-  const moodToHeight: Record<string, number> = { happy: 95, excited: 90, neutral: 75, calm: 70, grateful: 80, silly: 85, tired: 50, sad: 35, angry: 25, anxious: 40 };
+  const moodToHeight: Record<string, number> = { happy: 95, excited: 90, neutral: 75, calm: 70, grateful: 80, silly: 85, tired: 50, sad: 35, stressed: 25, anxious: 40, angry: 20, furious: 15, lonely: 30, hopeful: 78, confused: 45 };
   const last7 = Array.from({ length: 7 }, (_, i) => {
     const date = format(subDays(new Date(), 6 - i), "yyyy-MM-dd");
     return {
@@ -206,10 +219,10 @@ export default function MoodPage() {
         </div>
 
         <p className="text-sm font-bold text-foreground text-center mb-4">Current Mood</p>
-        <div className="grid grid-cols-5 gap-2 mb-6">
+        <div className="flex flex-wrap justify-center gap-2 mb-6">
           {MOODS.map(mood => (
             <motion.button key={mood.key} whileTap={{ scale: 0.9 }} onClick={() => logMood(mood.key)}
-              className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all ${todayLog?.mood === mood.key ? "bg-primary/25 shadow-soft ring-2 ring-primary/40" : "hover:bg-muted"}`}>
+              className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all w-[60px] ${todayLog?.mood === mood.key ? "bg-primary/25 shadow-soft ring-2 ring-primary/40" : "hover:bg-muted"}`}>
               <span className="text-2xl">{mood.emoji}</span>
               <span className="text-[9px] font-medium text-muted-foreground leading-tight">{mood.label}</span>
             </motion.button>
@@ -224,7 +237,7 @@ export default function MoodPage() {
         {/* Partner's Status with Reaction */}
         <div className="flex items-center gap-2 mb-3">
           <Users size={16} className="text-foreground" />
-          <p className="text-sm font-bold text-foreground">Partner's Status</p>
+          <p className="text-sm font-bold text-foreground">{partnerName}'s Status</p>
         </div>
         <div className="bg-card rounded-2xl p-4 shadow-card border border-border mb-4">
           <div className="flex items-start gap-3 mb-3">
@@ -234,7 +247,7 @@ export default function MoodPage() {
             </div>
             <div>
               <p className="text-sm font-bold text-foreground">
-                Partner is feeling {partnerLog ? (MOOD_EMOJI_MAP[partnerLog.mood] || "") + " " + partnerLog.mood.charAt(0).toUpperCase() + partnerLog.mood.slice(1) : "—"}
+                {partnerName} is feeling {partnerLog ? (MOOD_EMOJI_MAP[partnerLog.mood] || "") + " " + partnerLog.mood.charAt(0).toUpperCase() + partnerLog.mood.slice(1) : "—"}
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{partnerLog?.note || "No mood logged yet today"}</p>
             </div>
