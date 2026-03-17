@@ -44,7 +44,7 @@ export default function PartnerConnectPage() {
 
   return (
     <PageTransition>
-      <div className="min-h-screen bg-background max-w-lg mx-auto px-5 pb-10">
+      <div className="min-h-screen bg-background max-w-lg mx-auto px-5 pb-24">
         {/* Hero Image */}
         <div className="flex justify-center pt-8 mb-5">
           <div className="w-36 h-36 rounded-full overflow-hidden shadow-elevated border-4 border-card">
