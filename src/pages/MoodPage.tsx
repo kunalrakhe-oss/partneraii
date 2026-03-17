@@ -237,7 +237,7 @@ export default function MoodPage() {
         {/* Partner's Status with Reaction */}
         <div className="flex items-center gap-2 mb-3">
           <Users size={16} className="text-foreground" />
-          <p className="text-sm font-bold text-foreground">Partner's Status</p>
+          <p className="text-sm font-bold text-foreground">{partnerName}'s Status</p>
         </div>
         <div className="bg-card rounded-2xl p-4 shadow-card border border-border mb-4">
           <div className="flex items-start gap-3 mb-3">
