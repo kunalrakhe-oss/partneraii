@@ -78,6 +78,7 @@ export default function MoodPage() {
   const { partnerPair, loading: ppLoading } = usePartnerPair();
   const [logs, setLogs] = useState<MoodLog[]>([]);
   const [note, setNote] = useState("");
+  const navigate = useNavigate();
   const [displayName, setDisplayName] = useState("there");
 
   const today = format(new Date(), "yyyy-MM-dd");
