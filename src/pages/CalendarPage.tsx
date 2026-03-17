@@ -499,6 +499,8 @@ export default function CalendarPage() {
 
 /* ─────────────── DAY VIEW (MS Calendar-style: parked strip + timeline) ─────────────── */
 
+const EVENT_DEFAULT_DURATION = 60; // default 60 min display height
+
 function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleItem }: {
   date: Date;
   events: CalendarEvent[];
@@ -514,6 +516,12 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
   const [dropMinutes, setDropMinutes] = useState<number | null>(null);
   const [parkedExpanded, setParkedExpanded] = useState(false);
 
+  // Resize state
+  const [resizingEvent, setResizingEvent] = useState<CalendarEvent | null>(null);
+  const [resizeEndMinutes, setResizeEndMinutes] = useState<number | null>(null);
+  // Track custom durations per event id
+  const [eventDurations, setEventDurations] = useState<Record<string, number>>({});
+
   useEffect(() => {
     if (scrollRef.current) {
       const target = Math.max(0, nowHour - 2) * SLOT_HEIGHT;
@@ -525,12 +533,11 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
   const timedEvents = events.filter((e) => e.event_time);
   const visibleParked = parkedExpanded ? parkedEvents : parkedEvents.slice(0, 3);
 
-  // Convert pixel Y position to snapped minutes
   const yToMinutes = (clientY: number): number => {
     if (!gridRef.current || !scrollRef.current) return 0;
     const gridRect = gridRef.current.getBoundingClientRect();
     const relativeY = clientY - gridRect.top + scrollRef.current.scrollTop;
-    const rawMinutes = Math.max(0, Math.min(23 * 60 + 45, relativeY));
+    const rawMinutes = Math.max(0, Math.min(24 * 60, relativeY));
     return snapTo15(rawMinutes);
   };
 
@@ -543,11 +550,23 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
   const handleDragOverGrid = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-    setDropMinutes(yToMinutes(e.clientY));
+    if (resizingEvent) {
+      setResizeEndMinutes(yToMinutes(e.clientY));
+    } else {
+      setDropMinutes(yToMinutes(e.clientY));
+    }
   };
 
   const handleDropGrid = (e: React.DragEvent) => {
     e.preventDefault();
+    if (resizingEvent && resizeEndMinutes !== null) {
+      const startMin = timeToMinutes(resizingEvent.event_time);
+      const dur = Math.max(15, resizeEndMinutes - startMin);
+      setEventDurations((prev) => ({ ...prev, [resizingEvent.id]: dur }));
+      setResizingEvent(null);
+      setResizeEndMinutes(null);
+      return;
+    }
     if (draggingEvent && onScheduleItem && dropMinutes !== null) {
       onScheduleItem(draggingEvent, minutesToTime(dropMinutes));
     }
@@ -555,20 +574,50 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
     setDropMinutes(null);
   };
 
-  const handleDragEnd = () => { setDraggingEvent(null); setDropMinutes(null); };
+  const handleDragEnd = () => {
+    setDraggingEvent(null);
+    setDropMinutes(null);
+    setResizingEvent(null);
+    setResizeEndMinutes(null);
+  };
 
   // Touch-based drag for mobile
   const touchDragRef = useRef<CalendarEvent | null>(null);
+  const touchResizeRef = useRef<CalendarEvent | null>(null);
+
   const handleTouchStart = (evt: CalendarEvent) => () => {
     touchDragRef.current = evt;
     setDraggingEvent(evt);
   };
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!touchDragRef.current) return;
+
+  const handleResizeTouchStart = (evt: CalendarEvent) => (e: React.TouchEvent) => {
+    e.stopPropagation();
+    touchResizeRef.current = evt;
+    setResizingEvent(evt);
     const touch = e.touches[0];
+    setResizeEndMinutes(yToMinutes(touch.clientY));
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    if (touchResizeRef.current) {
+      setResizeEndMinutes(yToMinutes(touch.clientY));
+      return;
+    }
+    if (!touchDragRef.current) return;
     setDropMinutes(yToMinutes(touch.clientY));
   };
+
   const handleTouchEnd = () => {
+    if (touchResizeRef.current && resizeEndMinutes !== null) {
+      const startMin = timeToMinutes(touchResizeRef.current.event_time);
+      const dur = Math.max(15, resizeEndMinutes - startMin);
+      setEventDurations((prev) => ({ ...prev, [touchResizeRef.current!.id]: dur }));
+      touchResizeRef.current = null;
+      setResizingEvent(null);
+      setResizeEndMinutes(null);
+      return;
+    }
     if (touchDragRef.current && dropMinutes !== null && onScheduleItem) {
       onScheduleItem(touchDragRef.current, minutesToTime(dropMinutes));
     }
@@ -644,7 +693,7 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
           onTouchEnd={handleTouchEnd}
         >
           {/* Drop indicator line with 15-min precision */}
-          {dropMinutes !== null && draggingEvent && (
+          {dropMinutes !== null && draggingEvent && !resizingEvent && (
             <div
               className="absolute left-14 right-2 z-20 flex items-center pointer-events-none"
               style={{ top: `${dropMinutes}px` }}
@@ -653,6 +702,20 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
               <div className="flex-1 h-[2px] bg-primary" />
               <span className="text-[10px] font-bold text-primary bg-background/90 px-1.5 py-0.5 rounded ml-1">
                 {minutesToTime(dropMinutes)}
+              </span>
+            </div>
+          )}
+
+          {/* Resize indicator */}
+          {resizingEvent && resizeEndMinutes !== null && (
+            <div
+              className="absolute left-14 right-2 z-20 flex items-center pointer-events-none"
+              style={{ top: `${resizeEndMinutes}px` }}
+            >
+              <div className="w-3 h-3 rounded-full bg-accent -ml-1.5" />
+              <div className="flex-1 h-[2px] bg-accent" />
+              <span className="text-[10px] font-bold text-accent bg-background/90 px-1.5 py-0.5 rounded ml-1">
+                {minutesToTime(resizeEndMinutes)}
               </span>
             </div>
           )}
@@ -677,11 +740,10 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
             return (
               <div
                 key={hour}
-                className={`flex border-b border-border/50 min-h-[${SLOT_HEIGHT}px] cursor-pointer transition-colors ${
-                  dropHour === hour && draggingEvent ? "bg-primary/10" : "hover:bg-muted/30"
+                className={`flex border-b border-border/50 transition-colors ${
+                  dropHour === hour && draggingEvent ? "bg-primary/10" : ""
                 }`}
                 style={{ minHeight: `${SLOT_HEIGHT}px` }}
-                onClick={() => onAddEvent(`${hour.toString().padStart(2, "0")}:00`)}
               >
                 <div className="w-14 shrink-0 pr-2 pt-0.5 text-right">
                   <span className="text-[10px] text-muted-foreground font-medium">{formatHour(hour)}</span>
@@ -690,6 +752,10 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
                   {hourEvents.map((evt) => {
                     const evtMin = timeToMinutes(evt.event_time);
                     const offsetInHour = evtMin - hour * 60;
+                    const duration = resizingEvent?.id === evt.id && resizeEndMinutes !== null
+                      ? Math.max(15, resizeEndMinutes - evtMin)
+                      : (eventDurations[evt.id] || EVENT_DEFAULT_DURATION);
+                    const height = Math.max(15, duration);
                     return (
                       <div
                         key={evt.id}
@@ -698,13 +764,13 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
                         onDragEnd={handleDragEnd}
                         onTouchStart={handleTouchStart(evt)}
                         className={`absolute left-2 right-1 cursor-grab active:cursor-grabbing ${
-                          draggingEvent?.id === evt.id ? "opacity-40 scale-95" : ""
+                          draggingEvent?.id === evt.id && !resizingEvent ? "opacity-40 scale-95" : ""
                         }`}
-                        style={{ top: `${offsetInHour}px` }}
+                        style={{ top: `${offsetInHour}px`, height: `${height}px` }}
                       >
                         <button
                           onClick={(e) => { e.stopPropagation(); onEditEvent(evt); }}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium border-l-[3px] ${
+                          className={`w-full h-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium border-l-[3px] overflow-hidden ${
                             evt.is_completed ? "opacity-50" : ""
                           }`}
                           style={{
@@ -717,7 +783,27 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
                             <span className="ml-1 text-[8px] font-bold bg-primary-foreground/20 px-1.5 py-0.5 rounded-full">{countdownBadge(evt)}</span>
                           )}
                           <span className="text-muted-foreground ml-1">{evt.event_time}</span>
+                          {height >= 30 && (
+                            <span className="block text-[9px] text-muted-foreground mt-0.5">
+                              {minutesToTime(evtMin)} – {minutesToTime(evtMin + duration)}
+                            </span>
+                          )}
                         </button>
+                        {/* Resize handle at bottom */}
+                        <div
+                          draggable
+                          onDragStart={(e) => {
+                            e.stopPropagation();
+                            setResizingEvent(evt);
+                            e.dataTransfer.effectAllowed = "move";
+                            e.dataTransfer.setData("text/plain", "resize");
+                          }}
+                          onDragEnd={handleDragEnd}
+                          onTouchStart={handleResizeTouchStart(evt)}
+                          className="absolute bottom-0 left-0 right-0 h-3 cursor-s-resize flex items-center justify-center group"
+                        >
+                          <div className="w-8 h-1 rounded-full bg-muted-foreground/30 group-hover:bg-primary/60 transition-colors" />
+                        </div>
                       </div>
                     );
                   })}
@@ -853,10 +939,9 @@ function MultiDayView({ startDate, events, onSelectDate, onAddEvent, onEditEvent
                 return (
                   <div
                     key={day.toISOString()}
-                    className={`flex-1 border-l border-border/30 px-0.5 py-0.5 cursor-pointer hover:bg-muted/20 transition-colors ${
+                    className={`flex-1 border-l border-border/30 px-0.5 py-0.5 transition-colors ${
                       isToday(day) ? "bg-primary/[0.03]" : ""
                     } ${dropDayIdx === dayIdx && Math.floor((dropMinutes || 0) / 60) === hour && draggingEvent ? "bg-primary/10" : ""}`}
-                    onClick={() => onAddEvent(day, `${hour.toString().padStart(2, "0")}:00`)}
                   >
                     {hourEvents.map((evt) => (
                       <div
