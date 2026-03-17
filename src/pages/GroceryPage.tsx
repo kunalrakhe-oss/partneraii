@@ -251,7 +251,63 @@ export default function GroceryPage() {
               {tab.label}
             </button>
           ))}
+          <button
+            onClick={() => setShowNewList(true)}
+            className="flex items-center gap-1 px-3 py-2 rounded-full text-xs font-medium whitespace-nowrap shrink-0 border border-dashed border-primary/40 text-primary hover:bg-primary/5 transition-colors"
+          >
+            <Plus size={12} />
+            New List
+          </button>
         </div>
+
+        {/* New List Form */}
+        <AnimatePresence>
+          {showNewList && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+              <div className="bg-card rounded-2xl p-4 border border-border shadow-card mt-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-bold text-foreground">Create New List</p>
+                  <button onClick={() => setShowNewList(false)} className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                    <X size={12} className="text-muted-foreground" />
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      const emojis = ["📝", "🏠", "🎯", "💼", "🎮", "📚", "🎵", "🍳", "⚽", "🌱"];
+                      const idx = emojis.indexOf(newListEmoji);
+                      setNewListEmoji(emojis[(idx + 1) % emojis.length]);
+                    }}
+                    className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-xl shrink-0"
+                  >
+                    {newListEmoji}
+                  </button>
+                  <input
+                    value={newListName}
+                    onChange={e => setNewListName(e.target.value)}
+                    placeholder="List name..."
+                    className="flex-1 bg-muted rounded-xl px-3 h-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <button
+                    onClick={() => {
+                      if (!newListName.trim()) return;
+                      const key = newListName.trim().toLowerCase().replace(/\s+/g, "-");
+                      setCustomLists(prev => [...prev, { key, label: newListName.trim(), emoji: newListEmoji }]);
+                      setActiveList(key);
+                      setNewListName("");
+                      setNewListEmoji("📝");
+                      setShowNewList(false);
+                    }}
+                    disabled={!newListName.trim()}
+                    className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40"
+                  >
+                    Create
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Add input */}
         <div className="flex gap-2 mt-4 mb-6">
