@@ -31,6 +31,7 @@ export default function HomePage() {
   const { isDemoMode } = useDemo();
   const [firstName, setFirstName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [partnerProfile, setPartnerProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
   const [partnerMood, setPartnerMood] = useState<{ mood: string; note: string | null } | null>(null);
   const [myMood, setMyMood] = useState<{ mood: string; note: string | null } | null>(null);
   const [todayEvents, setTodayEvents] = useState<{ id: string; title: string; event_time: string | null }[]>([]);
@@ -61,7 +62,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("display_name, avatar_url, created_at").eq("user_id", user.id).maybeSingle()
+    supabase.from("profiles").select("display_name, avatar_url, created_at, partner_id").eq("user_id", user.id).maybeSingle()
       .then(({ data }) => {
         const raw = data?.display_name || user.user_metadata?.full_name || user.user_metadata?.display_name || user.user_metadata?.name || user.email?.split("@")[0] || "there";
         setFirstName(raw.split(" ")[0]);
@@ -70,6 +71,13 @@ export default function HomePage() {
           const created = new Date(data.created_at);
           const diff = Math.max(1, Math.floor((Date.now() - created.getTime()) / (1000 * 60 * 60 * 24)));
           setDaysTogether(diff);
+        }
+        // Fetch partner profile if connected
+        if (data?.partner_id) {
+          supabase.from("profiles").select("display_name, avatar_url").eq("id", data.partner_id).maybeSingle()
+            .then(({ data: partner }) => {
+              if (partner) setPartnerProfile(partner);
+            });
         }
       });
   }, [user]);
@@ -261,6 +269,49 @@ export default function HomePage() {
               )}
             </button>
           </motion.div>
+
+          {/* Partner Details Card */}
+          {partnerProfile && !isDemoMode && (
+            <motion.div variants={item}>
+              <Link to="/connect" className="block bg-gradient-to-r from-secondary/15 via-primary/10 to-secondary/15 rounded-2xl p-4 border border-secondary/20 shadow-soft">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    {partnerProfile.avatar_url ? (
+                      <img src={partnerProfile.avatar_url} alt="Partner" className="w-12 h-12 rounded-full object-cover ring-2 ring-secondary/40" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center ring-2 ring-secondary/40">
+                        <Heart size={18} className="text-secondary" fill="currentColor" />
+                      </div>
+                    )}
+                    <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-success rounded-full border-2 border-card" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground">Connected with</p>
+                    <p className="text-sm font-bold text-foreground truncate">
+                      {partnerProfile.display_name || "Your Partner"} 💕
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{daysTogether} days together</p>
+                  </div>
+                  <div className="flex -space-x-2 shrink-0">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Me" className="w-8 h-8 rounded-full object-cover border-2 border-card z-10" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-primary/20 border-2 border-card flex items-center justify-center z-10 text-[10px] font-bold text-primary">
+                        {firstName?.charAt(0) || "?"}
+                      </div>
+                    )}
+                    {partnerProfile.avatar_url ? (
+                      <img src={partnerProfile.avatar_url} alt="Partner" className="w-8 h-8 rounded-full object-cover border-2 border-card" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-secondary/20 border-2 border-card flex items-center justify-center text-[10px] font-bold text-secondary">
+                        {partnerProfile.display_name?.charAt(0) || "❤️"}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          )}
 
           {/* ❤️ Make it Real - Getting Started */}
           {isDemoMode && (
