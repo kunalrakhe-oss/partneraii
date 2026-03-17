@@ -181,6 +181,7 @@ export default function MemoriesPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
+            <ProfileButton />
             <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
               <ChevronLeft size={18} className="text-foreground" />
             </button>
@@ -189,12 +190,9 @@ export default function MemoriesPage() {
               <p className="text-xs text-muted-foreground">Your love story, one moment at a time 💕</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
-              <X size={16} className="text-muted-foreground" />
-            </button>
-            <ProfileButton />
-          </div>
+          <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+            <X size={16} className="text-muted-foreground" />
+          </button>
         </div>
 
         {/* Stats banner */}

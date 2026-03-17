@@ -143,6 +143,7 @@ export default function ChatPage() {
       <div className="flex flex-col h-[calc(100vh-4rem)]">
         {/* Header */}
         <div className="px-5 pt-8 pb-3 flex items-center gap-3 border-b border-border/50">
+          <ProfileButton />
           <div className="w-11 h-11 rounded-full bg-muted overflow-hidden flex items-center justify-center relative">
             {partnerProfile?.avatar_url ? (
               <img src={partnerProfile.avatar_url} alt="" className="w-full h-full object-cover" />
@@ -156,7 +157,6 @@ export default function ChatPage() {
             <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">✨ Online</span>
           </div>
           <button className="w-9 h-9 rounded-full flex items-center justify-center"><Search size={18} className="text-foreground" /></button>
-          <ProfileButton />
         </div>
 
         {/* Chat Filter Tabs */}
