@@ -721,15 +721,11 @@ export default function CalendarPage() {
           editingEvent={editingEvent}
           defaultDate={selectedDate}
           defaultTime={formTime}
-          onEventSaved={(data) => {
-            if (editingEvent) {
-              setEvents((prev) => prev.map((ev) => (ev.id === editingEvent.id ? data : ev)));
-            } else {
-              setEvents((prev) => [...prev, data]);
-            }
+          onEventSaved={async () => {
+            await refreshEvents();
           }}
-          onEventDeleted={(id) => {
-            setEvents((prev) => prev.filter((e) => e.id !== id));
+          onEventDeleted={async () => {
+            await refreshEvents();
           }}
         />
       </div>
