@@ -441,6 +441,25 @@ export default function HomePage() {
             </div>
           </motion.div>
 
+          {/* Add Memory/Note Quick Action */}
+          <motion.div variants={item}>
+            <button
+              onClick={() => navigate("/memories?add=true")}
+              className="w-full bg-gradient-to-r from-accent/15 via-primary/10 to-accent/15 rounded-2xl p-4 border border-accent/20 text-left hover:scale-[1.01] active:scale-[0.99] transition-transform"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
+                  <BookHeart size={22} className="text-accent-foreground" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-foreground">Add a Memory or Note</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Capture a special moment together 💕</p>
+                </div>
+                <Plus size={18} className="text-muted-foreground shrink-0" />
+              </div>
+            </button>
+          </motion.div>
+
           {/* Quick Links */}
           <motion.div variants={item} className="grid grid-cols-3 gap-3">
             <Link to="/lists" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
