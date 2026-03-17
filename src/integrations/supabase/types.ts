@@ -342,6 +342,7 @@ export type Database = {
       accept_partner_invite: { Args: { code: string }; Returns: Json }
       get_my_partner_profile_id: { Args: never; Returns: string }
       get_partner_pair: { Args: { uid: string }; Returns: string }
+      remove_partner: { Args: { partner_profile_id: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
