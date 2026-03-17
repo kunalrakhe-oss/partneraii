@@ -395,6 +395,45 @@ export default function HomePage() {
                   </div>
                 ))
               )}
+              <AnimatePresence>
+                {showAddChore && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                    <div className="flex gap-2 mt-2">
+                      <input
+                        value={newChoreTitle}
+                        onChange={e => setNewChoreTitle(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && newChoreTitle.trim() && (async () => {
+                          if (!user || !partnerPair) return;
+                          const { data, error } = await supabase.from("chores").insert({
+                            title: newChoreTitle.trim(), user_id: user.id, partner_pair: partnerPair,
+                          }).select().single();
+                          if (!error && data) {
+                            setUrgentChores(prev => [...prev, { id: data.id, title: data.title, is_completed: false, recurrence: null }]);
+                            setNewChoreTitle(""); setShowAddChore(false);
+                          }
+                        })()}
+                        placeholder="Quick add chore..."
+                        autoFocus
+                        className="flex-1 h-10 bg-card rounded-xl px-3 text-sm text-foreground placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                      <button
+                        onClick={async () => {
+                          if (!newChoreTitle.trim() || !user || !partnerPair) return;
+                          const { data, error } = await supabase.from("chores").insert({
+                            title: newChoreTitle.trim(), user_id: user.id, partner_pair: partnerPair,
+                          }).select().single();
+                          if (!error && data) {
+                            setUrgentChores(prev => [...prev, { id: data.id, title: data.title, is_completed: false, recurrence: null }]);
+                            setNewChoreTitle(""); setShowAddChore(false);
+                          }
+                        }}
+                        disabled={!newChoreTitle.trim()}
+                        className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40"
+                      >Add</button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
 
