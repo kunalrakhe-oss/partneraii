@@ -257,6 +257,16 @@ export default function CalendarPage() {
   };
 
   const toggleComplete = async (event: CalendarEvent) => {
+    if (event._source === "chore") {
+      await supabase.from("chores").update({ is_completed: !event.is_completed }).eq("id", event._sourceId!);
+      setEvents((prev) => prev.map((ev) => (ev.id === event.id ? { ...ev, is_completed: !ev.is_completed } : ev)));
+      return;
+    }
+    if (event._source === "grocery") {
+      await supabase.from("grocery_items").update({ is_checked: !event.is_completed }).eq("id", event._sourceId!);
+      setEvents((prev) => prev.map((ev) => (ev.id === event.id ? { ...ev, is_completed: !ev.is_completed } : ev)));
+      return;
+    }
     const { data, error } = await supabase
       .from("calendar_events")
       .update({ is_completed: !event.is_completed })
