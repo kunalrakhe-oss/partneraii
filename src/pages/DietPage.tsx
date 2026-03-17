@@ -359,6 +359,19 @@ export default function DietPage() {
     }).select().single();
     if (!error && row) {
       setItems(prev => [...prev, row as DietItem]);
+      // Sync to calendar
+      await supabase.from("calendar_events").insert({
+        title: `🥗 ${data.description}`,
+        description: `Diet: ${CATEGORIES.find(c => c.key === data.category)?.label || data.category}${data.notes ? ` — ${data.notes}` : ""}`,
+        category: "diet",
+        event_date: today,
+        event_time: null,
+        assigned_to: data.assigned_to,
+        priority: "low",
+        recurrence: "once",
+        user_id: user.id,
+        partner_pair: partnerPair,
+      });
       setShowForm(false);
       setEditingItem(null);
     }
