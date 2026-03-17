@@ -151,7 +151,33 @@ function DietFormModal({
             </div>
           </div>
 
-          {/* Category */}
+          {/* Frequency */}
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
+            <Repeat size={12} /> Frequency
+          </label>
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {(["once", "daily", "weekly"] as const).map(r => (
+              <button key={r} onClick={() => setRecurrence(r)}
+                className={`px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  recurrence === r ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
+                }`}>
+                {r === "once" ? "Once" : r === "daily" ? "🔁 Daily" : "🔁 Weekly"}
+              </button>
+            ))}
+          </div>
+          {recurrence === "weekly" && (
+            <div className="flex gap-1.5 mb-4">
+              {DAY_LABELS.map((label, idx) => (
+                <button key={idx} onClick={() => setRecurrenceDay(idx)}
+                  className={`flex-1 h-9 rounded-xl text-xs font-bold transition-all ${
+                    recurrenceDay === idx ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                  }`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Category</label>
           <div className="grid grid-cols-3 gap-2 mb-4">
             {CATEGORIES.map(c => (
