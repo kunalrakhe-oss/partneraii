@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Sparkles, Check, Trash2 } from "lucide-react";
+import { Plus, Sparkles, Check, Trash2, ShoppingCart, ClipboardList, Gift, Plane, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { categorizeGroceryItem } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
@@ -141,7 +141,7 @@ export default function GroceryPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-1">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Grocery List</h1>
+            <h1 className="text-2xl font-bold text-foreground">Love List</h1>
             <p className="text-xs text-muted-foreground">Shared list • {uncheckedCount} items left</p>
           </div>
           <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card shadow-card text-xs font-medium text-muted-foreground border border-border">
@@ -149,8 +149,28 @@ export default function GroceryPage() {
           </button>
         </div>
 
+        {/* Quick List Suggestions */}
+        <div className="flex gap-2 mt-4 overflow-x-auto pb-1">
+          {[
+            { icon: ShoppingCart, label: "Grocery", emoji: "🛒" },
+            { icon: ClipboardList, label: "To-Do", emoji: "📋" },
+            { icon: Gift, label: "Gift Ideas", emoji: "🎁" },
+            { icon: Plane, label: "Travel Pack", emoji: "✈️" },
+            { icon: Heart, label: "Date Ideas", emoji: "💕" },
+          ].map(list => (
+            <button
+              key={list.label}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-card shadow-card text-xs font-medium text-muted-foreground border border-border whitespace-nowrap shrink-0 hover:bg-muted transition-colors"
+            >
+              <span className="text-sm">{list.emoji}</span>
+              {list.label}
+            </button>
+          ))}
+        </div>
+
+
         {/* Add input */}
-        <div className="flex gap-2 mt-5 mb-6">
+        <div className="flex gap-2 mt-4 mb-6">
           <div className="flex-1 bg-card rounded-2xl shadow-card border border-border flex items-center px-4 gap-3">
             <Plus size={18} className="text-muted-foreground shrink-0" />
             <input
