@@ -156,7 +156,7 @@ export default function ChatPage() {
             <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full">✨ Online</span>
           </div>
           <button className="w-9 h-9 rounded-full flex items-center justify-center"><Search size={18} className="text-foreground" /></button>
-          <button className="w-9 h-9 rounded-full flex items-center justify-center"><MoreVertical size={18} className="text-foreground" /></button>
+          <ProfileButton />
         </div>
 
         {/* Chat Filter Tabs */}

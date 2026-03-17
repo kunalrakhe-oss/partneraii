@@ -231,11 +231,14 @@ export default function GroceryPage() {
             <h1 className="text-2xl font-bold text-foreground">Love List</h1>
             <p className="text-xs text-muted-foreground">Shared list • {uncheckedCount} items left</p>
           </div>
-          {activeList === "grocery" && (
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card shadow-card text-xs font-medium text-muted-foreground border border-border">
-              <Sparkles size={12} /> AI Sorting
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {activeList === "grocery" && (
+              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card shadow-card text-xs font-medium text-muted-foreground border border-border">
+                <Sparkles size={12} /> AI Sorting
+              </button>
+            )}
+            <ProfileButton />
+          </div>
         </div>
 
         {/* List Tabs */}

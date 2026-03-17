@@ -428,6 +428,7 @@ export default function CalendarPage() {
                 )}
               </AnimatePresence>
             </div>
+            <ProfileButton />
           </div>
           {/* Subtitle */}
           <p className="text-[10px] text-primary font-semibold uppercase tracking-wider mt-0.5 ml-9">
