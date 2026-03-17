@@ -185,16 +185,23 @@ export default function AddEventModal({
           <motion.div
             initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
+            drag="y"
+            dragConstraints={{ top: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(_e, info) => {
+              if (info.offset.y > 100 || info.velocity.y > 500) onClose();
+            }}
             onClick={(e) => e.stopPropagation()}
             className="bg-card w-full max-w-lg rounded-t-3xl shadow-elevated h-[85vh] max-h-[90vh] flex flex-col overflow-hidden"
           >
             <div className="shrink-0 bg-card px-5 pt-4 pb-0">
-              <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-muted" />
+              {/* Swipe handle */}
+              <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-muted cursor-grab active:cursor-grabbing" />
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold text-foreground">
                   {editingEvent ? "Edit" : "New"}
                 </h3>
-                <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors">
                   <X size={16} className="text-muted-foreground" />
                 </button>
               </div>
