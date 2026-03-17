@@ -32,6 +32,7 @@ export default function HomePage() {
   const [uncheckedGroceries, setUncheckedGroceries] = useState(0);
   const [messageCount, setMessageCount] = useState(0);
   const [nextEvent, setNextEvent] = useState<NextEvent | null>(null);
+  const [showAddEvent, setShowAddEvent] = useState(false);
 
   // Analytics
   const [daysTogether, setDaysTogether] = useState(0);
