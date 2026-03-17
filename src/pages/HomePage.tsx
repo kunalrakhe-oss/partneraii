@@ -100,7 +100,7 @@ export default function HomePage() {
           <motion.div variants={item}>
             <p className="text-sm font-semibold text-foreground mb-2">Partner's Mood</p>
             <div className="flex items-center gap-3">
-              <div className="flex-1 bg-[hsl(100,25%,78%)] rounded-2xl px-4 py-3 flex items-center gap-3">
+              <div className="flex-1 bg-primary/20 rounded-2xl px-4 py-3 flex items-center gap-3">
                 <span className="text-xl">✨</span>
                 <div>
                   <p className="text-xs text-foreground/70">James is feeling</p>
@@ -109,14 +109,14 @@ export default function HomePage() {
                   </p>
                 </div>
               </div>
-              <button className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center">
-                <Heart size={20} className="text-primary" fill="hsl(346, 77%, 60%)" />
+              <button className="w-12 h-12 rounded-btn bg-secondary/20 flex items-center justify-center">
+                <Heart size={20} className="text-secondary" fill="currentColor" />
               </button>
             </div>
           </motion.div>
 
           {/* Today's Agenda Card */}
-          <motion.div variants={item} className="bg-[hsl(100,20%,72%)] rounded-2xl p-5 shadow-soft">
+          <motion.div variants={item} className="bg-primary/25 rounded-card p-5 shadow-soft">
             <div className="flex items-center justify-between mb-1">
               <p className="text-xs font-medium text-foreground/70">Today's Agenda</p>
               <Link to="/calendar" className="text-xs font-medium bg-card/80 text-foreground px-3 py-1 rounded-full">View All</Link>
@@ -157,7 +157,7 @@ export default function HomePage() {
           {/* Quick Links */}
           <motion.div variants={item} className="grid grid-cols-3 gap-3">
             <Link to="/lists" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-              <div className="w-10 h-10 rounded-xl bg-[hsl(100,25%,78%)] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
                 <ShoppingCart size={18} className="text-foreground" />
               </div>
               <p className="text-sm font-bold text-foreground">Groceries</p>
@@ -213,7 +213,7 @@ export default function HomePage() {
 
           {/* AI Insight */}
           <motion.div variants={item} className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3">
-            <div className="w-9 h-9 rounded-full bg-[hsl(100,20%,72%)] flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
               <Sparkles size={16} className="text-foreground" />
             </div>
             <div>
@@ -228,7 +228,7 @@ export default function HomePage() {
           <motion.div variants={item} className="flex justify-end">
             <button
               onClick={() => navigate("/calendar")}
-              className="bg-foreground text-background px-5 py-3 rounded-full flex items-center gap-2 shadow-elevated text-sm font-semibold"
+              className="love-gradient text-primary-foreground px-5 py-3 rounded-btn flex items-center gap-2 shadow-elevated text-sm font-semibold"
             >
               <Plus size={16} />
               New Event

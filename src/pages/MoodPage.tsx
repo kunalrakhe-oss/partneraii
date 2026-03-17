@@ -96,8 +96,8 @@ export default function MoodPage() {
             <h1 className="text-2xl font-bold text-foreground">How are you, {displayName}?</h1>
             <p className="text-sm text-muted-foreground">Share your vibe with your partner</p>
           </div>
-          <button className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
-            <Heart size={18} className="text-primary" fill="hsl(346, 77%, 60%)" />
+          <button className="w-10 h-10 rounded-btn bg-secondary/20 flex items-center justify-center">
+            <Heart size={18} className="text-secondary" fill="currentColor" />
           </button>
         </div>
 
@@ -105,7 +105,7 @@ export default function MoodPage() {
         <div className="flex justify-center gap-3 mb-6 flex-wrap">
           {MOODS.map(mood => (
             <motion.button key={mood.key} whileTap={{ scale: 0.9 }} onClick={() => logMood(mood.key)}
-              className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all min-w-[60px] ${todayLog?.mood === mood.key ? "bg-[hsl(100,20%,72%)] shadow-soft ring-2 ring-[hsl(100,20%,60%)]" : "hover:bg-muted"}`}>
+              className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all min-w-[60px] ${todayLog?.mood === mood.key ? "bg-primary/25 shadow-soft ring-2 ring-primary/40" : "hover:bg-muted"}`}>
               <span className="text-3xl">{mood.emoji}</span>
               <span className="text-[10px] font-medium text-muted-foreground">{mood.label}</span>
             </motion.button>
@@ -115,7 +115,7 @@ export default function MoodPage() {
         <p className="text-sm font-semibold text-foreground mb-2">Add a note (optional)</p>
         <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="What's on your mind?" rows={3}
           className="w-full px-4 py-3 rounded-2xl bg-card shadow-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none border border-border mb-4" />
-        <button onClick={updateNote} className="w-full h-12 rounded-2xl bg-[hsl(100,20%,72%)] text-foreground font-semibold text-sm shadow-soft mb-6">Update My Mood</button>
+        <button onClick={updateNote} className="w-full h-12 rounded-btn love-gradient text-primary-foreground font-semibold text-sm shadow-soft mb-6">Update My Mood</button>
 
         {/* Partner's Status */}
         <div className="flex items-center gap-2 mb-3">
@@ -147,7 +147,7 @@ export default function MoodPage() {
               const h = day.me ? moodToHeight[day.me.mood] || 50 : 30;
               return (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="w-full rounded-t-lg bg-[hsl(100,25%,78%)] transition-all" style={{ height: `${h}%` }} />
+                  <div className="w-full rounded-t-lg bg-primary/30 transition-all" style={{ height: `${h}%` }} />
                   <span className="text-[10px] text-muted-foreground">{day.day}</span>
                 </div>
               );

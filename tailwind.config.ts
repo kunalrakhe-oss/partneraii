@@ -14,7 +14,15 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        sans: ['"Nunito"', '"DM Sans"', 'system-ui', 'sans-serif'],
+        body: ['"DM Sans"', 'system-ui', 'sans-serif'],
+      },
+      spacing: {
+        'xs': '4px',
+        'sm-sp': '8px',
+        'md-sp': '16px',
+        'lg-sp': '24px',
+        'xl-sp': '32px',
       },
       colors: {
         border: "hsl(var(--border))",
@@ -58,6 +66,7 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        hint: "hsl(var(--hint))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -73,6 +82,8 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        'card': '16px',
+        'btn': '9999px',
       },
       keyframes: {
         "accordion-down": {

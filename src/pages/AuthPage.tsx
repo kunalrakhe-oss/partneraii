@@ -103,8 +103,8 @@ export default function AuthPage() {
     <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto">
       <div className="flex-1 flex flex-col items-center pt-10 px-6">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 mb-6">
-          <Heart size={24} className="text-primary" fill="hsl(346, 77%, 60%)" />
-          <span className="text-xl font-bold text-foreground">LoveList</span>
+          <Heart size={24} className="text-secondary" fill="currentColor" />
+          <span className="text-xl font-bold text-foreground font-sans">LoveList</span>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}
