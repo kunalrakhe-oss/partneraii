@@ -943,7 +943,6 @@ function MultiDayView({ startDate, events, onSelectDate, onAddEvent, onEditEvent
                       isToday(day) ? "bg-primary/[0.03]" : ""
                     } ${dropDayIdx === dayIdx && Math.floor((dropMinutes || 0) / 60) === hour && draggingEvent ? "bg-primary/10" : ""}`}
                   >
-                  >
                     {hourEvents.map((evt) => (
                       <div
                         key={evt.id}
