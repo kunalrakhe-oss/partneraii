@@ -665,12 +665,16 @@ function MonthView({ currentDate, selectedDate, events, onSelectDate, onEditEven
               {/* Event dots */}
               {dayEvts.length > 0 && (
                 <div className="flex gap-0.5 mt-0.5">
-                  {dayEvts.slice(0, 3).map((evt, i) => (
+                  {dayEvts.slice(0, 4).map((evt, i) => (
                     <div
                       key={i}
                       className={`w-1 h-1 rounded-full ${
                         evt.category === "date-night" ? "bg-secondary" :
                         evt.category === "groceries" ? "bg-success" :
+                        evt.category === "chore" ? "bg-orange-400" :
+                        evt.category === "grocery-due" ? "bg-emerald-400" :
+                        evt.category === "birthday" ? "bg-pink-400" :
+                        evt.category === "reminder" ? "bg-blue-400" :
                         "bg-primary"
                       }`}
                     />
