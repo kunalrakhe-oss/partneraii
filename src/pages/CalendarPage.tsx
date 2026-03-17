@@ -106,6 +106,7 @@ function formatHour(h: number): string {
 export default function CalendarPage() {
   const { user } = useAuth();
   const { partnerPair, loading: ppLoading } = usePartnerPair();
+  const { isDemoMode } = useDemo();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
