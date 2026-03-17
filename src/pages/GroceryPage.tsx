@@ -59,6 +59,7 @@ export default function GroceryPage() {
   const [showSuggestion, setShowSuggestion] = useState(true);
   const [loading, setLoading] = useState(true);
   const [activeList, setActiveList] = useState<ListType>("grocery");
+  const [editingItem, setEditingItem] = useState<GroceryRow | null>(null);
 
   const fetchItems = useCallback(async () => {
     if (!partnerPair) return;
