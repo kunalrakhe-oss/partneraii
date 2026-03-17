@@ -168,7 +168,6 @@ export default function GroceryPage() {
           ))}
         </div>
 
-        </div>
 
         {/* Add input */}
         <div className="flex gap-2 mt-4 mb-6">
