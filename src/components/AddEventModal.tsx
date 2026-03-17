@@ -220,62 +220,76 @@ export default function AddEventModal({
                 <div className="space-y-3 pb-4">
                   <div>
                     <label className="mb-1 block text-xs font-semibold text-muted-foreground">
-                      {formType === "birthday" ? "Whose Birthday" : "Title"}
+                      {formType === "birthday" ? "Whose Birthday" : formType === "reminder" ? "Remind me to..." : formType === "countdown" ? "What are you counting?" : "Title"}
                     </label>
                     <input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required
-                      placeholder={formType === "birthday" ? "e.g. Sarah's Birthday" : formType === "reminder" ? "Remind me to..." : "Event title"}
+                      placeholder={formType === "birthday" ? "e.g. Sarah's Birthday" : formType === "reminder" ? "e.g. Buy flowers" : formType === "countdown" ? "e.g. Our Anniversary" : "Event title"}
                       className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
                   </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold text-muted-foreground">Description</label>
-                    <input value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Optional"
-                      className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  {/* Description - show for event and countdown only */}
+                  {(formType === "event" || formType === "countdown") && (
                     <div>
-                      <label className="mb-1 block text-xs font-semibold text-muted-foreground">Date</label>
+                      <label className="mb-1 block text-xs font-semibold text-muted-foreground">Description</label>
+                      <input value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Optional"
+                        className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                    </div>
+                  )}
+                  <div className={formType === "reminder" ? "" : "grid grid-cols-2 gap-3"}>
+                    <div>
+                      <label className="mb-1 block text-xs font-semibold text-muted-foreground">
+                        {formType === "birthday" ? "Birthday Date" : formType === "countdown" ? "Target Date" : "Date"}
+                      </label>
                       <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} required
                         className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
                     </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-muted-foreground">Time</label>
-                      <input type="time" value={formTime} onChange={(e) => setFormTime(e.target.value)}
-                        className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                    </div>
+                    {/* Time - show for event and reminder only */}
+                    {(formType === "event" || formType === "reminder") && (
+                      <div>
+                        <label className="mb-1 block text-xs font-semibold text-muted-foreground">Time</label>
+                        <input type="time" value={formTime} onChange={(e) => setFormTime(e.target.value)}
+                          className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold text-muted-foreground">Category</label>
-                    <div className="flex flex-wrap gap-2">
-                      {CATEGORIES.map((c) => (
-                        <button key={c} type="button" onClick={() => setFormCategory(c)}
-                          className={`rounded-btn px-3 py-1.5 text-xs font-medium transition-colors ${
-                            formCategory === c ? "love-gradient text-primary-foreground" : "bg-muted text-muted-foreground"
-                          }`}>
-                          {CATEGORY_LABEL[c]}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  {/* Category - event only */}
+                  {formType === "event" && (
                     <div>
-                      <label className="mb-1 block text-xs font-semibold text-muted-foreground">Assign</label>
-                      <select value={formAssigned} onChange={(e) => setFormAssigned(e.target.value)}
-                        className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
-                        <option value="both">Both</option>
-                        <option value="me">Me</option>
-                        <option value="partner">Partner</option>
-                      </select>
+                      <label className="mb-1 block text-xs font-semibold text-muted-foreground">Category</label>
+                      <div className="flex flex-wrap gap-2">
+                        {CATEGORIES.map((c) => (
+                          <button key={c} type="button" onClick={() => setFormCategory(c)}
+                            className={`rounded-btn px-3 py-1.5 text-xs font-medium transition-colors ${
+                              formCategory === c ? "love-gradient text-primary-foreground" : "bg-muted text-muted-foreground"
+                            }`}>
+                            {CATEGORY_LABEL[c]}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-muted-foreground">Priority</label>
-                      <select value={formPriority} onChange={(e) => setFormPriority(e.target.value)}
-                        className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                      </select>
+                  )}
+                  {/* Assign & Priority - event only */}
+                  {formType === "event" && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="mb-1 block text-xs font-semibold text-muted-foreground">Assign</label>
+                        <select value={formAssigned} onChange={(e) => setFormAssigned(e.target.value)}
+                          className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
+                          <option value="both">Both</option>
+                          <option value="me">Me</option>
+                          <option value="partner">Partner</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs font-semibold text-muted-foreground">Priority</label>
+                        <select value={formPriority} onChange={(e) => setFormPriority(e.target.value)}
+                          className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
+                          <option value="low">Low</option>
+                          <option value="medium">Medium</option>
+                          <option value="high">High</option>
+                        </select>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   {/* Reminder options - shown for reminder & birthday types */}
                   {(formType === "reminder" || formType === "birthday") && (
                     <div>
@@ -326,12 +340,12 @@ export default function AddEventModal({
               <div className="shrink-0 border-t border-border bg-card px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
                 <div className="space-y-2">
                   <button type="submit" className="h-12 w-full rounded-btn love-gradient text-sm font-semibold text-primary-foreground shadow-soft">
-                    {editingEvent ? "Save Changes" : "Add Event"}
+                    {editingEvent ? "Save Changes" : formType === "reminder" ? "Add Reminder" : formType === "countdown" ? "Add Countdown" : formType === "birthday" ? "Add Birthday" : "Add Event"}
                   </button>
                   {editingEvent && (
                     <button type="button" onClick={handleDelete}
                       className="flex h-11 w-full items-center justify-center gap-2 rounded-btn bg-destructive/10 text-sm font-semibold text-destructive">
-                      <Trash2 size={14} /> Delete Event
+                      <Trash2 size={14} /> Delete {formType === "reminder" ? "Reminder" : formType === "countdown" ? "Countdown" : formType === "birthday" ? "Birthday" : "Event"}
                     </button>
                   )}
                 </div>
