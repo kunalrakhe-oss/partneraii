@@ -23,8 +23,11 @@ export default function ProfilePage() {
         .eq("user_id", user.id)
         .single();
       if (data) {
-        setDisplayName(data.display_name || user.user_metadata?.display_name || user.email?.split("@")[0] || "You");
-        setAvatarUrl(data.avatar_url);
+        const profileName = data.display_name;
+        const metaName = user.user_metadata?.full_name || user.user_metadata?.display_name || user.user_metadata?.name;
+        const name = (profileName && profileName.includes(" ")) ? profileName : (metaName || profileName || user.email?.split("@")[0] || "You");
+        setDisplayName(name);
+        setAvatarUrl(data.avatar_url || user.user_metadata?.avatar_url || null);
         if (data.partner_id) {
           const { data: partner } = await supabase
             .from("profiles")

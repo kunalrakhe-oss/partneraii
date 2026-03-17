@@ -31,12 +31,12 @@ export default function HomePage() {
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
-        setDisplayName(
-          data?.display_name ||
-          user.user_metadata?.display_name ||
-          user.email?.split("@")[0] ||
-          "there"
-        );
+        const profileName = data?.display_name;
+        const metaName = user.user_metadata?.full_name || user.user_metadata?.display_name || user.user_metadata?.name;
+        const emailName = user.email?.split("@")[0];
+        // Prefer metadata full_name if profile name looks like an email prefix
+        const name = (profileName && profileName.includes(" ")) ? profileName : (metaName || profileName || emailName || "there");
+        setDisplayName(name);
       });
   }, [user]);
 
