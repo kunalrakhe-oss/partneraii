@@ -701,9 +701,7 @@ export default function CalendarPage() {
                     user_id: user.id,
                     partner_pair: partnerPair,
                   });
-                  // Refresh events
-                  const { data: freshEvents } = await supabase.from("calendar_events").select("*").eq("partner_pair", partnerPair);
-                  if (freshEvents) setEvents(expandRecurringEvents(freshEvents as CalendarEvent[]));
+                  await refreshEvents();
                   toast.success("Diet item added!");
                   setShowDietForm(false);
                 } else {
