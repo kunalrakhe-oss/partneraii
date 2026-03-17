@@ -69,7 +69,7 @@ export default function HomePage() {
           {/* Header */}
           <motion.div variants={item} className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">{greeting}, {displayName}</h1>
+              <h1 className="text-2xl font-bold text-foreground">{greeting}, {displayName.toUpperCase()}</h1>
               <p className="text-sm text-muted-foreground">{format(new Date(), "MMMM d, yyyy")}</p>
             </div>
             <div className="w-11 h-11 rounded-full bg-muted overflow-hidden flex items-center justify-center">

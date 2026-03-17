@@ -132,7 +132,7 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
-          <h2 className="text-base font-bold text-foreground">{displayName}</h2>
+          <h2 className="text-base font-bold text-foreground">{displayName.toUpperCase()}</h2>
           {partnerName && (
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <Link2 size={10} /> Connected to {partnerName}
