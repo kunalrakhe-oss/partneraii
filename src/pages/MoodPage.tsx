@@ -89,6 +89,21 @@ export default function MoodPage() {
     if (!partnerPair) return;
     supabase.from("mood_logs").select("*").eq("partner_pair", partnerPair)
       .then(({ data }) => { if (data) setLogs(data); });
+
+    const channel = supabase.channel("mood-realtime-" + partnerPair)
+      .on("postgres_changes", { event: "*", schema: "public", table: "mood_logs", filter: `partner_pair=eq.${partnerPair}` },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            setLogs(prev => [...prev.filter(l => l.id !== (payload.new as MoodLog).id), payload.new as MoodLog]);
+          } else if (payload.eventType === "UPDATE") {
+            setLogs(prev => prev.map(l => l.id === (payload.new as MoodLog).id ? payload.new as MoodLog : l));
+          } else if (payload.eventType === "DELETE") {
+            setLogs(prev => prev.filter(l => l.id !== (payload.old as any).id));
+          }
+        })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [partnerPair]);
 
   useEffect(() => {

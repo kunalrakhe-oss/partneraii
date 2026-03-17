@@ -66,8 +66,17 @@ export default function HomePage() {
     if (!partnerPair || !user) return;
 
     // Partner mood
-    supabase.from("mood_logs").select("mood, note").eq("partner_pair", partnerPair).eq("log_date", today).neq("user_id", user.id).maybeSingle()
-      .then(({ data }) => { if (data) setPartnerMood(data); });
+    const fetchPartnerMood = () => {
+      supabase.from("mood_logs").select("mood, note").eq("partner_pair", partnerPair).eq("log_date", today).neq("user_id", user.id).maybeSingle()
+        .then(({ data }) => { setPartnerMood(data || null); });
+    };
+    fetchPartnerMood();
+
+    // Subscribe to realtime mood changes
+    const moodChannel = supabase.channel("home-mood-" + partnerPair)
+      .on("postgres_changes", { event: "*", schema: "public", table: "mood_logs", filter: `partner_pair=eq.${partnerPair}` },
+        () => { fetchPartnerMood(); })
+      .subscribe();
 
     // Today's events
     supabase.from("calendar_events").select("id, title, event_time").eq("partner_pair", partnerPair).eq("event_date", today).eq("is_completed", false)
@@ -106,6 +115,8 @@ export default function HomePage() {
 
     supabase.from("chores").select("id", { count: "exact", head: true }).eq("partner_pair", partnerPair).eq("is_completed", true)
       .then(({ count }) => { setCompletedChores(count ?? 0); });
+
+    return () => { supabase.removeChannel(moodChannel); };
   }, [partnerPair, user, today]);
 
   // Fetch AI insight
