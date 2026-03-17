@@ -51,6 +51,8 @@ interface CalendarEvent {
   partner_pair: string;
   reminder?: string;
   countdown_type?: string;
+  _source?: "chore" | "grocery"; // undefined = calendar_events
+  _sourceId?: string;
 }
 
 function countdownBadge(event: CalendarEvent): string | null {
