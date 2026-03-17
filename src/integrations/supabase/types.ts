@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      calendar_events: {
+        Row: {
+          assigned_to: string
+          category: string
+          created_at: string
+          description: string | null
+          event_date: string
+          event_time: string | null
+          id: string
+          is_completed: boolean
+          partner_pair: string
+          priority: string
+          recurrence: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          event_date?: string
+          event_time?: string | null
+          id?: string
+          is_completed?: boolean
+          partner_pair: string
+          priority?: string
+          recurrence?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          event_date?: string
+          event_time?: string | null
+          id?: string
+          is_completed?: boolean
+          partner_pair?: string
+          priority?: string
+          recurrence?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          partner_pair: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          partner_pair: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          partner_pair?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chores: {
         Row: {
           assigned_to: string | null
@@ -118,6 +196,36 @@ export type Database = {
           title?: string
           type?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mood_logs: {
+        Row: {
+          created_at: string
+          id: string
+          log_date: string
+          mood: string
+          note: string | null
+          partner_pair: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          log_date?: string
+          mood: string
+          note?: string | null
+          partner_pair: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          log_date?: string
+          mood?: string
+          note?: string | null
+          partner_pair?: string
           user_id?: string
         }
         Relationships: []
