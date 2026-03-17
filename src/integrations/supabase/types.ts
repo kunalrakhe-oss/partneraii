@@ -233,6 +233,47 @@ export type Database = {
         }
         Relationships: []
       }
+      memory_reactions: {
+        Row: {
+          comment: string | null
+          created_at: string
+          emoji: string | null
+          id: string
+          memory_id: string
+          partner_pair: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          emoji?: string | null
+          id?: string
+          memory_id: string
+          partner_pair: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          emoji?: string | null
+          id?: string
+          memory_id?: string
+          partner_pair?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memory_reactions_memory_id_fkey"
+            columns: ["memory_id"]
+            isOneToOne: false
+            referencedRelation: "memories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mood_logs: {
         Row: {
           created_at: string

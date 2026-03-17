@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Plus, Camera, Heart, Star, Calendar, X, Image as ImageIcon, Award, BookOpen, Loader2, ChevronLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Plus, Camera, Heart, Star, Calendar, X, Image as ImageIcon, Award, BookOpen, Loader2, ChevronLeft, MessageCircle, Send } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import ProfileButton from "@/components/ProfileButton";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,16 @@ import { DEMO_MEMORIES } from "@/lib/demoData";
 
 type MemoryRow = Tables<"memories">;
 
+type Reaction = {
+  id: string;
+  memory_id: string;
+  user_id: string;
+  type: string;
+  emoji: string | null;
+  comment: string | null;
+  created_at: string;
+};
+
 const MILESTONE_OPTIONS = [
   { label: "Anniversary", emoji: "💍" },
   { label: "First Date", emoji: "🌹" },
@@ -24,11 +34,14 @@ const MILESTONE_OPTIONS = [
   { label: "Custom", emoji: "⭐" },
 ];
 
+const REACTION_EMOJIS = ["❤️", "😍", "🥰", "🔥", "😂", "🥺"];
+
 type FilterType = "all" | "photo" | "milestone" | "note";
 type MemoryType = "photo" | "milestone" | "note";
 
 export default function MemoriesPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
   const { toast } = useToast();
   const { isDemoMode } = useDemo();
@@ -48,6 +61,21 @@ export default function MemoriesPage() {
   const [formPreview, setFormPreview] = useState("");
   const [formMilestone, setFormMilestone] = useState("");
 
+  // Reactions
+  const [reactions, setReactions] = useState<Record<string, Reaction[]>>({});
+  const [expandedMemory, setExpandedMemory] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState("");
+  const [sendingComment, setSendingComment] = useState(false);
+
+  // Open add modal from URL param (e.g. from home page)
+  useEffect(() => {
+    if (searchParams.get("add") === "true" && !showAdd) {
+      setShowAdd(true);
+      // Clean the URL param
+      navigate("/memories", { replace: true });
+    }
+  }, [searchParams]);
+
   const fetchMemories = useCallback(async () => {
     if (!partnerPair) return;
     const { data } = await supabase
@@ -59,11 +87,28 @@ export default function MemoriesPage() {
     setLoading(false);
   }, [partnerPair]);
 
+  const fetchReactions = useCallback(async () => {
+    if (!partnerPair) return;
+    const { data } = await supabase
+      .from("memory_reactions")
+      .select("*")
+      .eq("partner_pair", partnerPair)
+      .order("created_at", { ascending: true });
+    if (data) {
+      const grouped: Record<string, Reaction[]> = {};
+      (data as Reaction[]).forEach(r => {
+        (grouped[r.memory_id] = grouped[r.memory_id] || []).push(r);
+      });
+      setReactions(grouped);
+    }
+  }, [partnerPair]);
+
   useEffect(() => {
     if (pairLoading) return;
     if (!partnerPair) { setLoading(false); return; }
     fetchMemories();
-  }, [partnerPair, pairLoading, fetchMemories]);
+    fetchReactions();
+  }, [partnerPair, pairLoading, fetchMemories, fetchReactions]);
 
   // Inject demo memories
   useEffect(() => {
@@ -81,9 +126,12 @@ export default function MemoriesPage() {
       .on("postgres_changes", { event: "*", schema: "public", table: "memories" }, () => {
         fetchMemories();
       })
+      .on("postgres_changes", { event: "*", schema: "public", table: "memory_reactions" }, () => {
+        fetchReactions();
+      })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [partnerPair, fetchMemories]);
+  }, [partnerPair, fetchMemories, fetchReactions]);
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -134,8 +182,9 @@ export default function MemoriesPage() {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
+      toast({ title: "Memory saved! ✨", description: "Your moment has been captured." });
       resetForm();
-      setShowAdd(false);
+      // Don't close modal - let user add another or close manually
       fetchMemories();
     }
     setSubmitting(false);
@@ -154,6 +203,41 @@ export default function MemoriesPage() {
   const deleteMemory = async (id: string) => {
     await supabase.from("memories").delete().eq("id", id);
     fetchMemories();
+  };
+
+  const addReaction = async (memoryId: string, emoji: string) => {
+    if (!userId || !partnerPair) return;
+    // Toggle: remove if already reacted with same emoji
+    const existing = (reactions[memoryId] || []).find(
+      r => r.user_id === userId && r.type === "reaction" && r.emoji === emoji
+    );
+    if (existing) {
+      await supabase.from("memory_reactions").delete().eq("id", existing.id);
+    } else {
+      await supabase.from("memory_reactions").insert({
+        memory_id: memoryId,
+        user_id: userId,
+        partner_pair: partnerPair,
+        type: "reaction",
+        emoji,
+      });
+    }
+    fetchReactions();
+  };
+
+  const addComment = async (memoryId: string) => {
+    if (!commentText.trim() || !userId || !partnerPair) return;
+    setSendingComment(true);
+    await supabase.from("memory_reactions").insert({
+      memory_id: memoryId,
+      user_id: userId,
+      partner_pair: partnerPair,
+      type: "comment",
+      comment: commentText.trim(),
+    });
+    setCommentText("");
+    setSendingComment(false);
+    fetchReactions();
   };
 
   const filtered = memories.filter(m => filter === "all" || m.type === filter);
@@ -273,58 +357,140 @@ export default function MemoriesPage() {
                 </div>
 
                 <div className="space-y-3 pl-4 border-l-2 border-border ml-0.5">
-                  {monthMemories.map(memory => (
-                    <motion.div
-                      key={memory.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-card rounded-2xl shadow-card border border-border overflow-hidden relative"
-                    >
-                      {memory.photo_url && (
-                        <div className="h-44 overflow-hidden">
-                          <img src={memory.photo_url} alt={memory.title} className="w-full h-full object-cover" />
-                        </div>
-                      )}
+                  {monthMemories.map(memory => {
+                    const memReactions = reactions[memory.id] || [];
+                    const emojiReactions = memReactions.filter(r => r.type === "reaction");
+                    const comments = memReactions.filter(r => r.type === "comment");
+                    const isExpanded = expandedMemory === memory.id;
 
-                      <div className="p-4">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1">
-                            {memory.type === "milestone" && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full mb-2">
-                                ⭐ Milestone
-                              </span>
-                            )}
-                            {memory.type === "photo" && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-success bg-success/10 px-2 py-0.5 rounded-full mb-2">
-                                📷 Photo
-                              </span>
-                            )}
-                            {memory.type === "note" && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full mb-2">
-                                ✏️ Note
-                              </span>
-                            )}
-                            <p className="text-sm font-bold text-foreground">{memory.title}</p>
-                            {memory.description && (
-                              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{memory.description}</p>
-                            )}
+                    return (
+                      <motion.div
+                        key={memory.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-card rounded-2xl shadow-card border border-border overflow-hidden relative"
+                      >
+                        {memory.photo_url && (
+                          <div className="h-44 overflow-hidden">
+                            <img src={memory.photo_url} alt={memory.title} className="w-full h-full object-cover" />
                           </div>
-                          <button
-                            onClick={() => deleteMemory(memory.id)}
-                            className="text-muted-foreground hover:text-destructive shrink-0 mt-1"
-                          >
-                            <X size={14} />
-                          </button>
+                        )}
+
+                        <div className="p-4">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
+                              {memory.type === "milestone" && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full mb-2">
+                                  ⭐ Milestone
+                                </span>
+                              )}
+                              {memory.type === "photo" && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-success bg-success/10 px-2 py-0.5 rounded-full mb-2">
+                                  📷 Photo
+                                </span>
+                              )}
+                              {memory.type === "note" && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full mb-2">
+                                  ✏️ Note
+                                </span>
+                              )}
+                              <p className="text-sm font-bold text-foreground">{memory.title}</p>
+                              {memory.description && (
+                                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{memory.description}</p>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => deleteMemory(memory.id)}
+                              className="text-muted-foreground hover:text-destructive shrink-0 mt-1"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-2 mt-2.5">
+                            <Calendar size={10} className="text-muted-foreground" />
+                            <span className="text-[10px] text-muted-foreground">
+                              {format(parseISO(memory.memory_date), "EEEE, MMMM d, yyyy")}
+                            </span>
+                          </div>
+
+                          {/* Reaction bar */}
+                          <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border">
+                            {REACTION_EMOJIS.map(emoji => {
+                              const count = emojiReactions.filter(r => r.emoji === emoji).length;
+                              const myReaction = emojiReactions.find(r => r.emoji === emoji && r.user_id === userId);
+                              return (
+                                <button
+                                  key={emoji}
+                                  onClick={() => addReaction(memory.id, emoji)}
+                                  className={`h-7 px-1.5 rounded-full text-xs flex items-center gap-0.5 transition-colors ${
+                                    myReaction
+                                      ? "bg-primary/15 ring-1 ring-primary/40"
+                                      : "bg-muted hover:bg-muted/80"
+                                  }`}
+                                >
+                                  <span className="text-sm">{emoji}</span>
+                                  {count > 0 && <span className="text-[10px] font-medium text-foreground">{count}</span>}
+                                </button>
+                              );
+                            })}
+                            <button
+                              onClick={() => setExpandedMemory(isExpanded ? null : memory.id)}
+                              className={`ml-auto h-7 px-2 rounded-full text-xs flex items-center gap-1 transition-colors ${
+                                isExpanded ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              <MessageCircle size={12} />
+                              {comments.length > 0 && <span className="text-[10px] font-medium">{comments.length}</span>}
+                            </button>
+                          </div>
+
+                          {/* Comments section */}
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="mt-3 space-y-2">
+                                  {comments.map(c => (
+                                    <div key={c.id} className="flex gap-2">
+                                      <div className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
+                                        <span className="text-[10px]">{c.user_id === userId ? "Me" : "💕"}</span>
+                                      </div>
+                                      <div className="bg-muted rounded-xl px-3 py-2 flex-1">
+                                        <p className="text-xs text-foreground">{c.comment}</p>
+                                        <p className="text-[9px] text-muted-foreground mt-0.5">
+                                          {format(new Date(c.created_at), "MMM d, h:mm a")}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                  <div className="flex gap-2 mt-1">
+                                    <input
+                                      value={commentText}
+                                      onChange={e => setCommentText(e.target.value)}
+                                      onKeyDown={e => e.key === "Enter" && addComment(memory.id)}
+                                      placeholder="Write a comment..."
+                                      className="flex-1 h-9 px-3 rounded-xl bg-muted text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                                    />
+                                    <button
+                                      onClick={() => addComment(memory.id)}
+                                      disabled={!commentText.trim() || sendingComment}
+                                      className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40"
+                                    >
+                                      <Send size={14} />
+                                    </button>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
-                        <div className="flex items-center gap-2 mt-2.5">
-                          <Calendar size={10} className="text-muted-foreground" />
-                          <span className="text-[10px] text-muted-foreground">
-                            {format(parseISO(memory.memory_date), "EEEE, MMMM d, yyyy")}
-                          </span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -482,6 +648,11 @@ export default function MemoriesPage() {
                 >
                   {submitting ? <Loader2 size={18} className="animate-spin" /> : "Save Memory"}
                 </button>
+
+                {/* Add Another hint */}
+                <p className="text-[10px] text-muted-foreground text-center mt-3">
+                  After saving, the form resets so you can add another memory ✨
+                </p>
                 </div>
               </motion.div>
             </motion.div>
