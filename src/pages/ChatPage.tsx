@@ -239,22 +239,7 @@ export default function ChatPage() {
           <div ref={bottomRef} />
         </div>
 
-        {/* Quick Actions */}
-        <div className="px-5 py-2 flex gap-2 overflow-x-auto">
-          {[
-            { icon: ShoppingCart, label: "Grocery List", action: () => navigate("/lists") },
-            { icon: CheckSquare, label: "Shared Task", action: () => navigate("/chores") },
-            { icon: SmilePlus, label: "Mood Update", action: () => navigate("/mood") },
-          ].map(action => (
-            <button
-              key={action.label}
-              onClick={action.action}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card shadow-card text-xs font-medium text-muted-foreground border border-border whitespace-nowrap shrink-0 hover:bg-muted transition-colors"
-            >
-              <action.icon size={12} />{action.label}
-            </button>
-          ))}
-        </div>
+
 
         {/* Attachment Menu Overlay */}
         <AnimatePresence>
