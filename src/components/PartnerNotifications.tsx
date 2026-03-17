@@ -163,6 +163,7 @@ export default function PartnerNotifications() {
         (payload) => {
           const evt = payload.new as { user_id: string; title: string };
           if (evt.user_id !== user.id && locationRef.current !== "/calendar") {
+            notifyPartnerAction();
             toast("New event added 📅", {
               description: evt.title,
               icon: <CalendarDays size={16} className="text-primary" />,
