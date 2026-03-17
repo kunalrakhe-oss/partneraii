@@ -95,7 +95,7 @@ function DietFormModal({
   editing: DietItem | null;
   category: string;
   defaultDate: string;
-  onSave: (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string }) => void;
+  onSave: (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string; recurrence: string; recurrence_day: number | null }) => void;
   onClose: () => void;
 }) {
   const [desc, setDesc] = useState(editing?.description || "");
