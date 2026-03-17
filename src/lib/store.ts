@@ -65,6 +65,16 @@ export interface ChatMessage {
   type: "text" | "task_share";
 }
 
+export interface Memory {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  photo?: string; // base64 data URL for MVP
+  type: "photo" | "milestone" | "note";
+  milestone?: string;
+}
+
 export const MOOD_EMOJIS = {
   happy: "😊",
   neutral: "😐",
