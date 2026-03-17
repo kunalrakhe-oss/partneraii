@@ -674,11 +674,11 @@ export default function HomePage() {
 
                 {/* Quick reactions - select, don't auto-send */}
                 <p className="text-xs text-muted-foreground text-center mb-2">React to their mood</p>
-                <div className="flex justify-center gap-3 mb-4">
+                <div className="flex justify-center gap-3 mb-4 relative">
                   {["❤️", "🤗", "💪", "😘"].map(emoji => (
                     <button
                       key={emoji}
-                      onClick={() => setMoodReaction(prev => prev === emoji ? "" : emoji)}
+                      onClick={() => { setMoodReaction(prev => prev === emoji ? "" : emoji); setShowMoodEmojiPicker(false); }}
                       className={`w-11 h-11 rounded-full flex items-center justify-center text-xl transition-all ${
                         moodReaction === emoji ? "scale-110 bg-primary/20 ring-2 ring-primary" : "bg-muted"
                       }`}
@@ -686,6 +686,37 @@ export default function HomePage() {
                       {emoji}
                     </button>
                   ))}
+                  {/* + button for custom emoji */}
+                  <button
+                    onClick={() => setShowMoodEmojiPicker(prev => !prev)}
+                    className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${
+                      showMoodEmojiPicker ? "bg-primary/20 ring-2 ring-primary" : moodReaction && !["❤️", "🤗", "💪", "😘"].includes(moodReaction) ? "scale-110 bg-primary/20 ring-2 ring-primary text-xl" : "bg-muted"
+                    }`}
+                  >
+                    {moodReaction && !["❤️", "🤗", "💪", "😘"].includes(moodReaction) ? moodReaction : <Plus size={18} className="text-muted-foreground" />}
+                  </button>
+
+                  {/* Emoji Picker Dropdown */}
+                  <AnimatePresence>
+                    {showMoodEmojiPicker && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute top-14 left-0 right-0 bg-card rounded-2xl shadow-elevated border border-border p-3 z-10 max-h-[200px] overflow-y-auto"
+                      >
+                        <div className="grid grid-cols-8 gap-1">
+                          {["😍","🥺","😭","🫶","💕","💗","💖","💘","🥰","😢","😮","🫂","🙌","✨","🔥","💯","👏","🎉","😂","😅","🤭","🫣","😳","🤩","💐","🌹","🍫","☕","🧸","🎵","🌈","🦋","💎","⭐","🌸","🌺","🍀","🌻","🐝","🦊"].map(e => (
+                            <button key={e} onClick={() => { setMoodReaction(e); setShowMoodEmojiPicker(false); }}
+                              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-lg active:scale-110 transition-transform">
+                              {e}
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Personal message */}
