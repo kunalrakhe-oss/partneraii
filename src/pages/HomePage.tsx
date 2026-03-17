@@ -305,12 +305,17 @@ export default function HomePage() {
 
         {/* Floating New Event FAB */}
         <button
-          onClick={() => navigate("/calendar")}
+          onClick={() => setShowAddEvent(true)}
           className="fixed bottom-20 right-5 max-w-lg love-gradient text-primary-foreground px-5 py-3 rounded-btn flex items-center gap-2 shadow-elevated text-sm font-semibold z-40"
         >
           <Plus size={16} />
           New Event
         </button>
+
+        <AddEventModal
+          open={showAddEvent}
+          onClose={() => setShowAddEvent(false)}
+        />
       </div>
     </PageTransition>
   );
