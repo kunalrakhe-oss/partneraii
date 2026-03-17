@@ -25,6 +25,14 @@ export default function PartnerConnectPage() {
   const [connecting, setConnecting] = useState(false);
   const [alreadyPaired, setAlreadyPaired] = useState(false);
   const [partnerName, setPartnerName] = useState<string | null>(null);
+  const [partnerDetails, setPartnerDetails] = useState<{
+    display_name: string | null;
+    avatar_url: string | null;
+    phone: string | null;
+    gender: string | null;
+    birthday: string | null;
+    email: string | null;
+  } | null>(null);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
   useEffect(() => {
@@ -39,13 +47,23 @@ export default function PartnerConnectPage() {
 
       if (profile?.partner_id) {
         setAlreadyPaired(true);
-        // Get partner name
+        // Get full partner details
         const { data: partnerP } = await supabase
           .from("profiles")
-          .select("display_name")
+          .select("display_name, avatar_url, phone, gender, birthday, user_id")
           .eq("id", profile.partner_id)
           .single();
-        if (partnerP) setPartnerName(partnerP.display_name);
+        if (partnerP) {
+          setPartnerName(partnerP.display_name);
+          setPartnerDetails({
+            display_name: partnerP.display_name,
+            avatar_url: partnerP.avatar_url,
+            phone: partnerP.phone,
+            gender: (partnerP as any).gender,
+            birthday: (partnerP as any).birthday,
+            email: null, // We don't expose partner email for privacy
+          });
+        }
         setLoading(false);
         return;
       }
