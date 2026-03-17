@@ -103,7 +103,7 @@ export default function GroceryPage() {
 
   // Filter items by active list type
   const items = allItems.filter(i => (i as any).list_type === activeList || (!((i as any).list_type) && activeList === "grocery"));
-  const config = LIST_CONFIG[activeList];
+  const config = DEFAULT_LIST_CONFIG[activeList] || { placeholder: `Add to ${activeList}...`, emptyEmoji: "📝", emptyText: `Your ${activeList} list is empty`, emptyHint: "Start adding items" };
 
   const addItem = async () => {
     if (!input.trim() || !userId || !partnerPair) return;
