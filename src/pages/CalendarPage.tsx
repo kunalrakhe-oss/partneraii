@@ -7,7 +7,7 @@ import {
 import {
   Plus, X, Check, Coffee, ShoppingCart, Tv, Cake, CalendarPlus,
   ChevronLeft, ChevronRight, Clock, Tag, Users, Trash2,
-  List, CalendarDays, Calendar, LayoutGrid,
+  List, CalendarDays, Calendar, LayoutGrid, ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AddEventModal from "@/components/AddEventModal";
