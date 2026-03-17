@@ -131,6 +131,22 @@ export default function ChoresPage() {
     fetchChores();
   }, [partnerPair, pairLoading, fetchChores]);
 
+  // Inject demo chores
+  useEffect(() => {
+    if (isDemoMode && !pairLoading && chores.length === 0) {
+      const demoProfiles: Record<string, ProfileInfo> = {
+        "demo-kunal": { user_id: "demo-kunal", display_name: DEMO_PARTNER1, avatar_url: null },
+        "demo-neelam": { user_id: "demo-neelam", display_name: DEMO_PARTNER2, avatar_url: null },
+      };
+      setProfiles(demoProfiles);
+      setChores(DEMO_CHORES.map(c => ({
+        ...c,
+        assigned_to: c.assigned_to === "me" ? "demo-kunal" : c.assigned_to === "partner" ? "demo-neelam" : null,
+      })) as any);
+      setLoading(false);
+    }
+  }, [isDemoMode, pairLoading, chores.length]);
+
   // Fetch profiles for user + partner
   useEffect(() => {
     if (!userId) return;
