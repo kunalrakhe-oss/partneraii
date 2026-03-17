@@ -81,8 +81,15 @@ export default function HomePage() {
 
     // Partner mood
     const fetchPartnerMood = () => {
-      supabase.from("mood_logs").select("mood, note").eq("partner_pair", partnerPair).eq("log_date", today).neq("user_id", user.id).maybeSingle()
-        .then(({ data }) => { setPartnerMood(data || null); });
+      supabase.from("mood_logs").select("mood, note, user_id").eq("partner_pair", partnerPair).eq("log_date", today)
+        .then(({ data }) => {
+          if (data) {
+            const partner = data.find(l => l.user_id !== user.id);
+            const mine = data.find(l => l.user_id === user.id);
+            setPartnerMood(partner ? { mood: partner.mood, note: partner.note } : null);
+            setMyMood(mine ? { mood: mine.mood, note: mine.note } : null);
+          }
+        });
     };
     fetchPartnerMood();
 
