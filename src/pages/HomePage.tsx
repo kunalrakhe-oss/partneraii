@@ -33,6 +33,8 @@ export default function HomePage() {
   const [messageCount, setMessageCount] = useState(0);
   const [nextEvent, setNextEvent] = useState<NextEvent | null>(null);
   const [showAddEvent, setShowAddEvent] = useState(false);
+  const [showMoodPopup, setShowMoodPopup] = useState(false);
+  const [moodReaction, setMoodReaction] = useState("");
 
   // Analytics
   const [daysTogether, setDaysTogether] = useState(0);
