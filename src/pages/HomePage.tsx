@@ -1,4 +1,4 @@
-import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send } from "lucide-react";
+import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send, Bell } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
+import NotificationsPanel, { useNotificationCount } from "@/components/NotificationsPanel";
 
 const container = {
   hidden: { opacity: 0 },
@@ -35,6 +36,8 @@ export default function HomePage() {
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [showMoodPopup, setShowMoodPopup] = useState(false);
   const [moodReaction, setMoodReaction] = useState("");
+  const [showNotifications, setShowNotifications] = useState(false);
+  const unreadCount = useNotificationCount();
 
   // Analytics
   const [daysTogether, setDaysTogether] = useState(0);
@@ -211,13 +214,23 @@ export default function HomePage() {
               <h1 className="text-2xl font-bold text-foreground">{greeting}, {firstName}</h1>
               <p className="text-sm text-muted-foreground">{format(new Date(), "EEEE, MMMM d")}</p>
             </div>
-            <button onClick={() => navigate("/profile")} className="w-11 h-11 rounded-full bg-muted overflow-hidden flex items-center justify-center border-2 border-border">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-lg">👩</span>
-              )}
-            </button>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setShowNotifications(true)} className="relative w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                <Bell size={18} className="text-foreground" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[9px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </button>
+              <button onClick={() => navigate("/profile")} className="w-11 h-11 rounded-full bg-muted overflow-hidden flex items-center justify-center border-2 border-border">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-lg">👩</span>
+                )}
+              </button>
+            </div>
           </motion.div>
 
           {/* Next Upcoming Event */}
@@ -489,6 +502,7 @@ export default function HomePage() {
             </>
           )}
         </AnimatePresence>
+        <NotificationsPanel open={showNotifications} onClose={() => setShowNotifications(false)} />
       </div>
     </PageTransition>
   );
