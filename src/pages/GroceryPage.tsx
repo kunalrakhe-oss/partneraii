@@ -123,7 +123,13 @@ export default function GroceryPage() {
   const addItem = async () => {
     if (!input.trim() || !userId || !partnerPair) return;
     const category = activeList === "grocery" ? categorizeGroceryItem(input.trim()) : "other";
-    // New items get sort_order higher than current max
+    
+    // Show categorization animation for grocery items
+    if (activeList === "grocery" && category !== "other") {
+      setCategorizingAnim(true);
+      setTimeout(() => setCategorizingAnim(false), 1200);
+    }
+    
     const maxOrder = items.length > 0 ? Math.max(...items.map(i => (i as any).sort_order ?? 0)) : 0;
     const { error } = await supabase.from("grocery_items").insert({
       name: input.trim(),
