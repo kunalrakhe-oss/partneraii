@@ -267,51 +267,78 @@ export default function PartnerConnectPage() {
             ))}
           </div>
 
-          {/* Copy & Share buttons */}
-          <div className="flex gap-2 mb-5">
+          {/* Share Methods - WhatsApp, Copy Link, Enter Code */}
+          <div className="space-y-2.5 mb-5">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Invite your partner</p>
+            
+            {/* WhatsApp */}
+            <button
+              onClick={() => {
+                if (!myCode) return;
+                const text = encodeURIComponent(`Join me on LoveList! 💕 Use my code: ${myCode}\n\nDownload: ${window.location.origin}`);
+                window.open(`https://wa.me/?text=${text}`, "_blank");
+              }}
+              disabled={loading}
+              className="w-full h-12 rounded-xl bg-[hsl(142,70%,45%)] text-white font-semibold text-sm flex items-center justify-center gap-2.5 disabled:opacity-50 shadow-soft"
+            >
+              <MessageCircle size={16} />
+              Invite via WhatsApp
+            </button>
+
+            {/* Copy Link */}
             <button
               onClick={handleCopy}
               disabled={loading}
-              className="flex-1 h-11 rounded-xl bg-[hsl(100,20%,72%)] text-foreground font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full h-12 rounded-xl bg-card border border-border text-foreground font-semibold text-sm flex items-center justify-center gap-2.5 shadow-card disabled:opacity-50"
             >
-              <Copy size={14} />
-              {copied ? "Copied!" : "Copy Code"}
+              <Link2 size={16} />
+              {copied ? "Copied! ✓" : "Copy Invite Link"}
             </button>
+
+            {/* Share (native) */}
             <button
               onClick={handleShare}
               disabled={loading}
-              className="h-11 px-5 rounded-xl bg-muted text-foreground font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full h-12 rounded-xl bg-muted text-foreground font-semibold text-sm flex items-center justify-center gap-2.5 disabled:opacity-50"
             >
-              <Share2 size={14} />
-              Share
+              <Share2 size={16} />
+              Share via Other Apps
             </button>
           </div>
 
           {/* Divider */}
-          <div className="border-t border-border mb-5" />
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-xs font-medium text-muted-foreground">OR</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
 
           {/* Partner code input */}
-          <p className="text-sm font-bold text-foreground mb-3">Have a partner's code?</p>
-          <div className="flex gap-2">
-            <div className="flex-1 bg-muted rounded-xl flex items-center px-3 gap-2">
-              <Heart size={14} className="text-muted-foreground shrink-0" />
-              <input
-                value={partnerCode}
-                onChange={e => setPartnerCode(e.target.value.toUpperCase().slice(0, 5))}
-                placeholder="Enter 5-digit code"
-                maxLength={5}
-                className="flex-1 h-11 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none tracking-wider font-medium"
-              />
+          <div className="bg-card rounded-2xl p-5 shadow-card border border-border mb-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Keyboard size={16} className="text-primary" />
+              <p className="text-sm font-bold text-foreground">Have a partner's code?</p>
             </div>
-            <button
-              onClick={handleConnect}
-              disabled={partnerCode.length < 5 || connecting}
-              className="px-5 h-11 rounded-xl bg-primary/80 text-primary-foreground text-sm font-semibold disabled:opacity-40 transition-opacity flex items-center gap-2"
-            >
-              {connecting ? <Loader2 size={16} className="animate-spin" /> : "Connect"}
-            </button>
+            <div className="flex gap-2">
+              <div className="flex-1 bg-muted rounded-xl flex items-center px-3 gap-2">
+                <Heart size={14} className="text-muted-foreground shrink-0" />
+                <input
+                  value={partnerCode}
+                  onChange={e => setPartnerCode(e.target.value.toUpperCase().slice(0, 5))}
+                  placeholder="Enter 5-digit code"
+                  maxLength={5}
+                  className="flex-1 h-11 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none tracking-wider font-medium"
+                />
+              </div>
+              <button
+                onClick={handleConnect}
+                disabled={partnerCode.length < 5 || connecting}
+                className="px-5 h-11 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40 transition-opacity flex items-center gap-2"
+              >
+                {connecting ? <Loader2 size={16} className="animate-spin" /> : "Connect"}
+              </button>
+            </div>
           </div>
-        </div>
 
         {/* Info cards */}
         <div className="space-y-2 mb-6">
