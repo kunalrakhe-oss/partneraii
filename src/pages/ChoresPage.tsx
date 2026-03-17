@@ -232,6 +232,32 @@ export default function ChoresPage() {
     fetchChores();
   };
 
+  const clearCompleted = async () => {
+    if (!partnerPair) return;
+    const completed = chores.filter(c => c.is_completed);
+    if (completed.length === 0) {
+      toast({ title: "No completed chores to clear" });
+      return;
+    }
+    await supabase.from("chores").delete().eq("partner_pair", partnerPair).eq("is_completed", true);
+    setShowSettings(false);
+    fetchChores();
+    toast({ title: `Cleared ${completed.length} completed chore${completed.length > 1 ? "s" : ""}` });
+  };
+
+  const deleteAllChores = async () => {
+    if (!partnerPair) return;
+    if (chores.length === 0) {
+      toast({ title: "No chores to delete" });
+      return;
+    }
+    await supabase.from("chores").delete().eq("partner_pair", partnerPair);
+    setShowSettings(false);
+    setExpandedId(null);
+    fetchChores();
+    toast({ title: "All chores deleted" });
+  };
+
   const fetchSteps = async (chore: ChoreRow) => {
     if (stepsCache[chore.id]) return;
     setLoadingSteps(chore.id);
@@ -261,6 +287,14 @@ export default function ChoresPage() {
     if (filter === "me") return c.assigned_to === userId;
     if (filter === "pending") return !c.is_completed;
     return true;
+  }).sort((a, b) => {
+    if (sortBy === "due") {
+      if (!a.due_date && !b.due_date) return 0;
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return a.due_date.localeCompare(b.due_date);
+    }
+    return 0; // default: DB order (created_at)
   });
 
   if (pairLoading || loading) {
