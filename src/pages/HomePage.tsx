@@ -370,20 +370,43 @@ export default function HomePage() {
             </div>
           </motion.div>
 
+          {/* Daily Mood Check */}
+          {!myMood && !isDemoMode && (
+            <motion.div variants={item}>
+              <button onClick={() => navigate("/mood")} className="w-full bg-gradient-to-r from-secondary/20 via-primary/10 to-secondary/20 rounded-2xl p-4 border border-secondary/30 text-left">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center shrink-0">
+                    <span className="text-2xl">🌤️</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-foreground">How are you feeling today?</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Tap to log your mood & connect with your partner</p>
+                  </div>
+                  <Heart size={16} className="text-secondary shrink-0" />
+                </div>
+              </button>
+            </motion.div>
+          )}
+
           {/* Partner's Mood */}
           <motion.div variants={item}>
             <p className="text-sm font-semibold text-foreground mb-2">Partner's Mood</p>
-            <button onClick={() => partnerMood && setShowMoodPopup(true)} className="w-full text-left">
+            <button onClick={() => partnerMood ? setShowMoodPopup(true) : navigate("/mood")} className="w-full text-left">
               <div className="flex items-center gap-3">
                 <div className="flex-1 bg-primary/20 rounded-2xl px-4 py-3 flex items-center gap-3">
-                  <span className="text-xl">✨</span>
+                  <span className="text-xl">
+                    {partnerMood ? ({ happy: "😊", excited: "🤩", neutral: "🥰", calm: "😌", grateful: "🙏", silly: "🤪", tired: "😵‍💫", sad: "😢", stressed: "😫", anxious: "😰", angry: "😠", furious: "🤬", lonely: "🥺", hopeful: "🌟", confused: "😕" }[partnerMood.mood] || "✨") : "✨"}
+                  </span>
                   <div>
                     <p className="text-xs text-foreground/70">Your partner is feeling</p>
                     <p className="text-sm font-bold text-foreground">
-                      {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : "—"}
+                      {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : "No mood yet today"}
                     </p>
                     {partnerMood?.note && (
                       <p className="text-xs text-foreground/50 mt-0.5">"{partnerMood.note}"</p>
+                    )}
+                    {!partnerMood && (
+                      <p className="text-xs text-muted-foreground mt-0.5">Nudge them to check in ❤️</p>
                     )}
                   </div>
                 </div>
