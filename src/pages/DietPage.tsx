@@ -25,6 +25,7 @@ interface DietItem {
   assigned_to: string;
   is_completed: boolean;
   log_date: string;
+  event_time: string | null;
   created_at: string;
 }
 
