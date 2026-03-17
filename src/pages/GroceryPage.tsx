@@ -429,7 +429,7 @@ function EditSheet({
       transition={{ type: "spring", damping: 28, stiffness: 350 }}
       className="fixed bottom-20 left-0 right-0 z-[60] max-w-lg mx-auto"
     >
-      <div className="bg-card rounded-t-3xl border border-border border-b-0 shadow-lg max-h-[90vh] flex flex-col">
+      <div className="bg-card rounded-t-3xl border border-border border-b-0 shadow-lg max-h-[72vh] flex flex-col">
         {/* Header */}
         <div className="sticky top-0 bg-card z-10 px-5 pt-4 pb-2">
           <div className="flex justify-center mb-3">
