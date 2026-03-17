@@ -16,6 +16,7 @@ export default function AppLayout() {
   return (
     <div className="flex flex-col h-screen max-w-lg mx-auto bg-background relative">
       <PartnerNotifications />
+      <AIChatbot />
       <main className="flex-1 overflow-y-auto pb-20">
         <Outlet />
       </main>
