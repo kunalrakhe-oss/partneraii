@@ -71,6 +71,8 @@ export default function GroceryPage() {
   const [newListEmoji, setNewListEmoji] = useState("📝");
 
   const LIST_TABS = [...DEFAULT_TABS, ...customLists];
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const fetchItems = useCallback(async () => {
     if (!partnerPair) return;
