@@ -114,7 +114,15 @@ export default function OnboardingFlow() {
     const text = encodeURIComponent(
       `Join me on LoveList! 💕 Use my code: ${inviteCode}\n\nDownload: ${window.location.origin}`
     );
-    window.open(`https://wa.me/?text=${text}`, "_blank");
+    const url = `https://wa.me/?text=${text}`;
+    // Use anchor click to avoid popup blockers in iframe/preview
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleCopyCode = async () => {
