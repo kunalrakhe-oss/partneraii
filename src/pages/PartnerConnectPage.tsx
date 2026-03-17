@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Copy, Heart, ChevronLeft, Loader2, CheckCircle, Users, Share2, Shield } from "lucide-react";
+import { Copy, Heart, ChevronLeft, Loader2, CheckCircle, Users, Share2, Shield, MessageCircle, Link2, Keyboard } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
