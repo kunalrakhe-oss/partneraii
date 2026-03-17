@@ -53,6 +53,7 @@ export default function ChatPage() {
   const [partnerProfile, setPartnerProfile] = useState<ProfileInfo | null>(null);
   const [sending, setSending] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [activeTab, setActiveTab] = useState<ChatTab>("partner");
   const [selectedMsg, setSelectedMsg] = useState<ChatMsg | null>(null);
   const [replyTo, setReplyTo] = useState<ChatMsg | null>(null);
