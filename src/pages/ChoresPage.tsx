@@ -30,6 +30,23 @@ const RECURRENCE_LABEL: Record<string, string> = {
 
 type FilterMode = "all" | "me" | "pending";
 
+type ProfileInfo = { user_id: string; display_name: string | null; avatar_url: string | null };
+
+function getInitial(name: string | null) {
+  return name ? name.trim().charAt(0).toUpperCase() : "?";
+}
+
+function AvatarCircle({ profile, size = "w-7 h-7", className = "" }: { profile: ProfileInfo | null; size?: string; className?: string }) {
+  if (profile?.avatar_url) {
+    return <img src={profile.avatar_url} alt={profile.display_name || ""} className={`${size} rounded-full object-cover ${className}`} />;
+  }
+  return (
+    <span className={`${size} rounded-full bg-secondary/20 text-secondary text-[11px] font-bold flex items-center justify-center ${className}`}>
+      {getInitial(profile?.display_name ?? null)}
+    </span>
+  );
+}
+
 export default function ChoresPage() {
   const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
   const { toast } = useToast();
@@ -41,6 +58,7 @@ export default function ChoresPage() {
   const [submitting, setSubmitting] = useState(false);
   const [stepsCache, setStepsCache] = useState<Record<string, string[]>>({});
   const [loadingSteps, setLoadingSteps] = useState<string | null>(null);
+  const [profiles, setProfiles] = useState<Record<string, ProfileInfo>>({});
 
   const fetchChores = useCallback(async () => {
     if (!partnerPair) return;
