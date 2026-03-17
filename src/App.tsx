@@ -85,6 +85,8 @@ function AppRoutes() {
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/memories" element={<MemoriesPage />} />
+        <Route path="/workout" element={<WorkoutPage />} />
+        <Route path="/diet" element={<DietPage />} />
       </Route>
       <Route path="/auth" element={<Navigate to="/" replace />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
