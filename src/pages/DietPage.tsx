@@ -105,6 +105,12 @@ function DietFormModal({
   const [assignedTo, setAssignedTo] = useState(editing?.assigned_to || "me");
   const [logDate, setLogDate] = useState(editing?.log_date || defaultDate);
   const [eventTime, setEventTime] = useState(editing?.event_time || "");
+  const [recurrence, setRecurrence] = useState(editing?.recurrence || "once");
+  const [recurrenceDay, setRecurrenceDay] = useState<number | null>(
+    editing?.recurrence_day ?? new Date(defaultDate + "T00:00:00").getDay()
+  );
+  const [logDate, setLogDate] = useState(editing?.log_date || defaultDate);
+  const [eventTime, setEventTime] = useState(editing?.event_time || "");
 
   return (
     <>
