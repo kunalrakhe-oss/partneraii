@@ -43,6 +43,39 @@ function BottomSheet({ open, onClose, title, children }: { open: boolean; onClos
   );
 }
 
+function ThemeSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { theme, setTheme } = useTheme();
+  const options: { value: "light" | "dark" | "system"; label: string; icon: typeof Sun; desc: string }[] = [
+    { value: "light", label: "Light", icon: Sun, desc: "Warm & bright" },
+    { value: "dark", label: "Dark", icon: Moon, desc: "Easy on the eyes" },
+    { value: "system", label: "System", icon: Monitor, desc: "Match your device" },
+  ];
+  return (
+    <BottomSheet open={open} onClose={onClose} title="Theme & Appearance">
+      <div className="space-y-2">
+        <p className="text-xs text-muted-foreground mb-1">Choose your preferred look</p>
+        {options.map(t => (
+          <button key={t.value} onClick={() => setTheme(t.value)}
+            className={`w-full flex items-center gap-3 bg-muted rounded-xl px-4 py-3 border transition-colors ${theme === t.value ? "border-primary" : "border-border"}`}>
+            <div className="w-9 h-9 rounded-xl bg-card flex items-center justify-center">
+              <t.icon size={16} className="text-foreground" />
+            </div>
+            <div className="text-left flex-1">
+              <p className="text-sm font-medium text-foreground">{t.label}</p>
+              <p className="text-[10px] text-muted-foreground">{t.desc}</p>
+            </div>
+            {theme === t.value && (
+              <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                <Check size={12} className="text-primary-foreground" />
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    </BottomSheet>
+  );
+}
+
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
