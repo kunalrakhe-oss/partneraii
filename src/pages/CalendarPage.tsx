@@ -444,6 +444,9 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle }: {
                     }}
                   >
                     <span className={`text-foreground ${evt.is_completed ? "line-through" : ""}`}>{evt.title}</span>
+                    {countdownBadge(evt) && (
+                      <span className="ml-1 text-[8px] font-bold bg-primary-foreground/20 px-1.5 py-0.5 rounded-full">{countdownBadge(evt)}</span>
+                    )}
                     <span className="text-muted-foreground ml-1">{evt.event_time}</span>
                   </button>
                 ))}
