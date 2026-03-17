@@ -367,11 +367,11 @@ function ItemRow({
         {item.name}
       </span>
       {!item.is_checked && (
-        <div className="flex flex-col gap-0.5 shrink-0">
+        <div className="flex items-center gap-0.5 shrink-0">
           <button
             onClick={() => onMove(item.id, "up")}
             disabled={isFirst}
-            className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${
+            className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors ${
               isFirst ? "text-muted-foreground/30" : "text-muted-foreground hover:bg-muted active:bg-primary/10"
             }`}
           >
@@ -380,7 +380,7 @@ function ItemRow({
           <button
             onClick={() => onMove(item.id, "down")}
             disabled={isLast}
-            className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${
+            className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors ${
               isLast ? "text-muted-foreground/30" : "text-muted-foreground hover:bg-muted active:bg-primary/10"
             }`}
           >
