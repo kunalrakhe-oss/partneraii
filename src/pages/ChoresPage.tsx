@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { Plus, Settings, Check, Clock, Sparkles, Droplets, HelpCircle, UtensilsCrossed, Loader2, CheckCircle2, X } from "lucide-react";
+import { useState, useEffect, useCallback, forwardRef } from "react";
+import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
@@ -9,24 +9,52 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type ChoreRow = Tables<"chores">;
 
-const DEFAULT_CHORES = [
-  { title: "Deep Clean Kitchen", recurrence: "weekly" as const },
-  { title: "Water the Plants", recurrence: "weekly" as const },
-  { title: "Vacuum Living Room", recurrence: "weekly" as const },
-];
-
-const CHORE_ICONS: Record<string, any> = {
-  "Deep Clean Kitchen": UtensilsCrossed,
-  "Water the Plants": Droplets,
-  "Vacuum Living Room": HelpCircle,
-};
-
 const RECURRENCE_LABEL: Record<string, string> = {
   daily: "Every day",
-  weekly: "Every Saturday",
+  weekly: "Every week",
   monthly: "Once a month",
   "": "One-time",
 };
+
+// Dynamic icon matching based on chore title keywords
+function getChoreIcon(title: string) {
+  const t = title.toLowerCase();
+  if (t.includes("kitchen") || t.includes("cook") || t.includes("dish")) return Utensils;
+  if (t.includes("water") || t.includes("plant")) return Droplets;
+  if (t.includes("vacuum") || t.includes("clean") || t.includes("mop") || t.includes("sweep")) return Brush;
+  if (t.includes("laundry") || t.includes("iron") || t.includes("fold") || t.includes("cloth")) return Shirt;
+  if (t.includes("spray") || t.includes("sanitize") || t.includes("disinfect")) return SprayCan;
+  if (t.includes("dog") || t.includes("cat") || t.includes("pet") || t.includes("feed")) return Dog;
+  if (t.includes("baby") || t.includes("kid") || t.includes("child")) return Baby;
+  if (t.includes("car") || t.includes("garage") || t.includes("drive")) return Car;
+  if (t.includes("fix") || t.includes("repair") || t.includes("tool")) return Wrench;
+  if (t.includes("garden") || t.includes("lawn") || t.includes("yard") || t.includes("leaf")) return Leaf;
+  if (t.includes("shop") || t.includes("grocer") || t.includes("buy")) return ShoppingBag;
+  return Home;
+}
+
+// Determine chore status label based on due_date, recurrence, completion
+function getStatusInfo(chore: ChoreRow): { label: string; color: "success" | "secondary" | "muted" } {
+  if (chore.is_completed) return { label: "Done", color: "success" };
+
+  if (chore.due_date) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const due = new Date(chore.due_date + "T00:00:00");
+    const diffDays = Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) return { label: "Overdue", color: "secondary" };
+    if (diffDays === 0) return { label: "Today", color: "secondary" };
+    if (diffDays === 1) return { label: "Tomorrow", color: "muted" };
+    return { label: due.toLocaleDateString("en-US", { month: "short", day: "numeric" }), color: "muted" };
+  }
+
+  // No due_date — show recurrence-based label
+  if (chore.recurrence === "daily") return { label: "Today", color: "secondary" };
+  if (chore.recurrence === "weekly") return { label: "This week", color: "secondary" };
+  if (chore.recurrence === "monthly") return { label: "This month", color: "muted" };
+  return { label: "Pending", color: "secondary" };
+}
 
 type FilterMode = "all" | "me" | "pending";
 
@@ -36,16 +64,19 @@ function getInitial(name: string | null) {
   return name ? name.trim().charAt(0).toUpperCase() : "?";
 }
 
-function AvatarCircle({ profile, size = "w-7 h-7", className = "" }: { profile: ProfileInfo | null; size?: string; className?: string }) {
-  if (profile?.avatar_url) {
-    return <img src={profile.avatar_url} alt={profile.display_name || ""} className={`${size} rounded-full object-cover ${className}`} />;
+const AvatarCircle = forwardRef<HTMLSpanElement, { profile: ProfileInfo | null; size?: string; className?: string }>(
+  ({ profile, size = "w-7 h-7", className = "" }, ref) => {
+    if (profile?.avatar_url) {
+      return <img src={profile.avatar_url} alt={profile.display_name || ""} className={`${size} rounded-full object-cover ${className}`} />;
+    }
+    return (
+      <span ref={ref} className={`${size} rounded-full bg-secondary/20 text-secondary text-[11px] font-bold flex items-center justify-center ${className}`}>
+        {getInitial(profile?.display_name ?? null)}
+      </span>
+    );
   }
-  return (
-    <span className={`${size} rounded-full bg-secondary/20 text-secondary text-[11px] font-bold flex items-center justify-center ${className}`}>
-      {getInitial(profile?.display_name ?? null)}
-    </span>
-  );
-}
+);
+AvatarCircle.displayName = "AvatarCircle";
 
 export default function ChoresPage() {
   const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
@@ -81,7 +112,6 @@ export default function ChoresPage() {
   useEffect(() => {
     if (!userId) return;
     const fetchProfiles = async () => {
-      // Fetch own profile + partner profile (if exists)
       const { data } = await supabase
         .from("profiles")
         .select("user_id, display_name, avatar_url");
@@ -109,6 +139,9 @@ export default function ChoresPage() {
   const totalCount = chores.length;
   const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
+  const myProfile = userId ? profiles[userId] : null;
+  const partnerProfile = Object.values(profiles).find(p => p.user_id !== userId) || null;
+
   const addChore = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!userId || !partnerPair) return;
@@ -116,10 +149,16 @@ export default function ChoresPage() {
     const fd = new FormData(e.currentTarget);
     const title = (fd.get("name") as string).trim();
     if (!title) { setSubmitting(false); return; }
+
+    const assignVal = fd.get("assignedTo") as string;
+    let assignedTo: string | null = null;
+    if (assignVal === "me") assignedTo = userId;
+    else if (assignVal === "partner" && partnerProfile) assignedTo = partnerProfile.user_id;
+
     const { error } = await supabase.from("chores").insert({
       title,
       recurrence: (fd.get("frequency") as string) || null,
-      assigned_to: fd.get("assignedTo") === "me" ? userId : null,
+      assigned_to: assignedTo,
       user_id: userId,
       partner_pair: partnerPair,
     });
@@ -137,15 +176,9 @@ export default function ChoresPage() {
     fetchChores();
   };
 
-  const addDefaults = async () => {
-    if (!userId || !partnerPair) return;
-    const rows = DEFAULT_CHORES.map(c => ({
-      title: c.title,
-      recurrence: c.recurrence,
-      user_id: userId,
-      partner_pair: partnerPair,
-    }));
-    await supabase.from("chores").insert(rows);
+  const deleteChore = async (id: string) => {
+    await supabase.from("chores").delete().eq("id", id);
+    if (expandedId === id) setExpandedId(null);
     fetchChores();
   };
 
@@ -259,16 +292,30 @@ export default function ChoresPage() {
             <p className="text-5xl mb-4">🧹</p>
             <p className="text-sm text-muted-foreground mb-1">No chores yet</p>
             <p className="text-xs text-muted-foreground/60 mb-4">Start organizing your home together</p>
-            <button onClick={addDefaults} className="text-sm text-primary font-semibold hover:underline">Add default chores →</button>
+            <button
+              onClick={() => setShowAdd(true)}
+              className="text-sm text-primary font-semibold hover:underline"
+            >
+              Add your first chore →
+            </button>
+          </div>
+        ) : filteredChores.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-sm text-muted-foreground">No chores match this filter</p>
           </div>
         ) : (
           <div className="space-y-3">
             <AnimatePresence mode="popLayout">
               {filteredChores.map(chore => {
                 const isExpanded = expandedId === chore.id;
-                const IconComp = CHORE_ICONS[chore.title] || HelpCircle;
+                const IconComp = getChoreIcon(chore.title);
                 const steps = stepsCache[chore.id];
                 const isLoadingThis = loadingSteps === chore.id;
+                const status = getStatusInfo(chore);
+                const assignedProfile = chore.assigned_to ? profiles[chore.assigned_to] || null : null;
+                const assignedName = chore.assigned_to === userId
+                  ? "You"
+                  : (assignedProfile?.display_name || "Partner");
 
                 return (
                   <motion.div
@@ -308,13 +355,16 @@ export default function ChoresPage() {
                                 className={`transition-colors ${chore.is_completed ? "text-success fill-success/20" : "text-border hover:text-primary/50"}`}
                               />
                             </div>
-                          ) : chore.is_completed ? (
-                            <span className="flex items-center gap-1 text-[10px] font-semibold text-success bg-success/10 px-2.5 py-1 rounded-full shrink-0">
-                              <Check size={10} /> Done
-                            </span>
                           ) : (
-                            <span className="flex items-center gap-1 text-[10px] font-semibold text-secondary bg-secondary/10 px-2.5 py-1 rounded-full shrink-0">
-                              <Clock size={10} /> Today
+                            <span className={`flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-full shrink-0 ${
+                              status.color === "success"
+                                ? "text-success bg-success/10"
+                                : status.color === "secondary"
+                                  ? "text-secondary bg-secondary/10"
+                                  : "text-muted-foreground bg-muted"
+                            }`}>
+                              {status.label === "Done" ? <Check size={10} /> : <Clock size={10} />}
+                              {status.label}
                             </span>
                           )}
                         </div>
@@ -368,25 +418,20 @@ export default function ChoresPage() {
                       <div className="flex items-center gap-2">
                         {chore.assigned_to ? (
                           <>
-                            <AvatarCircle profile={profiles[chore.assigned_to] || null} />
+                            <AvatarCircle profile={assignedProfile} />
                             {isExpanded && (
                               <span className="text-xs text-muted-foreground">
-                                Assigned to {chore.assigned_to === userId ? "You" : (profiles[chore.assigned_to]?.display_name || "Partner")}
+                                Assigned to {assignedName}
                               </span>
                             )}
                           </>
                         ) : (
-                          (() => {
-                            const allProfiles = Object.values(profiles);
-                            const myProfile = userId ? profiles[userId] : null;
-                            const partnerProfile = allProfiles.find(p => p.user_id !== userId) || null;
-                            return (
-                              <div className="flex items-center">
-                                <AvatarCircle profile={myProfile} />
-                                <AvatarCircle profile={partnerProfile} className="-ml-2 border-2 border-card" />
-                              </div>
-                            );
-                          })()
+                          <div className="flex items-center">
+                            <AvatarCircle profile={myProfile} />
+                            {partnerProfile && (
+                              <AvatarCircle profile={partnerProfile} className="-ml-2 border-2 border-card" />
+                            )}
+                          </div>
                         )}
                       </div>
                       <div className="flex items-center gap-3">
@@ -400,16 +445,24 @@ export default function ChoresPage() {
                           </button>
                         )}
                         {isExpanded && (
-                          <button
-                            onClick={() => toggleComplete(chore.id, chore.is_completed)}
-                            className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200 ${
-                              chore.is_completed
-                                ? "bg-muted text-muted-foreground hover:bg-muted/80"
-                                : "bg-primary/80 text-primary-foreground hover:bg-primary shadow-soft"
-                            }`}
-                          >
-                            {chore.is_completed ? "Undo" : "Mark Done"}
-                          </button>
+                          <>
+                            <button
+                              onClick={() => deleteChore(chore.id)}
+                              className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors"
+                            >
+                              <Trash2 size={14} className="text-destructive" />
+                            </button>
+                            <button
+                              onClick={() => toggleComplete(chore.id, chore.is_completed)}
+                              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200 ${
+                                chore.is_completed
+                                  ? "bg-muted text-muted-foreground hover:bg-muted/80"
+                                  : "bg-primary/80 text-primary-foreground hover:bg-primary shadow-soft"
+                              }`}
+                            >
+                              {chore.is_completed ? "Undo" : "Mark Done"}
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>
@@ -497,7 +550,10 @@ export default function ChoresPage() {
                         className="w-full h-12 px-4 rounded-xl bg-muted/60 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/30 transition-all appearance-none"
                       >
                         <option value="">Both of us</option>
-                        <option value="me">Just me</option>
+                        <option value="me">{myProfile?.display_name || "Me"}</option>
+                        {partnerProfile && (
+                          <option value="partner">{partnerProfile.display_name || "Partner"}</option>
+                        )}
                       </select>
                     </div>
                   </div>
