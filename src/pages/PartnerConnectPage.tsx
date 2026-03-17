@@ -244,12 +244,11 @@ export default function PartnerConnectPage() {
           </div>
         </div>
 
-        {/* Link Code Card */}
         <div className="bg-card rounded-2xl p-5 shadow-card border border-border mb-5">
           <p className="text-sm font-semibold text-primary text-center mb-4">Your Unique Link Code</p>
 
           {/* Code display */}
-          <div className="flex justify-center gap-2.5 mb-4">
+          <div className="flex justify-center gap-2.5 mb-2">
             {codeChars.map((char, i) => (
               <motion.div
                 key={i}
@@ -266,6 +265,8 @@ export default function PartnerConnectPage() {
               </motion.div>
             ))}
           </div>
+          <p className="text-[10px] text-muted-foreground text-center mb-0">Share this code with your partner</p>
+        </div>
 
           {/* Share Methods - WhatsApp, Copy Link, Enter Code */}
           <div className="space-y-2.5 mb-5">
