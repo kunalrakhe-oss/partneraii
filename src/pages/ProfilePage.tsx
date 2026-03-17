@@ -113,6 +113,8 @@ export default function ProfilePage() {
         setDisplayName(name);
         setPhone(data.phone || "");
         setAvatarUrl(data.avatar_url || user.user_metadata?.avatar_url || null);
+        setGender((data as any).gender || "");
+        setBirthday((data as any).birthday || "");
         setPartnerId(data.partner_id);
         if (data.partner_id) {
           const { data: partner } = await supabase
