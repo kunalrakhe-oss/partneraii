@@ -14,12 +14,25 @@ export function usePartnerPair() {
   useEffect(() => {
     if (!user) { setLoading(false); return; }
 
-    supabase
-      .rpc("get_partner_pair", { uid: user.id })
-      .then(({ data, error }) => {
-        if (!error && data) setPartnerPair(data as string);
-        setLoading(false);
-      });
+    const fetch = () => {
+      supabase
+        .rpc("get_partner_pair", { uid: user.id })
+        .then(({ data, error }) => {
+          if (!error && data) {
+            setPartnerPair(data as string);
+            setLoading(false);
+          } else {
+            // Profile may not exist yet on first login; retry once
+            setTimeout(() => {
+              supabase.rpc("get_partner_pair", { uid: user.id }).then(({ data: d2 }) => {
+                if (d2) setPartnerPair(d2 as string);
+                setLoading(false);
+              });
+            }, 1500);
+          }
+        });
+    };
+    fetch();
   }, [user]);
 
   return { partnerPair, loading, userId: user?.id ?? null };
