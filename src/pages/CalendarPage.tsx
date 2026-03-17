@@ -440,6 +440,7 @@ export default function CalendarPage() {
               onAddEvent={(d, t) => openAddForm(d, t)}
               onEditEvent={openEditForm}
               onToggle={toggleComplete}
+              onScheduleItem={scheduleItem}
             />
           )}
 
