@@ -58,7 +58,10 @@ export default function ChatPage() {
   const [activeTab, setActiveTab] = useState<ChatTab>("partner");
   const [selectedMsg, setSelectedMsg] = useState<ChatMsg | null>(null);
   const [replyTo, setReplyTo] = useState<ChatMsg | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch partner profile
   useEffect(() => {
