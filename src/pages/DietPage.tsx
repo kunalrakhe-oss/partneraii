@@ -204,13 +204,14 @@ function CategorySection({
 
   return (
     <div className="mb-3">
-      <button onClick={onExpand}
-        className="w-full flex items-center gap-3 px-4 py-3 bg-card rounded-2xl shadow-soft transition-all active:scale-[0.98]">
-        <span className="text-xl">{category.emoji}</span>
-        <div className="flex-1 text-left">
-          <p className="text-sm font-bold text-foreground">{category.label}</p>
-          <p className="text-[10px] text-muted-foreground">{items.length} items · {done} done</p>
-        </div>
+      <div className="w-full flex items-center gap-3 px-4 py-3 bg-card rounded-2xl shadow-soft transition-all">
+        <button onClick={onExpand} className="flex items-center gap-3 flex-1 active:scale-[0.98] transition-transform">
+          <span className="text-xl">{category.emoji}</span>
+          <div className="flex-1 text-left">
+            <p className="text-sm font-bold text-foreground">{category.label}</p>
+            <p className="text-[10px] text-muted-foreground">{items.length} items · {done} done</p>
+          </div>
+        </button>
         {items.length > 0 && (
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
             done === items.length && items.length > 0 ? "bg-success/20 text-success" : "bg-muted text-muted-foreground"
@@ -218,8 +219,14 @@ function CategorySection({
             {done}/{items.length}
           </span>
         )}
-        {expanded ? <ChevronDown size={16} className="text-muted-foreground" /> : <ChevronRight size={16} className="text-muted-foreground" />}
-      </button>
+        <button onClick={(e) => { e.stopPropagation(); onAdd(); }}
+          className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors">
+          <Plus size={14} className="text-primary" />
+        </button>
+        <button onClick={onExpand}>
+          {expanded ? <ChevronDown size={16} className="text-muted-foreground" /> : <ChevronRight size={16} className="text-muted-foreground" />}
+        </button>
+      </div>
 
       <AnimatePresence>
         {expanded && items.length > 0 && (
