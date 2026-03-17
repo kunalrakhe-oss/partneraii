@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, forwardRef } from "react";
-import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users } from "lucide-react";
+import { useState, useEffect, useCallback, forwardRef, useRef } from "react";
+import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users, ArrowDownAZ, CheckCheck, Trash } from "lucide-react";
 import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -94,6 +94,21 @@ export default function ChoresPage() {
   const [stepsCache, setStepsCache] = useState<Record<string, string[]>>({});
   const [loadingSteps, setLoadingSteps] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<Record<string, ProfileInfo>>({});
+  const [showSettings, setShowSettings] = useState(false);
+  const [sortBy, setSortBy] = useState<"created" | "due">("created");
+  const settingsRef = useRef<HTMLDivElement>(null);
+
+  // Close settings on outside click
+  useEffect(() => {
+    if (!showSettings) return;
+    const handler = (e: MouseEvent) => {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setShowSettings(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showSettings]);
 
   const fetchChores = useCallback(async () => {
     if (!partnerPair) return;
@@ -217,6 +232,32 @@ export default function ChoresPage() {
     fetchChores();
   };
 
+  const clearCompleted = async () => {
+    if (!partnerPair) return;
+    const completed = chores.filter(c => c.is_completed);
+    if (completed.length === 0) {
+      toast({ title: "No completed chores to clear" });
+      return;
+    }
+    await supabase.from("chores").delete().eq("partner_pair", partnerPair).eq("is_completed", true);
+    setShowSettings(false);
+    fetchChores();
+    toast({ title: `Cleared ${completed.length} completed chore${completed.length > 1 ? "s" : ""}` });
+  };
+
+  const deleteAllChores = async () => {
+    if (!partnerPair) return;
+    if (chores.length === 0) {
+      toast({ title: "No chores to delete" });
+      return;
+    }
+    await supabase.from("chores").delete().eq("partner_pair", partnerPair);
+    setShowSettings(false);
+    setExpandedId(null);
+    fetchChores();
+    toast({ title: "All chores deleted" });
+  };
+
   const fetchSteps = async (chore: ChoreRow) => {
     if (stepsCache[chore.id]) return;
     setLoadingSteps(chore.id);
@@ -246,6 +287,14 @@ export default function ChoresPage() {
     if (filter === "me") return c.assigned_to === userId;
     if (filter === "pending") return !c.is_completed;
     return true;
+  }).sort((a, b) => {
+    if (sortBy === "due") {
+      if (!a.due_date && !b.due_date) return 0;
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return a.due_date.localeCompare(b.due_date);
+    }
+    return 0; // default: DB order (created_at)
   });
 
   if (pairLoading || loading) {
@@ -267,9 +316,49 @@ export default function ChoresPage() {
             <h1 className="text-2xl font-bold text-foreground font-heading">Chore Manager</h1>
             <p className="text-xs text-muted-foreground">Keeping our home cozy, together</p>
           </div>
-          <button className="w-10 h-10 rounded-full bg-card shadow-card flex items-center justify-center border border-border transition-transform active:scale-95">
-            <Settings size={16} className="text-muted-foreground" />
-          </button>
+          <div className="relative" ref={settingsRef}>
+            <button
+              onClick={() => setShowSettings(s => !s)}
+              className="w-10 h-10 rounded-full bg-card shadow-card flex items-center justify-center border border-border transition-transform active:scale-95"
+            >
+              <Settings size={16} className="text-muted-foreground" />
+            </button>
+            <AnimatePresence>
+              {showSettings && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-12 z-50 w-52 bg-card border border-border rounded-2xl shadow-elevated overflow-hidden"
+                >
+                  <button
+                    onClick={() => { setSortBy(s => s === "created" ? "due" : "created"); setShowSettings(false); }}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-accent/50 transition-colors"
+                  >
+                    <ArrowDownAZ size={15} className="text-primary" />
+                    <span className="text-sm text-foreground">Sort by {sortBy === "created" ? "Due Date" : "Created"}</span>
+                  </button>
+                  <div className="h-px bg-border/50" />
+                  <button
+                    onClick={clearCompleted}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-accent/50 transition-colors"
+                  >
+                    <CheckCheck size={15} className="text-success" />
+                    <span className="text-sm text-foreground">Clear Completed</span>
+                  </button>
+                  <div className="h-px bg-border/50" />
+                  <button
+                    onClick={deleteAllChores}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-accent/50 transition-colors"
+                  >
+                    <Trash size={15} className="text-destructive" />
+                    <span className="text-sm text-destructive">Delete All</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Weekly Progress */}
