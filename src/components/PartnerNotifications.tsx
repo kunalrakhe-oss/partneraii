@@ -97,6 +97,7 @@ export default function PartnerNotifications() {
         (payload) => {
           const chore = payload.new as { user_id: string; title: string };
           if (chore.user_id !== user.id && locationRef.current !== "/chores") {
+            notifyPartnerAction();
             toast("New chore added 🧹", {
               description: chore.title,
               icon: <ClipboardList size={16} className="text-primary" />,
