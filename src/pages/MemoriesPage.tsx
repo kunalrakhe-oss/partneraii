@@ -65,6 +65,14 @@ export default function MemoriesPage() {
     fetchMemories();
   }, [partnerPair, pairLoading, fetchMemories]);
 
+  // Inject demo memories
+  useEffect(() => {
+    if (isDemoMode && !pairLoading && memories.length === 0) {
+      setMemories(DEMO_MEMORIES as any);
+      setLoading(false);
+    }
+  }, [isDemoMode, pairLoading, memories.length]);
+
   // Realtime
   useEffect(() => {
     if (!partnerPair) return;
