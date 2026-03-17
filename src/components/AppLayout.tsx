@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { Home, CalendarDays, ShoppingCart, MessageCircle, User } from "lucide-react";
+import { Home, CalendarDays, ShoppingCart, MessageCircle, ClipboardList } from "lucide-react";
 import { motion } from "framer-motion";
 import PartnerNotifications from "@/components/PartnerNotifications";
 
@@ -8,7 +8,7 @@ const tabs = [
   { to: "/calendar", icon: CalendarDays, label: "Calendar" },
   { to: "/lists", icon: ShoppingCart, label: "Lists" },
   { to: "/chat", icon: MessageCircle, label: "Chat" },
-  { to: "/profile", icon: User, label: "Profile" },
+  { to: "/chores", icon: ClipboardList, label: "Chores" },
 ];
 
 export default function AppLayout() {
