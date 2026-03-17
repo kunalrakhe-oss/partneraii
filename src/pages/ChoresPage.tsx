@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
+import ProfileButton from "@/components/ProfileButton";
 import { Calendar } from "@/components/ui/calendar";
 import { Switch } from "@/components/ui/switch";
 import type { Tables } from "@/integrations/supabase/types";
