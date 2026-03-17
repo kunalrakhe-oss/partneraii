@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   ArrowLeft, Plus, Check, Trash2, Edit3, X, ChevronDown, ChevronRight,
-  Sparkles, PartyPopper, Users, User, Heart, CalendarDays, Clock
+  Sparkles, PartyPopper, Users, User, Heart, CalendarDays, Clock, Repeat
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
