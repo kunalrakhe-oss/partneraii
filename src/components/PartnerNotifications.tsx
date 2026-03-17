@@ -4,14 +4,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { MessageCircle, Heart } from "lucide-react";
+import { MessageCircle, Heart, ClipboardList, ShoppingCart, CalendarDays, Camera } from "lucide-react";
 
 const MOOD_LABELS: Record<string, string> = {
   happy: "Happy 😊",
+  excited: "Excited 🤩",
+  neutral: "Loved 🥰",
+  calm: "Calm 😌",
+  grateful: "Grateful 🙏",
+  silly: "Silly 🤪",
   tired: "Tired 😵‍💫",
   sad: "Sad 😢",
-  angry: "Stressed 😫",
-  neutral: "Loved 🥰",
+  stressed: "Stressed 😫",
+  anxious: "Anxious 😰",
+  angry: "Angry 😠",
+  furious: "Furious 🤬",
+  lonely: "Lonely 🥺",
+  hopeful: "Hopeful 🌟",
+  confused: "Confused 😕",
 };
 
 export default function PartnerNotifications() {
@@ -29,38 +39,31 @@ export default function PartnerNotifications() {
 
     const channel = supabase
       .channel("partner-notifications")
+      // ─── Chat Messages ───
       .on(
         "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "chat_messages",
-          filter: `partner_pair=eq.${partnerPair}`,
-        },
+        { event: "INSERT", schema: "public", table: "chat_messages", filter: `partner_pair=eq.${partnerPair}` },
         (payload) => {
-          const msg = payload.new as { user_id: string; message: string };
+          const msg = payload.new as { user_id: string; message: string; type: string };
           if (msg.user_id !== user.id && locationRef.current !== "/chat") {
-            toast("New message from your partner 💬", {
-              description: msg.message.length > 60 ? msg.message.slice(0, 60) + "…" : msg.message,
+            const preview = msg.type === "image" ? "📷 Sent a photo" : msg.message.length > 60 ? msg.message.slice(0, 60) + "…" : msg.message;
+            toast("New message 💬", {
+              description: preview,
               icon: <MessageCircle size={16} className="text-primary" />,
               duration: 5000,
             });
           }
         }
       )
+      // ─── Mood Logs (INSERT) ───
       .on(
         "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "mood_logs",
-          filter: `partner_pair=eq.${partnerPair}`,
-        },
+        { event: "INSERT", schema: "public", table: "mood_logs", filter: `partner_pair=eq.${partnerPair}` },
         (payload) => {
           const log = payload.new as { user_id: string; mood: string };
           if (log.user_id !== user.id) {
             const label = MOOD_LABELS[log.mood] || log.mood;
-            toast(`Your partner is feeling ${label}`, {
+            toast(`Partner is feeling ${label}`, {
               description: "Tap to check in on them ❤️",
               icon: <Heart size={16} className="text-primary" />,
               duration: 5000,
@@ -68,21 +71,123 @@ export default function PartnerNotifications() {
           }
         }
       )
+      // ─── Mood Logs (UPDATE) ───
       .on(
         "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "mood_logs",
-          filter: `partner_pair=eq.${partnerPair}`,
-        },
+        { event: "UPDATE", schema: "public", table: "mood_logs", filter: `partner_pair=eq.${partnerPair}` },
         (payload) => {
           const log = payload.new as { user_id: string; mood: string };
           if (log.user_id !== user.id) {
             const label = MOOD_LABELS[log.mood] || log.mood;
-            toast(`Your partner updated their mood to ${label}`, {
+            toast(`Partner updated mood to ${label}`, {
               icon: <Heart size={16} className="text-primary" />,
               duration: 5000,
+            });
+          }
+        }
+      )
+      // ─── Chores (INSERT) ───
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "chores", filter: `partner_pair=eq.${partnerPair}` },
+        (payload) => {
+          const chore = payload.new as { user_id: string; title: string };
+          if (chore.user_id !== user.id && locationRef.current !== "/chores") {
+            toast("New chore added 🧹", {
+              description: chore.title,
+              icon: <ClipboardList size={16} className="text-primary" />,
+              duration: 4000,
+            });
+          }
+        }
+      )
+      // ─── Chores (UPDATE — completed) ───
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "chores", filter: `partner_pair=eq.${partnerPair}` },
+        (payload) => {
+          const chore = payload.new as { user_id: string; title: string; is_completed: boolean };
+          const old = payload.old as { is_completed: boolean };
+          if (chore.user_id !== user.id && chore.is_completed && !old.is_completed) {
+            toast("Chore completed ✅", {
+              description: chore.title,
+              icon: <ClipboardList size={16} className="text-primary" />,
+              duration: 4000,
+            });
+          }
+        }
+      )
+      // ─── Grocery Items (INSERT) ───
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "grocery_items", filter: `partner_pair=eq.${partnerPair}` },
+        (payload) => {
+          const item = payload.new as { user_id: string; name: string };
+          if (item.user_id !== user.id && locationRef.current !== "/lists") {
+            toast("Item added to list 🛒", {
+              description: item.name,
+              icon: <ShoppingCart size={16} className="text-primary" />,
+              duration: 4000,
+            });
+          }
+        }
+      )
+      // ─── Grocery Items (UPDATE — checked off) ───
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "grocery_items", filter: `partner_pair=eq.${partnerPair}` },
+        (payload) => {
+          const item = payload.new as { user_id: string; name: string; is_checked: boolean };
+          const old = payload.old as { is_checked: boolean };
+          if (item.user_id !== user.id && item.is_checked && !old.is_checked && locationRef.current !== "/lists") {
+            toast("Item checked off ✓", {
+              description: item.name,
+              icon: <ShoppingCart size={16} className="text-primary" />,
+              duration: 3000,
+            });
+          }
+        }
+      )
+      // ─── Calendar Events (INSERT) ───
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "calendar_events", filter: `partner_pair=eq.${partnerPair}` },
+        (payload) => {
+          const evt = payload.new as { user_id: string; title: string };
+          if (evt.user_id !== user.id && locationRef.current !== "/calendar") {
+            toast("New event added 📅", {
+              description: evt.title,
+              icon: <CalendarDays size={16} className="text-primary" />,
+              duration: 4000,
+            });
+          }
+        }
+      )
+      // ─── Memories (INSERT) ───
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "memories", filter: `partner_pair=eq.${partnerPair}` },
+        (payload) => {
+          const mem = payload.new as { user_id: string; title: string };
+          if (mem.user_id !== user.id) {
+            toast("New memory added 📸", {
+              description: mem.title,
+              icon: <Camera size={16} className="text-primary" />,
+              duration: 5000,
+            });
+          }
+        }
+      )
+      // ─── Message Reactions ───
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "message_reactions", filter: `partner_pair=eq.${partnerPair}` },
+        (payload) => {
+          const reaction = payload.new as { user_id: string; emoji: string };
+          if (reaction.user_id !== user.id && locationRef.current !== "/chat") {
+            toast(`Partner reacted ${reaction.emoji}`, {
+              icon: <MessageCircle size={16} className="text-primary" />,
+              duration: 3000,
             });
           }
         }
