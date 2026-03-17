@@ -340,6 +340,8 @@ export default function ChatPage() {
             </motion.button>
           </div>
         </div>
+        </>
+        )}
       </div>
     </PageTransition>
   );
