@@ -36,6 +36,7 @@ function AppRoutes() {
 
   // Not authenticated — show auth pages only
   const onboardingDone = localStorage.getItem("lovelist-onboarding-done") === "true";
+  const defaultRoute = onboardingDone ? "/auth" : "/onboarding";
 
   if (!user) {
     return (
@@ -43,7 +44,7 @@ function AppRoutes() {
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/onboarding" element={<OnboardingFlow />} />
-        <Route path="*" element={<Navigate to={onboardingDone ? "/auth" : "/onboarding"} replace />} />
+        <Route path="*" element={<Navigate to={defaultRoute} replace />} />
       </Routes>
     );
   }
