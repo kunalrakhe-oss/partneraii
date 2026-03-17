@@ -18,7 +18,7 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
-type NextEvent = { id: string; title: string; event_date: string; event_time: string | null; category: string };
+type NextEvent = { id: string; title: string; event_date: string; event_time: string | null; category: string; countdown_type?: string };
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -70,7 +70,7 @@ export default function HomePage() {
 
     // Next upcoming event (today or future, not completed)
     supabase.from("calendar_events")
-      .select("id, title, event_date, event_time, category")
+      .select("id, title, event_date, event_time, category, countdown_type")
       .eq("partner_pair", partnerPair)
       .eq("is_completed", false)
       .gte("event_date", today)
@@ -126,6 +126,25 @@ export default function HomePage() {
     return format(d, "MMM d");
   };
 
+  const getCountdownBadge = (event: NextEvent): string | null => {
+    if (!event.countdown_type || event.countdown_type === "none") return null;
+    const now = new Date(); now.setHours(0,0,0,0);
+    const eventDay = parseISO(event.event_date); eventDay.setHours(0,0,0,0);
+    const diff = Math.round((eventDay.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    if (event.countdown_type === "days-until") {
+      if (diff === 0) return "🎉 Today!";
+      if (diff === 1) return "Tomorrow!";
+      if (diff > 0) return `${diff} days to go`;
+      return `${Math.abs(diff)}d ago`;
+    }
+    if (event.countdown_type === "days-since") {
+      if (diff === 0) return "🎉 Today!";
+      if (diff < 0) return `${Math.abs(diff)} days since`;
+      return `In ${diff}d`;
+    }
+    return null;
+  };
+
   return (
     <PageTransition>
       <div className="px-5 pt-10 pb-6">
@@ -150,7 +169,14 @@ export default function HomePage() {
             <motion.div variants={item}>
               <Link to="/calendar" className="block love-gradient rounded-2xl p-4 shadow-elevated relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary-foreground/10 rounded-full -translate-y-8 translate-x-8" />
-                <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider mb-1">Next Up</p>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">Next Up</p>
+                  {getCountdownBadge(nextEvent) && (
+                    <span className="text-[10px] font-bold bg-primary-foreground/20 text-primary-foreground px-2 py-0.5 rounded-full">
+                      {getCountdownBadge(nextEvent)}
+                    </span>
+                  )}
+                </div>
                 <p className="text-lg font-bold text-primary-foreground leading-tight">{nextEvent.title}</p>
                 <div className="flex items-center gap-3 mt-2">
                   <div className="flex items-center gap-1.5">

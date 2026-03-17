@@ -46,6 +46,27 @@ interface CalendarEvent {
   is_completed: boolean;
   user_id: string;
   partner_pair: string;
+  reminder?: string;
+  countdown_type?: string;
+}
+
+function countdownBadge(event: CalendarEvent): string | null {
+  if (!event.countdown_type || event.countdown_type === "none") return null;
+  const today = startOfDay(new Date());
+  const eventDay = startOfDay(parseISO(event.event_date));
+  const diff = Math.round((eventDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  if (event.countdown_type === "days-until") {
+    if (diff === 0) return "Today!";
+    if (diff === 1) return "Tomorrow!";
+    if (diff > 0) return `${diff}d until`;
+    return `${Math.abs(diff)}d ago`;
+  }
+  if (event.countdown_type === "days-since") {
+    if (diff === 0) return "Today!";
+    if (diff < 0) return `${Math.abs(diff)}d since`;
+    return `In ${diff}d`;
+  }
+  return null;
 }
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -423,6 +444,9 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle }: {
                     }}
                   >
                     <span className={`text-foreground ${evt.is_completed ? "line-through" : ""}`}>{evt.title}</span>
+                    {countdownBadge(evt) && (
+                      <span className="ml-1 text-[8px] font-bold bg-primary-foreground/20 px-1.5 py-0.5 rounded-full">{countdownBadge(evt)}</span>
+                    )}
                     <span className="text-muted-foreground ml-1">{evt.event_time}</span>
                   </button>
                 ))}
@@ -730,10 +754,17 @@ function ListView({ events, onEditEvent, onToggle, onAddEvent }: {
                     <p className={`text-sm font-semibold text-foreground ${evt.is_completed ? "line-through" : ""}`}>
                       {evt.title}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">
-                      {evt.event_time || "All day"} • {CATEGORY_LABEL[evt.category] || evt.category}
-                      {evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
-                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-[10px] text-muted-foreground">
+                        {evt.event_time || "All day"} • {CATEGORY_LABEL[evt.category] || evt.category}
+                        {evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
+                      </p>
+                      {countdownBadge(evt) && (
+                        <span className="text-[9px] font-bold bg-primary/15 text-primary px-1.5 py-0.5 rounded-full">
+                          {countdownBadge(evt)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); onToggle(evt); }}
