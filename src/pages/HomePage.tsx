@@ -1,8 +1,9 @@
-import { Heart, CalendarDays, ShoppingCart, ClipboardList } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useLocalStorage, MOOD_EMOJIS, type MoodLog, type CalendarEvent, type Chore } from "@/lib/store";
+import { useLocalStorage, MOOD_EMOJIS, type MoodLog, type CalendarEvent, type Chore, type GroceryItem, type ChatMessage } from "@/lib/store";
 import PageTransition from "@/components/PageTransition";
+import { format } from "date-fns";
 
 const container = {
   hidden: { opacity: 0 },
@@ -14,119 +15,176 @@ const item = {
 };
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const [moods] = useLocalStorage<MoodLog[]>("lovelist-moods", []);
   const [events] = useLocalStorage<CalendarEvent[]>("lovelist-events", []);
-  const [chores] = useLocalStorage<Chore[]>("lovelist-chores", []);
+  const [chores, setChores] = useLocalStorage<Chore[]>("lovelist-chores", []);
+  const [groceries] = useLocalStorage<GroceryItem[]>("lovelist-groceries", []);
+  const [messages] = useLocalStorage<ChatMessage[]>("lovelist-chat", []);
 
   const today = new Date().toISOString().split("T")[0];
-  const todayMood = moods.find(m => m.date === today && m.user === "me");
   const partnerMood = moods.find(m => m.date === today && m.user === "partner");
-  const upcomingEvents = events
-    .filter(e => e.date >= today && !e.completed)
-    .sort((a, b) => a.date.localeCompare(b.date))
-    .slice(0, 3);
-  const pendingChores = chores.filter(c => !c.completed).length;
+  const todayEvents = events.filter(e => e.date === today && !e.completed);
+  const urgentChores = chores.filter(c => !c.completed).slice(0, 3);
+  const uncheckedGroceries = groceries.filter(g => !g.checked).length;
+
+  const toggleChore = (id: string) => {
+    setChores(chores.map(c => c.id === id ? { ...c, completed: !c.completed, lastCompleted: new Date().toISOString() } : c));
+  };
 
   return (
     <PageTransition>
-      <div className="px-5 pt-12 pb-6">
-        {/* Header */}
-        <div className="flex items-center gap-2 mb-8">
-          <Heart className="text-primary" size={24} fill="hsl(346, 77%, 60%)" />
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">LoveList</h1>
-        </div>
-
-        {/* Mood Banner */}
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-          className="space-y-4"
-        >
-          <motion.div variants={item} className="love-gradient-soft rounded-2xl p-5 shadow-soft">
-            <p className="text-sm font-medium text-muted-foreground mb-3">Today's Mood</p>
-            <div className="flex items-center gap-6">
-              <div className="text-center">
-                <div className="text-3xl mb-1">{todayMood ? MOOD_EMOJIS[todayMood.mood] : "❓"}</div>
-                <p className="text-xs text-muted-foreground">You</p>
-              </div>
-              <div className="flex-1 flex items-center justify-center">
-                <Heart size={16} className="text-primary animate-pulse-love" fill="hsl(346, 77%, 60%)" />
-              </div>
-              <div className="text-center">
-                <div className="text-3xl mb-1">{partnerMood ? MOOD_EMOJIS[partnerMood.mood] : "❓"}</div>
-                <p className="text-xs text-muted-foreground">Partner</p>
-              </div>
+      <div className="px-5 pt-10 pb-6">
+        <motion.div variants={container} initial="hidden" animate="show" className="space-y-5">
+          {/* Header */}
+          <motion.div variants={item} className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Good morning, Sarah</h1>
+              <p className="text-sm text-muted-foreground">{format(new Date(), "MMMM d, yyyy")}</p>
             </div>
-            {!todayMood && (
-              <Link to="/mood" className="block mt-3 text-xs font-medium text-primary text-center">
-                Log your mood →
-              </Link>
-            )}
+            <div className="w-11 h-11 rounded-full bg-muted overflow-hidden flex items-center justify-center">
+              <span className="text-lg">👩</span>
+            </div>
           </motion.div>
 
-          {/* Quick Actions */}
-          <motion.div variants={item} className="grid grid-cols-3 gap-3">
-            <QuickAction to="/calendar" icon={CalendarDays} label="Calendar" count={upcomingEvents.length} />
-            <QuickAction to="/lists" icon={ShoppingCart} label="Groceries" />
-            <QuickAction to="/chores" icon={ClipboardList} label="Chores" count={pendingChores} />
+          {/* Partner's Mood */}
+          <motion.div variants={item}>
+            <p className="text-sm font-semibold text-foreground mb-2">Partner's Mood</p>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 bg-[hsl(100,25%,78%)] rounded-2xl px-4 py-3 flex items-center gap-3">
+                <span className="text-xl">✨</span>
+                <div>
+                  <p className="text-xs text-foreground/70">James is feeling</p>
+                  <p className="text-sm font-bold text-foreground">
+                    {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : "Inspired"}
+                  </p>
+                </div>
+              </div>
+              <button className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center">
+                <Heart size={20} className="text-primary" fill="hsl(346, 77%, 60%)" />
+              </button>
+            </div>
           </motion.div>
 
-          {/* Upcoming Events */}
+          {/* Today's Agenda Card */}
+          <motion.div variants={item} className="bg-[hsl(100,20%,72%)] rounded-2xl p-5 shadow-soft">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs font-medium text-foreground/70">Today's Agenda</p>
+              <Link to="/calendar" className="text-xs font-medium bg-card/80 text-foreground px-3 py-1 rounded-full">View All</Link>
+            </div>
+            <p className="text-xl font-bold text-foreground mb-4">{todayEvents.length} Shared Events</p>
+            <div className="space-y-2">
+              {todayEvents.length === 0 ? (
+                <>
+                  <div className="flex items-center gap-3">
+                    <div className="w-0.5 h-8 bg-foreground/30 rounded-full" />
+                    <div>
+                      <p className="text-[10px] text-foreground/60">08:30 AM</p>
+                      <p className="text-sm font-semibold text-foreground">Morning Coffee & Planning</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-0.5 h-8 bg-foreground/30 rounded-full" />
+                    <div>
+                      <p className="text-[10px] text-foreground/60">07:00 PM</p>
+                      <p className="text-sm font-semibold text-foreground">Dinner Date: The Green Bistro</p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                todayEvents.slice(0, 2).map(event => (
+                  <div key={event.id} className="flex items-center gap-3">
+                    <div className="w-0.5 h-8 bg-foreground/30 rounded-full" />
+                    <div>
+                      <p className="text-[10px] text-foreground/60">{event.time || "All day"}</p>
+                      <p className="text-sm font-semibold text-foreground">{event.title}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
+
+          {/* Quick Links */}
+          <motion.div variants={item} className="grid grid-cols-2 gap-3">
+            <Link to="/lists" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+              <div className="w-10 h-10 rounded-xl bg-[hsl(100,25%,78%)] flex items-center justify-center">
+                <ShoppingCart size={18} className="text-foreground" />
+              </div>
+              <p className="text-sm font-bold text-foreground">Groceries</p>
+              <p className="text-xs text-muted-foreground">{uncheckedGroceries} items needed</p>
+            </Link>
+            <Link to="/chat" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+              <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+                <MessageSquare size={18} className="text-primary" />
+              </div>
+              <p className="text-sm font-bold text-foreground">Chat</p>
+              <p className="text-xs text-muted-foreground">{messages.length} new messages</p>
+            </Link>
+          </motion.div>
+
+          {/* Urgent Chores */}
           <motion.div variants={item}>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-foreground">Upcoming</h2>
-              <Link to="/calendar" className="text-xs text-primary font-medium">See all</Link>
+              <h2 className="text-base font-bold text-foreground">Urgent Chores</h2>
+              <Link to="/chores" className="text-sm text-muted-foreground font-medium">Manage</Link>
             </div>
-            {upcomingEvents.length === 0 ? (
-              <div className="bg-card rounded-xl p-6 shadow-card text-center">
-                <p className="text-sm text-muted-foreground">No upcoming events</p>
-                <Link to="/calendar" className="text-xs text-primary font-medium mt-1 inline-block">
-                  Add your first event →
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {upcomingEvents.map(event => (
-                  <div key={event.id} className="bg-card rounded-xl px-4 py-3 shadow-card flex items-center gap-3">
-                    <div
-                      className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: `hsl(346, 77%, 60%)` }}
-                    />
+            <div className="space-y-2">
+              {urgentChores.length === 0 ? (
+                <div className="bg-card rounded-2xl p-4 shadow-card text-center">
+                  <p className="text-sm text-muted-foreground">No pending chores 🎉</p>
+                </div>
+              ) : (
+                urgentChores.map(chore => (
+                  <div key={chore.id} className="bg-card rounded-2xl px-4 py-3.5 shadow-card flex items-center gap-3">
+                    <button
+                      onClick={() => toggleChore(chore.id)}
+                      className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
+                        chore.completed ? "bg-success border-success" : "border-border"
+                      }`}
+                    >
+                      {chore.completed && <Check size={14} className="text-success-foreground" />}
+                    </button>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{event.title}</p>
-                      <p className="text-xs text-muted-foreground">{event.date} · {event.time || "All day"}</p>
+                      <p className={`text-sm font-medium ${chore.completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{chore.name}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{chore.frequency === "daily" ? "Due now" : chore.frequency}</p>
                     </div>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                      event.priority === "high" ? "bg-destructive/10 text-destructive" :
-                      event.priority === "medium" ? "bg-warning/10 text-warning" :
-                      "bg-muted text-muted-foreground"
-                    }`}>
-                      {event.priority}
-                    </span>
+                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                      <span className="text-[10px] font-bold text-muted-foreground">
+                        {chore.assignedTo === "partner1" ? "S" : chore.assignedTo === "partner2" ? "J" : "R"}
+                      </span>
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
+                ))
+              )}
+            </div>
+          </motion.div>
+
+          {/* AI Insight */}
+          <motion.div variants={item} className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3">
+            <div className="w-9 h-9 rounded-full bg-[hsl(100,20%,72%)] flex items-center justify-center shrink-0 mt-0.5">
+              <Sparkles size={16} className="text-foreground" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-foreground mb-0.5">LoveList AI Insight</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                James has had a busy week. Maybe surprise him with his favorite chocolate tonight?
+              </p>
+            </div>
+          </motion.div>
+
+          {/* New Event FAB */}
+          <motion.div variants={item} className="flex justify-end">
+            <button
+              onClick={() => navigate("/calendar")}
+              className="bg-foreground text-background px-5 py-3 rounded-full flex items-center gap-2 shadow-elevated text-sm font-semibold"
+            >
+              <Plus size={16} />
+              New Event
+            </button>
           </motion.div>
         </motion.div>
       </div>
     </PageTransition>
-  );
-}
-
-function QuickAction({ to, icon: Icon, label, count }: {
-  to: string; icon: any; label: string; count?: number;
-}) {
-  return (
-    <Link to={to} className="bg-card rounded-xl p-4 shadow-card flex flex-col items-center gap-2 hover:shadow-elevated transition-shadow">
-      <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-        <Icon size={18} className="text-secondary-foreground" />
-      </div>
-      <span className="text-xs font-medium text-foreground">{label}</span>
-      {count !== undefined && count > 0 && (
-        <span className="text-[10px] font-semibold text-primary">{count} pending</span>
-      )}
-    </Link>
   );
 }

@@ -1,27 +1,50 @@
 import { useState } from "react";
-import { format, addDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, isToday, parseISO } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { format, addDays, startOfWeek, eachDayOfInterval, isSameDay, isToday, addWeeks, subWeeks } from "date-fns";
+import { Plus, X, Search, Check, Coffee, ShoppingCart, Tv, Cake, CalendarPlus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocalStorage, generateId, type CalendarEvent } from "@/lib/store";
 import PageTransition from "@/components/PageTransition";
 
 const CATEGORIES = ["date-night", "groceries", "cleaning", "bills", "travel", "family"] as const;
+const CATEGORY_ICONS: Record<string, any> = {
+  "date-night": Coffee,
+  groceries: ShoppingCart,
+  cleaning: Tv,
+  travel: Cake,
+  family: Cake,
+  bills: Cake,
+};
+const CATEGORY_ICON_BG: Record<string, string> = {
+  "date-night": "bg-primary/15",
+  groceries: "bg-success/15",
+  cleaning: "bg-accent/15",
+  travel: "bg-warning/15",
+  family: "bg-secondary",
+  bills: "bg-muted",
+};
+const CATEGORY_LABEL: Record<string, string> = {
+  "date-night": "Romance",
+  groceries: "Household",
+  cleaning: "Cleaning",
+  bills: "Bills",
+  travel: "Travel",
+  family: "Family",
+};
+
+type ViewMode = "day" | "week" | "month";
 
 export default function CalendarPage() {
   const [events, setEvents] = useLocalStorage<CalendarEvent[]>("lovelist-events", []);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showAdd, setShowAdd] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("day");
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(currentDate, { weekStartsOn: 1 });
-  const days = eachDayOfInterval({ start: weekStart, end: weekEnd });
+  const days = eachDayOfInterval({ start: weekStart, end: addDays(weekStart, 5) });
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
   const dayEvents = events.filter(e => e.date === selectedDateStr);
-
-  const prevWeek = () => setCurrentDate(addDays(currentDate, -7));
-  const nextWeek = () => setCurrentDate(addDays(currentDate, 7));
 
   const addEvent = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,10 +65,6 @@ export default function CalendarPage() {
     setShowAdd(false);
   };
 
-  const toggleComplete = (id: string) => {
-    setEvents(events.map(e => e.id === id ? { ...e, completed: !e.completed } : e));
-  };
-
   const deleteEvent = (id: string) => {
     setEvents(events.filter(e => e.id !== id));
   };
@@ -53,22 +72,39 @@ export default function CalendarPage() {
   return (
     <PageTransition>
       <div className="px-5 pt-10 pb-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold text-foreground">Calendar</h1>
-          <button onClick={() => setShowAdd(true)} className="w-9 h-9 rounded-full love-gradient flex items-center justify-center shadow-soft">
-            <Plus size={18} className="text-primary-foreground" />
+        {/* Header */}
+        <div className="flex items-center justify-between mb-1">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">{format(currentDate, "MMMM yyyy")}</h1>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <span>♥</span> Our Love Timeline
+            </p>
+          </div>
+          <button className="w-9 h-9 rounded-full bg-card shadow-card flex items-center justify-center">
+            <Search size={16} className="text-foreground" />
           </button>
         </div>
 
-        {/* Week navigation */}
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={prevWeek} className="p-1"><ChevronLeft size={18} className="text-muted-foreground" /></button>
-          <span className="text-sm font-medium text-foreground">{format(weekStart, "MMM d")} – {format(weekEnd, "MMM d, yyyy")}</span>
-          <button onClick={nextWeek} className="p-1"><ChevronRight size={18} className="text-muted-foreground" /></button>
+        {/* View mode tabs */}
+        <div className="flex gap-2 mt-4 mb-5">
+          {(["day", "week", "month"] as ViewMode[]).map(mode => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ${
+                viewMode === mode
+                  ? "bg-[hsl(100,20%,72%)] text-foreground"
+                  : "bg-card shadow-card text-muted-foreground"
+              }`}
+            >
+              {viewMode === mode && <Check size={12} />}
+              {mode.charAt(0).toUpperCase() + mode.slice(1)}
+            </button>
+          ))}
         </div>
 
-        {/* Week grid */}
-        <div className="grid grid-cols-7 gap-1 mb-6">
+        {/* Horizontal date strip */}
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-1">
           {days.map(day => {
             const isSelected = isSameDay(day, selectedDate);
             const hasEvents = events.some(e => e.date === format(day, "yyyy-MM-dd"));
@@ -76,15 +112,16 @@ export default function CalendarPage() {
               <button
                 key={day.toISOString()}
                 onClick={() => { setSelectedDate(day); setCurrentDate(day); }}
-                className={`flex flex-col items-center py-2 rounded-xl transition-all ${
-                  isSelected ? "love-gradient text-primary-foreground shadow-soft" :
-                  isToday(day) ? "bg-secondary" : ""
+                className={`flex flex-col items-center min-w-[52px] py-2.5 px-2 rounded-2xl transition-all ${
+                  isSelected
+                    ? "bg-[hsl(100,20%,72%)] shadow-soft"
+                    : isToday(day) ? "bg-card shadow-card" : ""
                 }`}
               >
-                <span className={`text-[10px] font-medium mb-1 ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                <span className={`text-[10px] font-medium mb-1 ${isSelected ? "text-foreground" : "text-muted-foreground"}`}>
                   {format(day, "EEE")}
                 </span>
-                <span className={`text-sm font-semibold ${isSelected ? "text-primary-foreground" : "text-foreground"}`}>
+                <span className={`text-base font-bold ${isSelected ? "text-foreground" : "text-foreground"}`}>
                   {format(day, "d")}
                 </span>
                 {hasEvents && !isSelected && <div className="w-1 h-1 rounded-full bg-primary mt-1" />}
@@ -93,36 +130,73 @@ export default function CalendarPage() {
           })}
         </div>
 
-        {/* Events for selected day */}
-        <h2 className="text-sm font-semibold text-foreground mb-3">{format(selectedDate, "EEEE, MMM d")}</h2>
+        {/* Today's Schedule */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold text-foreground">Today's Schedule</h2>
+          <button className="text-sm text-muted-foreground font-medium">See all</button>
+        </div>
+
         {dayEvents.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">No events for this day</p>
+          <div className="space-y-4">
+            {/* Empty state placeholder events */}
+            <EventCard icon={Coffee} iconBg="bg-primary/15" title="Morning Coffee Date" time="08:30 AM" badge="Romance" onDelete={() => {}} />
+            <EventCard icon={ShoppingCart} iconBg="bg-success/15" title="Weekly Grocery Run" time="05:00 PM" badge="Household" onDelete={() => {}} />
+            <EventCard icon={Tv} iconBg="bg-accent/15" title="Netflix & Chill Night" time="08:00 PM" badge="Relax" onDelete={() => {}} />
+          </div>
         ) : (
-          <div className="space-y-2">
-            {dayEvents.map(event => (
-              <motion.div
-                key={event.id}
-                layout
-                className={`bg-card rounded-xl px-4 py-3 shadow-card flex items-center gap-3 ${event.completed ? "opacity-50" : ""}`}
-              >
-                <button onClick={() => toggleComplete(event.id)}
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                    event.completed ? "bg-primary border-primary" : "border-border"
-                  }`}
-                >
-                  {event.completed && <span className="text-primary-foreground text-xs">✓</span>}
-                </button>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium ${event.completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{event.title}</p>
-                  <p className="text-xs text-muted-foreground">{event.time || "All day"} · {event.category}</p>
-                </div>
-                <button onClick={() => deleteEvent(event.id)} className="text-muted-foreground hover:text-destructive">
-                  <X size={14} />
-                </button>
-              </motion.div>
-            ))}
+          <div className="space-y-3">
+            {dayEvents.map(event => {
+              const IconComp = CATEGORY_ICONS[event.category] || Coffee;
+              const iconBg = CATEGORY_ICON_BG[event.category] || "bg-muted";
+              return (
+                <EventCard
+                  key={event.id}
+                  icon={IconComp}
+                  iconBg={iconBg}
+                  title={event.title}
+                  time={event.time || "All day"}
+                  badge={CATEGORY_LABEL[event.category] || event.category}
+                  onDelete={() => deleteEvent(event.id)}
+                />
+              );
+            })}
           </div>
         )}
+
+        {/* Plan something special */}
+        <div className="bg-card rounded-2xl p-6 shadow-card text-center mt-5 border border-border">
+          <CalendarPlus size={28} className="text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm font-bold text-foreground mb-1">Plan something special</p>
+          <p className="text-xs text-muted-foreground mb-3">Add a surprise date or a reminder for your partner.</p>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="px-5 py-2 rounded-full bg-foreground text-background text-xs font-semibold inline-flex items-center gap-1.5"
+          >
+            <Plus size={14} /> Add Event
+          </button>
+        </div>
+
+        {/* Anniversary teaser */}
+        <div className="bg-[hsl(38,40%,88%)] rounded-2xl px-4 py-3.5 mt-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-[hsl(38,40%,78%)] flex items-center justify-center shrink-0">
+            <Cake size={18} className="text-foreground" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-bold text-foreground">Anniversary in 12 days</p>
+            <p className="text-xs text-muted-foreground">3 years of beautiful memories together</p>
+          </div>
+          <span className="text-muted-foreground">›</span>
+        </div>
+
+        {/* New Event FAB */}
+        <div className="flex justify-end mt-5">
+          <button
+            onClick={() => setShowAdd(true)}
+            className="bg-foreground text-background px-5 py-3 rounded-full flex items-center gap-2 shadow-elevated text-sm font-semibold"
+          >
+            <Plus size={16} /> New Event
+          </button>
+        </div>
 
         {/* Add Event Modal */}
         <AnimatePresence>
@@ -140,27 +214,27 @@ export default function CalendarPage() {
               >
                 <h3 className="text-lg font-bold text-foreground mb-4">New Event</h3>
                 <form onSubmit={addEvent} className="space-y-3">
-                  <input name="title" required placeholder="Event title" className="w-full h-10 px-3 rounded-lg bg-muted text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                  <input name="description" placeholder="Description (optional)" className="w-full h-10 px-3 rounded-lg bg-muted text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <input name="title" required placeholder="Event title" className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <input name="description" placeholder="Description (optional)" className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
                   <div className="grid grid-cols-2 gap-3">
-                    <input name="time" type="time" className="h-10 px-3 rounded-lg bg-muted text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                    <select name="category" className="h-10 px-3 rounded-lg bg-muted text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
+                    <input name="time" type="time" className="h-11 px-4 rounded-xl bg-muted text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <select name="category" className="h-11 px-4 rounded-xl bg-muted text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
                       {CATEGORIES.map(c => <option key={c} value={c}>{c.replace("-", " ")}</option>)}
                     </select>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <select name="assignedTo" className="h-10 px-3 rounded-lg bg-muted text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
+                    <select name="assignedTo" className="h-11 px-4 rounded-xl bg-muted text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
                       <option value="both">Both</option>
                       <option value="partner1">Me</option>
                       <option value="partner2">Partner</option>
                     </select>
-                    <select name="priority" className="h-10 px-3 rounded-lg bg-muted text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
+                    <select name="priority" className="h-11 px-4 rounded-xl bg-muted text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
                       <option value="high">High</option>
                     </select>
                   </div>
-                  <button type="submit" className="w-full h-11 rounded-xl love-gradient text-primary-foreground font-semibold text-sm shadow-soft">
+                  <button type="submit" className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm shadow-soft">
                     Add Event
                   </button>
                 </form>
@@ -170,5 +244,22 @@ export default function CalendarPage() {
         </AnimatePresence>
       </div>
     </PageTransition>
+  );
+}
+
+function EventCard({ icon: Icon, iconBg, title, time, badge, onDelete }: {
+  icon: any; iconBg: string; title: string; time: string; badge: string; onDelete: () => void;
+}) {
+  return (
+    <div className="bg-card rounded-2xl px-4 py-3.5 shadow-card flex items-center gap-3 border border-border">
+      <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}>
+        <Icon size={18} className="text-foreground" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+        <p className="text-xs text-muted-foreground flex items-center gap-1">⏱ {time}</p>
+      </div>
+      <span className="text-[10px] px-2.5 py-1 rounded-full bg-muted text-muted-foreground font-medium">{badge}</span>
+    </div>
   );
 }
