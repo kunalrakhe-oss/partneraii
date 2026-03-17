@@ -25,7 +25,7 @@ const DEFAULT_TABS = [
 
 type ListType = string;
 
-const LIST_CONFIG: Record<ListType, { placeholder: string; emptyEmoji: string; emptyText: string; emptyHint: string }> = {
+const DEFAULT_LIST_CONFIG: Record<string, { placeholder: string; emptyEmoji: string; emptyText: string; emptyHint: string }> = {
   grocery: { placeholder: "Add milk, eggs, or bread...", emptyEmoji: "🛒", emptyText: "Your grocery list is empty", emptyHint: "Items are auto-categorized by AI" },
   todo: { placeholder: "Add a task...", emptyEmoji: "📋", emptyText: "No tasks yet", emptyHint: "Add shared to-dos for you & your partner" },
   gift: { placeholder: "Add a gift idea...", emptyEmoji: "🎁", emptyText: "No gift ideas yet", emptyHint: "Save ideas for birthdays, anniversaries & more" },
