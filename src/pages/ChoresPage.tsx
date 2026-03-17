@@ -177,6 +177,16 @@ export default function ChoresPage() {
     if (newAssign === "me") assignedTo = userId;
     else if (newAssign === "partner" && partnerProfile) assignedTo = partnerProfile.user_id;
 
+    let imageUrl: string | null = null;
+    if (newFile && userId) {
+      imageUrl = await uploadAttachment(newFile, userId);
+      if (!imageUrl) {
+        toast({ title: "Upload failed", variant: "destructive" });
+        setSubmitting(false);
+        return;
+      }
+    }
+
     const { error } = await supabase.from("chores").insert({
       title,
       recurrence: newFrequency || null,
@@ -184,7 +194,8 @@ export default function ChoresPage() {
       user_id: userId,
       partner_pair: partnerPair,
       due_date: hasDueDate && newDueDate ? format(newDueDate, "yyyy-MM-dd") : null,
-    });
+      image_url: imageUrl,
+    } as any);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
