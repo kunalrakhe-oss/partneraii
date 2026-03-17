@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
-import partnerHero from "@/assets/partner-hero.jpg";
+import onboardingHero from "@/assets/onboarding-hero.jpg";
 
 function generateLinkCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -221,7 +221,7 @@ export default function PartnerConnectPage() {
         {/* Hero Image */}
         <div className="flex justify-center mb-5">
           <div className="w-36 h-36 rounded-full overflow-hidden shadow-elevated border-4 border-card">
-            <img src={partnerHero} alt="Couple together" className="w-full h-full object-cover" />
+            <img src={onboardingHero} alt="Couple holding hands" className="w-full h-full object-cover" />
           </div>
         </div>
 
