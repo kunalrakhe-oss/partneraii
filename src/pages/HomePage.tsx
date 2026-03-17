@@ -1,4 +1,4 @@
-import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus } from "lucide-react";
+import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useLocalStorage, MOOD_EMOJIS, type MoodLog, type CalendarEvent, type Chore, type GroceryItem, type ChatMessage } from "@/lib/store";
