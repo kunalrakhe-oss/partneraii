@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Copy, QrCode, HelpCircle, Heart, ChevronRight, ChevronLeft, Loader2, CheckCircle } from "lucide-react";
-import { motion } from "framer-motion";
+import { Copy, Heart, ChevronLeft, Loader2, CheckCircle, Users, Share2, Shield } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,13 +23,13 @@ export default function PartnerConnectPage() {
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [alreadyPaired, setAlreadyPaired] = useState(false);
+  const [partnerName, setPartnerName] = useState<string | null>(null);
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
 
-  // On mount: check if already paired, or fetch/create invite code
   useEffect(() => {
     if (!user) return;
 
     async function init() {
-      // Check if already paired
       const { data: profile } = await supabase
         .from("profiles")
         .select("partner_id")
@@ -38,11 +38,17 @@ export default function PartnerConnectPage() {
 
       if (profile?.partner_id) {
         setAlreadyPaired(true);
+        // Get partner name
+        const { data: partnerP } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("id", profile.partner_id)
+          .single();
+        if (partnerP) setPartnerName(partnerP.display_name);
         setLoading(false);
         return;
       }
 
-      // Check for existing active invite
       const { data: existing } = await supabase
         .from("partner_invites")
         .select("invite_code")
@@ -56,14 +62,12 @@ export default function PartnerConnectPage() {
       if (existing) {
         setMyCode(existing.invite_code);
       } else {
-        // Create a new invite
         const code = generateLinkCode();
         const { error } = await supabase
           .from("partner_invites")
           .insert({ inviter_id: user!.id, invite_code: code });
 
         if (error) {
-          // Code collision — retry once
           const retryCode = generateLinkCode();
           await supabase
             .from("partner_invites")
@@ -86,10 +90,25 @@ export default function PartnerConnectPage() {
     try {
       await navigator.clipboard.writeText(myCode);
       setCopied(true);
+      toast({ title: "Code copied! 📋", description: "Share it with your partner" });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!myCode) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "LoveList Partner Code",
+          text: `Join me on LoveList! Use my code: ${myCode}`,
+        });
+      } catch { /* user cancelled */ }
+    } else {
+      handleCopy();
     }
   };
 
@@ -124,9 +143,13 @@ export default function PartnerConnectPage() {
     return (
       <PageTransition>
         <div className="min-h-screen bg-background max-w-lg mx-auto px-5 flex flex-col items-center justify-center gap-4">
-          <CheckCircle size={48} className="text-success" />
-          <h1 className="text-xl font-bold text-foreground">You're already connected!</h1>
-          <p className="text-sm text-muted-foreground text-center">You and your partner are linked.</p>
+          <div className="w-20 h-20 rounded-full bg-success/15 flex items-center justify-center">
+            <CheckCircle size={40} className="text-success" />
+          </div>
+          <h1 className="text-xl font-bold text-foreground">You're connected!</h1>
+          <p className="text-sm text-muted-foreground text-center">
+            You and {partnerName || "your partner"} are linked and sharing everything.
+          </p>
           <button
             onClick={() => navigate("/")}
             className="mt-4 px-6 h-11 rounded-xl love-gradient text-primary-foreground font-semibold text-sm"
@@ -147,6 +170,7 @@ export default function PartnerConnectPage() {
             <ChevronLeft size={20} className="text-foreground" />
           </button>
         </div>
+
         {/* Hero Image */}
         <div className="flex justify-center mb-5">
           <div className="w-36 h-36 rounded-full overflow-hidden shadow-elevated border-4 border-card">
@@ -196,15 +220,25 @@ export default function PartnerConnectPage() {
             ))}
           </div>
 
-          {/* Copy & Share */}
-          <button
-            onClick={handleCopy}
-            disabled={loading}
-            className="w-full h-11 rounded-xl bg-[hsl(100,20%,72%)] text-foreground font-semibold text-sm flex items-center justify-center gap-2 mb-5 disabled:opacity-50"
-          >
-            <Copy size={14} />
-            {copied ? "Copied!" : "Copy & Share Link"}
-          </button>
+          {/* Copy & Share buttons */}
+          <div className="flex gap-2 mb-5">
+            <button
+              onClick={handleCopy}
+              disabled={loading}
+              className="flex-1 h-11 rounded-xl bg-[hsl(100,20%,72%)] text-foreground font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Copy size={14} />
+              {copied ? "Copied!" : "Copy Code"}
+            </button>
+            <button
+              onClick={handleShare}
+              disabled={loading}
+              className="h-11 px-5 rounded-xl bg-muted text-foreground font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Share2 size={14} />
+              Share
+            </button>
+          </div>
 
           {/* Divider */}
           <div className="border-t border-border mb-5" />
@@ -232,29 +266,65 @@ export default function PartnerConnectPage() {
           </div>
         </div>
 
-        {/* QR Code option */}
+        {/* Info cards */}
         <div className="space-y-2 mb-6">
-          <button className="w-full bg-card rounded-2xl px-4 py-3.5 shadow-card border border-border flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[hsl(100,25%,78%)] flex items-center justify-center shrink-0">
-              <QrCode size={18} className="text-foreground" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-sm font-semibold text-foreground">Show QR Code</p>
-              <p className="text-[10px] text-muted-foreground">Let your partner scan your screen</p>
-            </div>
-            <ChevronRight size={16} className="text-muted-foreground" />
-          </button>
-
-          <button className="w-full bg-card rounded-2xl px-4 py-3.5 shadow-card border border-border flex items-center gap-3">
+          <button
+            onClick={() => setShowHowItWorks(!showHowItWorks)}
+            className="w-full bg-card rounded-2xl px-4 py-3.5 shadow-card border border-border flex items-center gap-3"
+          >
             <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-              <HelpCircle size={18} className="text-foreground" />
+              <Users size={18} className="text-foreground" />
             </div>
             <div className="flex-1 text-left">
               <p className="text-sm font-semibold text-foreground">How does this work?</p>
               <p className="text-[10px] text-muted-foreground">Learn about shared data and privacy</p>
             </div>
-            <ChevronRight size={16} className="text-muted-foreground" />
           </button>
+
+          <AnimatePresence>
+            {showHowItWorks && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-card rounded-2xl p-4 shadow-card border border-border space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-sm">1️⃣</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Share your code</p>
+                      <p className="text-xs text-muted-foreground">Send your 5-letter code to your partner via text, email, or in person.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-sm">2️⃣</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">They enter it</p>
+                      <p className="text-xs text-muted-foreground">Your partner signs up, goes to Connect, and enters your code.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-success/15 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-sm">✅</span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">You're linked!</p>
+                      <p className="text-xs text-muted-foreground">Grocery lists, chores, calendar, chat — everything syncs in real time.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 pt-1 border-t border-border">
+                    <Shield size={16} className="text-muted-foreground shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground">Your data is private and only shared between you and your partner. Codes expire after 7 days.</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Skip */}
