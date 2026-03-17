@@ -1,17 +1,13 @@
 import { useState } from "react";
-import { Heart, Mail, Lock, User, ArrowRight, Loader2, ChevronDown, ChevronUp, Phone } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Heart, Mail, Lock, User, ArrowRight, Loader2, Phone } from "lucide-react";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useToast } from "@/hooks/use-toast";
 import onboardingHero from "@/assets/onboarding-hero.jpg";
 
 export default function AuthPage() {
-  const [otpEmail, setOtpEmail] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
-  const [showMore, setShowMore] = useState(false);
-  const [moreMode, setMoreMode] = useState<"login" | "signup" | "forgot">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -19,46 +15,11 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleOtpRequest = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: otpEmail,
-        options: { emailRedirectTo: window.location.origin },
-      });
-      if (error) throw error;
-      setOtpSent(true);
-      toast({ title: "Magic link sent! ✨", description: "Check your email for a sign-in link, or enter the OTP code below." });
-    } catch (err: any) {
-      toast({ title: "Oops!", description: err.message || "Something went wrong", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleOtpVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        email: otpEmail,
-        token: otpCode,
-        type: "email",
-      });
-      if (error) throw error;
-    } catch (err: any) {
-      toast({ title: "Oops!", description: err.message || "Invalid code", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      if (moreMode === "signup") {
+      if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email, password,
           options: {
@@ -67,9 +28,8 @@ export default function AuthPage() {
           },
         });
         if (error) throw error;
-        // Save phone to profile after signup
         toast({ title: "Account created! 🎉", description: "Check your email to confirm your account." });
-      } else if (moreMode === "login") {
+      } else if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
@@ -113,37 +73,60 @@ export default function AuthPage() {
         </motion.div>
 
         <h1 className="text-2xl font-bold text-foreground text-center mb-1">Welcome to LoveList</h1>
-        <p className="text-sm text-muted-foreground text-center mb-6">Sign in with your email — no password needed</p>
+        <p className="text-sm text-muted-foreground text-center mb-6">
+          {mode === "login" ? "Sign in to your account" : mode === "signup" ? "Create your account" : "Reset your password"}
+        </p>
 
-        {/* OTP Primary */}
-        {!otpSent ? (
-          <form onSubmit={handleOtpRequest} className="w-full space-y-3">
+        {/* Mode tabs */}
+        <div className="flex gap-1 bg-muted rounded-xl p-1 w-full mb-4">
+          {(["login", "signup", "forgot"] as const).map((m) => (
+            <button key={m} onClick={() => setMode(m)}
+              className={`flex-1 text-xs font-medium py-2 rounded-lg transition-colors ${mode === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
+              {m === "login" ? "Sign In" : m === "signup" ? "Sign Up" : "Reset"}
+            </button>
+          ))}
+        </div>
+
+        <form onSubmit={handleSubmit} className="w-full space-y-3">
+          {mode === "signup" && (
+            <>
+              <div className="relative">
+                <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Your name" required className={inputClass} />
+              </div>
+              <div className="relative">
+                <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Phone number (optional)" className={inputClass} />
+              </div>
+            </>
+          )}
+          <div className="relative">
+            <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email address" required className={inputClass} />
+          </div>
+          {mode !== "forgot" && (
             <div className="relative">
-              <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input type="email" value={otpEmail} onChange={(e) => setOtpEmail(e.target.value)}
-                placeholder="Email address" required className={inputClass} />
+              <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password" required minLength={6} className={inputClass} />
             </div>
-            <button type="submit" disabled={loading}
-              className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-soft disabled:opacity-60">
-              {loading ? <Loader2 size={18} className="animate-spin" /> : <>Send Magic Link <ArrowRight size={16} /></>}
+          )}
+          {mode === "login" && (
+            <button type="button" onClick={() => setMode("forgot")}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              Forgot password?
             </button>
-          </form>
-        ) : (
-          <form onSubmit={handleOtpVerify} className="w-full space-y-3">
-            <p className="text-xs text-muted-foreground text-center">Enter the 6-digit code sent to <strong>{otpEmail}</strong></p>
-            <input type="text" value={otpCode} onChange={(e) => setOtpCode(e.target.value)}
-              placeholder="Enter OTP code" required maxLength={6}
-              className="w-full h-12 text-center tracking-[0.3em] rounded-xl bg-card border border-border text-lg font-bold text-foreground placeholder:text-muted-foreground placeholder:tracking-normal placeholder:text-sm placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary/30" />
-            <button type="submit" disabled={loading}
-              className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-soft disabled:opacity-60">
-              {loading ? <Loader2 size={18} className="animate-spin" /> : <>Verify & Sign In <ArrowRight size={16} /></>}
-            </button>
-            <button type="button" onClick={() => { setOtpSent(false); setOtpCode(""); }}
-              className="w-full text-xs text-muted-foreground hover:text-foreground text-center">
-              Use a different email
-            </button>
-          </form>
-        )}
+          )}
+          <button type="submit" disabled={loading}
+            className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-soft disabled:opacity-60">
+            {loading ? <Loader2 size={18} className="animate-spin" /> : (
+              <>{mode === "login" ? "Sign In" : mode === "signup" ? "Create Account" : "Send Reset Link"} <ArrowRight size={16} /></>
+            )}
+          </button>
+        </form>
 
         {/* Divider */}
         <div className="flex items-center gap-3 my-5 w-full">
@@ -163,66 +146,6 @@ export default function AuthPage() {
           </svg>
           Continue with Google
         </button>
-
-        {/* More sign-in options */}
-        <button type="button" onClick={() => setShowMore(!showMore)}
-          className="mt-4 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
-          {showMore ? "Hide" : "More sign-in options"} {showMore ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-        </button>
-
-        <AnimatePresence>
-          {showMore && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }} className="w-full overflow-hidden">
-              <div className="pt-4 space-y-3">
-                {/* Mode tabs */}
-                <div className="flex gap-1 bg-muted rounded-xl p-1">
-                  {(["login", "signup", "forgot"] as const).map((m) => (
-                    <button key={m} onClick={() => setMoreMode(m)}
-                      className={`flex-1 text-xs font-medium py-2 rounded-lg transition-colors ${moreMode === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
-                      {m === "login" ? "Sign In" : m === "signup" ? "Sign Up" : "Reset"}
-                    </button>
-                  ))}
-                </div>
-
-                <form onSubmit={handlePasswordSubmit} className="space-y-3">
-                  {moreMode === "signup" && (
-                    <>
-                      <div className="relative">
-                        <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                        <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
-                          placeholder="Your name" required className={inputClass} />
-                      </div>
-                      <div className="relative">
-                        <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
-                          placeholder="Phone number (optional)" className={inputClass} />
-                      </div>
-                    </>
-                  )}
-                  <div className="relative">
-                    <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Email address" required className={inputClass} />
-                  </div>
-                  {moreMode !== "forgot" && (
-                    <div className="relative">
-                      <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Password" required minLength={6} className={inputClass} />
-                    </div>
-                  )}
-                  <button type="submit" disabled={loading}
-                    className="w-full h-11 rounded-xl bg-foreground text-background font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-60">
-                    {loading ? <Loader2 size={18} className="animate-spin" /> : (
-                      <>{moreMode === "login" ? "Sign In" : moreMode === "signup" ? "Create Account" : "Send Reset Link"} <ArrowRight size={16} /></>
-                    )}
-                  </button>
-                </form>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       <div className="px-6 pb-8 pt-4">
