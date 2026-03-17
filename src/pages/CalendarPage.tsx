@@ -10,6 +10,7 @@ import {
   List, CalendarDays, Calendar, LayoutGrid,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import AddEventModal from "@/components/AddEventModal";
 import PageTransition from "@/components/PageTransition";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
@@ -316,108 +317,23 @@ export default function CalendarPage() {
         </button>
 
         {/* Add/Edit Event Modal */}
-        <AnimatePresence>
-          {showAdd && (
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[60] flex items-end justify-center bg-foreground/30 pb-20 sm:pb-0"
-              onClick={() => setShowAdd(false)}
-            >
-              <motion.div
-                initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 28, stiffness: 300 }}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-card w-full max-w-lg rounded-t-3xl shadow-elevated h-[85vh] max-h-[90vh] flex flex-col overflow-hidden"
-              >
-                <div className="shrink-0 border-b border-border bg-card px-5 pt-4 pb-3">
-                  <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-muted" />
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-foreground">
-                      {editingEvent ? "Edit Event" : "New Event"}
-                    </h3>
-                    <button onClick={() => setShowAdd(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                      <X size={16} className="text-muted-foreground" />
-                    </button>
-                  </div>
-                </div>
-                <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-                  <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4">
-                    <div className="space-y-3 pb-4">
-                      <div>
-                        <label className="mb-1 block text-xs font-semibold text-muted-foreground">Title</label>
-                        <input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required placeholder="Event title"
-                          className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-xs font-semibold text-muted-foreground">Description</label>
-                        <input value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Optional"
-                          className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="mb-1 block text-xs font-semibold text-muted-foreground">Date</label>
-                          <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} required
-                            className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                        </div>
-                        <div>
-                          <label className="mb-1 block text-xs font-semibold text-muted-foreground">Time</label>
-                          <input type="time" value={formTime} onChange={(e) => setFormTime(e.target.value)}
-                            className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-xs font-semibold text-muted-foreground">Category</label>
-                        <div className="flex flex-wrap gap-2">
-                          {CATEGORIES.map((c) => (
-                            <button key={c} type="button" onClick={() => setFormCategory(c)}
-                              className={`rounded-btn px-3 py-1.5 text-xs font-medium transition-colors ${
-                                formCategory === c ? "love-gradient text-primary-foreground" : "bg-muted text-muted-foreground"
-                              }`}>
-                              {CATEGORY_LABEL[c]}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="mb-1 block text-xs font-semibold text-muted-foreground">Assign</label>
-                          <select value={formAssigned} onChange={(e) => setFormAssigned(e.target.value)}
-                            className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
-                            <option value="both">Both</option>
-                            <option value="me">Me</option>
-                            <option value="partner">Partner</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="mb-1 block text-xs font-semibold text-muted-foreground">Priority</label>
-                          <select value={formPriority} onChange={(e) => setFormPriority(e.target.value)}
-                            className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="shrink-0 border-t border-border bg-card px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
-                    <div className="space-y-2">
-                      <button type="submit" className="h-12 w-full rounded-btn love-gradient text-sm font-semibold text-primary-foreground shadow-soft">
-                        {editingEvent ? "Save Changes" : "Add Event"}
-                      </button>
-                      {editingEvent && (
-                        <button type="button" onClick={() => { deleteEvent(editingEvent.id); setShowAdd(false); }}
-                          className="flex h-11 w-full items-center justify-center gap-2 rounded-btn bg-destructive/10 text-sm font-semibold text-destructive">
-                          <Trash2 size={14} /> Delete Event
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </form>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <AddEventModal
+          open={showAdd}
+          onClose={() => setShowAdd(false)}
+          editingEvent={editingEvent}
+          defaultDate={selectedDate}
+          defaultTime={formTime}
+          onEventSaved={(data) => {
+            if (editingEvent) {
+              setEvents((prev) => prev.map((ev) => (ev.id === editingEvent.id ? data : ev)));
+            } else {
+              setEvents((prev) => [...prev, data]);
+            }
+          }}
+          onEventDeleted={(id) => {
+            setEvents((prev) => prev.filter((e) => e.id !== id));
+          }}
+        />
       </div>
     </PageTransition>
   );
