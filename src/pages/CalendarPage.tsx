@@ -10,6 +10,7 @@ import {
   List, CalendarDays, Calendar, LayoutGrid,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import AddEventModal from "@/components/AddEventModal";
 import PageTransition from "@/components/PageTransition";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
