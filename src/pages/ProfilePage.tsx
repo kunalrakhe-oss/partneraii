@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft } from "lucide-react";
+import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Monitor } from "lucide-react";
 
-type SheetType = "personal" | "notifications" | "theme" | null;
+type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | null;
 
 function BottomSheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   return (
@@ -183,6 +183,27 @@ export default function ProfilePage() {
     await signOut();
   };
 
+  const [removingPartner, setRemovingPartner] = useState(false);
+  const handleRemovePartner = async () => {
+    if (!partnerId) return;
+    setRemovingPartner(true);
+    const { data, error } = await supabase.rpc("remove_partner", { partner_profile_id: partnerId });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      const result = data as any;
+      if (result?.success) {
+        toast({ title: "Partner removed" });
+        setPartnerName(null);
+        setPartnerId(null);
+        setActiveSheet(null);
+      } else {
+        toast({ title: "Failed", description: result?.error || "Unknown error", variant: "destructive" });
+      }
+    }
+    setRemovingPartner(false);
+  };
+
   const handleSettingTap = (label: string) => {
     switch (label) {
       case "Personal Information":
@@ -193,6 +214,9 @@ export default function ProfilePage() {
         break;
       case "Couple Connection":
         navigate("/connect");
+        break;
+      case "Remove Partner":
+        setActiveSheet("remove-partner");
         break;
       case "Theme & Appearance":
         setActiveSheet("theme");
@@ -209,6 +233,7 @@ export default function ProfilePage() {
         { icon: User, label: "Personal Information", sub: "Name, Phone" },
         { icon: Bell, label: "Notifications", sub: "Reminders & Alerts" },
         { icon: Heart, label: "Couple Connection", sub: partnerName ? `Connected to ${partnerName}` : "Invite your partner" },
+        ...(partnerId ? [{ icon: UserMinus, label: "Remove Partner", sub: `Disconnect from ${partnerName || "partner"}` }] : []),
       ],
     },
     {
@@ -358,6 +383,29 @@ export default function ProfilePage() {
 
       {/* Theme Sheet */}
       <ThemeSheet open={activeSheet === "theme"} onClose={() => setActiveSheet(null)} />
+
+      {/* Remove Partner Confirmation */}
+      <BottomSheet open={activeSheet === "remove-partner"} onClose={() => setActiveSheet(null)} title="Remove Partner">
+        <div className="flex flex-col items-center py-4 gap-3">
+          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+            <UserMinus size={28} className="text-destructive" />
+          </div>
+          <p className="text-sm font-bold text-foreground">Disconnect from {partnerName}?</p>
+          <p className="text-xs text-muted-foreground text-center leading-relaxed max-w-xs">
+            This will unlink your accounts. Shared data (chores, lists, events) will remain but won't sync anymore. You can reconnect anytime with a new invite code.
+          </p>
+          <button
+            onClick={handleRemovePartner}
+            disabled={removingPartner}
+            className="w-full h-11 rounded-xl bg-destructive text-destructive-foreground font-semibold text-sm mt-2 flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {removingPartner ? <Loader2 size={16} className="animate-spin" /> : "Remove Partner"}
+          </button>
+          <button onClick={() => setActiveSheet(null)} className="text-xs text-muted-foreground font-medium">
+            Cancel
+          </button>
+        </div>
+      </BottomSheet>
     </PageTransition>
   );
 }
