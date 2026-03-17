@@ -24,6 +24,8 @@ interface ProfileInfo {
   avatar_url: string | null;
 }
 
+type ChatFilter = "all" | "media" | "links" | "shared";
+
 export default function ChatPage() {
   const { user } = useAuth();
   const { partnerPair, loading: ppLoading, userId } = usePartnerPair();
@@ -35,6 +37,7 @@ export default function ChatPage() {
   const [partnerProfile, setPartnerProfile] = useState<ProfileInfo | null>(null);
   const [sending, setSending] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [chatFilter, setChatFilter] = useState<ChatFilter>("all");
 
   // Fetch partner profile
   useEffect(() => {
