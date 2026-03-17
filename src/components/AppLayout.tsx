@@ -2,7 +2,6 @@ import { NavLink, Outlet } from "react-router-dom";
 import { Home, CalendarDays, ShoppingCart, MessageCircle, ClipboardList } from "lucide-react";
 import { motion } from "framer-motion";
 import PartnerNotifications from "@/components/PartnerNotifications";
-import AIChatbot from "@/components/AIChatbot";
 
 const tabs = [
   { to: "/", icon: Home, label: "Home" },
