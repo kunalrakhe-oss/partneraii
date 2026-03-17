@@ -60,6 +60,24 @@ export default function AuthPage() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      toast({
+        title: "Oops!",
+        description: err.message || "Google sign-in failed",
+        variant: "destructive",
+      });
+      setLoading(false);
+    }
+  };
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto">
       {/* Top section */}
