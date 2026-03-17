@@ -65,6 +65,12 @@ export default function GroceryPage() {
   const [loading, setLoading] = useState(true);
   const [activeList, setActiveList] = useState<ListType>("grocery");
   const [editingItem, setEditingItem] = useState<GroceryRow | null>(null);
+  const [customLists, setCustomLists] = useState<{ key: string; label: string; emoji: string }[]>([]);
+  const [showNewList, setShowNewList] = useState(false);
+  const [newListName, setNewListName] = useState("");
+  const [newListEmoji, setNewListEmoji] = useState("📝");
+
+  const LIST_TABS = [...DEFAULT_TABS, ...customLists];
 
   const fetchItems = useCallback(async () => {
     if (!partnerPair) return;
