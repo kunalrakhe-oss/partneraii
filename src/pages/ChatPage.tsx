@@ -494,12 +494,10 @@ export default function ChatPage() {
           <div className="flex gap-2 items-center">
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={() => { setShowAttachMenu(prev => !prev); setShowEmojiPicker(false); }}
+              onClick={() => { fileRef.current?.removeAttribute("capture"); fileRef.current?.click(); }}
               className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center shrink-0"
             >
-              <motion.div animate={{ rotate: showAttachMenu ? 45 : 0 }} transition={{ duration: 0.15 }}>
-                <Plus size={18} className="text-primary" />
-              </motion.div>
+              <Plus size={18} className="text-primary" />
             </motion.button>
             <div className="flex-1 bg-muted rounded-full flex items-center px-4 gap-2 relative">
               <input
