@@ -106,9 +106,18 @@ export default function ChatPage() {
   const isMe = (msg: ChatMsg) => msg.user_id === user?.id;
   const partnerInitial = partnerProfile?.display_name?.charAt(0).toUpperCase() || "P";
 
+  // Filter messages
+  const filteredMessages = messages.filter(msg => {
+    if (chatFilter === "all") return true;
+    if (chatFilter === "media") return msg.type === "image";
+    if (chatFilter === "links") return msg.type === "text" && /https?:\/\/\S+/.test(msg.message);
+    if (chatFilter === "shared") return msg.type === "text" && (msg.message.includes("Reacted to") || msg.message.includes("🧹") || msg.message.includes("🛒"));
+    return true;
+  });
+
   // Group messages by date
   const groupedMessages: { date: string; msgs: ChatMsg[] }[] = [];
-  messages.forEach(msg => {
+  filteredMessages.forEach(msg => {
     const dateKey = format(new Date(msg.created_at), "yyyy-MM-dd");
     const last = groupedMessages[groupedMessages.length - 1];
     if (last && last.date === dateKey) {
