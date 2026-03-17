@@ -610,33 +610,41 @@ export default function HomePage() {
           </motion.div>
 
           {/* AI Insight — Powered by Lovable AI */}
-          <motion.div variants={item} className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3">
-            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
-              <Sparkles size={16} className="text-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between mb-0.5">
-                <p className="text-xs font-bold text-foreground">LoveList AI Insight</p>
-                <button
-                  onClick={fetchInsight}
-                  disabled={insightLoading}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <RefreshCw size={12} className={insightLoading ? "animate-spin" : ""} />
-                </button>
+          {!insightDismissed && (
+            <motion.div variants={item} className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3 cursor-pointer"
+              onClick={() => setInsightDismissed(true)}>
+              <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+                <Sparkles size={16} className="text-foreground" />
               </div>
-              {insightLoading && !aiInsight ? (
-                <div className="flex items-center gap-2 py-1">
-                  <Loader2 size={12} className="animate-spin text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Generating insight…</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-0.5">
+                  <p className="text-xs font-bold text-foreground">LoveList AI Insight</p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); fetchInsight(); setInsightDismissed(false); }}
+                      disabled={insightLoading}
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <RefreshCw size={12} className={insightLoading ? "animate-spin" : ""} />
+                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); setInsightDismissed(true); }} className="text-muted-foreground hover:text-foreground transition-colors">
+                      <X size={12} />
+                    </button>
+                  </div>
                 </div>
-              ) : (
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {aiInsight || "Loading your personalized insight…"}
-                </p>
-              )}
-            </div>
-          </motion.div>
+                {insightLoading && !aiInsight ? (
+                  <div className="flex items-center gap-2 py-1">
+                    <Loader2 size={12} className="animate-spin text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Generating insight…</span>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {aiInsight || "Loading your personalized insight…"}
+                  </p>
+                )}
+              </div>
+            </motion.div>
+          )}
 
         </motion.div>
 
