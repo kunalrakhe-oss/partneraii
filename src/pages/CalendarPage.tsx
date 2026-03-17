@@ -695,17 +695,6 @@ export default function CalendarPage() {
           )}
         </div>
 
-        {/* Today FAB - bottom left, always visible */}
-        <button
-          onClick={goToToday}
-          className={`fixed bottom-20 left-5 font-semibold text-xs px-4 py-2.5 rounded-full shadow-elevated border z-40 transition-colors ${
-            isToday(selectedDate)
-              ? "bg-primary text-primary-foreground border-primary"
-              : "bg-card text-primary border-border"
-          }`}
-        >
-          Today
-        </button>
 
         {/* FAB with menu */}
         {showFabMenu && (
