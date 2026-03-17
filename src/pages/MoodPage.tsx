@@ -218,16 +218,21 @@ export default function MoodPage() {
           </button>
         </div>
 
-        <p className="text-sm font-bold text-foreground text-center mb-4">Current Mood</p>
-        <div className="flex flex-wrap justify-center gap-2 mb-6">
-          {MOODS.map(mood => (
-            <motion.button key={mood.key} whileTap={{ scale: 0.9 }} onClick={() => logMood(mood.key)}
-              className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all w-[60px] ${todayLog?.mood === mood.key ? "bg-primary/25 shadow-soft ring-2 ring-primary/40" : "hover:bg-muted"}`}>
-              <span className="text-2xl">{mood.emoji}</span>
-              <span className="text-[9px] font-medium text-muted-foreground leading-tight">{mood.label}</span>
-            </motion.button>
-          ))}
-        </div>
+        <p className="text-sm font-bold text-foreground mb-3">How are you feeling?</p>
+        {MOOD_GROUPS.map((group) => (
+          <div key={group.label} className="mb-4">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">{group.label}</p>
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-5 px-5">
+              {group.moods.map(mood => (
+                <motion.button key={mood.key} whileTap={{ scale: 0.9 }} onClick={() => logMood(mood.key)}
+                  className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all min-w-[60px] shrink-0 ${todayLog?.mood === mood.key ? "bg-primary/25 shadow-soft ring-2 ring-primary/40" : "hover:bg-muted"}`}>
+                  <span className="text-2xl">{mood.emoji}</span>
+                  <span className="text-[9px] font-medium text-muted-foreground leading-tight">{mood.label}</span>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        ))}
 
         <p className="text-sm font-semibold text-foreground mb-2">Add a note (optional)</p>
         <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="What's on your mind?" rows={2}
