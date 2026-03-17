@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Settings, Check, Clock, Sparkles, Droplets, HelpCircle, UtensilsCrossed, Loader2, ChevronDown } from "lucide-react";
+import { Plus, Settings, Check, Clock, Sparkles, Droplets, HelpCircle, UtensilsCrossed, Loader2, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
