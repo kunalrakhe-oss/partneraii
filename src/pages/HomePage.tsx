@@ -22,6 +22,7 @@ export default function HomePage() {
   const { user } = useAuth();
   const { partnerPair } = usePartnerPair();
   const [displayName, setDisplayName] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [partnerMood, setPartnerMood] = useState<{ mood: string; note: string | null } | null>(null);
   const [todayEvents, setTodayEvents] = useState<{ id: string; title: string; event_time: string | null }[]>([]);
   const [urgentChores, setUrgentChores] = useState<{ id: string; title: string; is_completed: boolean; recurrence: string | null }[]>([]);
@@ -30,13 +31,14 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle()
+    supabase.from("profiles").select("display_name, avatar_url").eq("user_id", user.id).maybeSingle()
       .then(({ data }) => {
         const profileName = data?.display_name;
         const metaName = user.user_metadata?.full_name || user.user_metadata?.display_name || user.user_metadata?.name;
         const emailName = user.email?.split("@")[0];
         const name = (profileName && profileName.includes(" ")) ? profileName : (metaName || profileName || emailName || "there");
         setDisplayName(name);
+        setAvatarUrl(data?.avatar_url || user.user_metadata?.avatar_url || null);
       });
   }, [user]);
 
@@ -85,9 +87,13 @@ export default function HomePage() {
               <h1 className="text-2xl font-bold text-foreground">{greeting}, {displayName.toUpperCase()}</h1>
               <p className="text-sm text-muted-foreground">{format(new Date(), "MMMM d, yyyy")}</p>
             </div>
-            <div className="w-11 h-11 rounded-full bg-muted overflow-hidden flex items-center justify-center">
-              <span className="text-lg">👩</span>
-            </div>
+            <button onClick={() => navigate("/profile")} className="w-11 h-11 rounded-full bg-muted overflow-hidden flex items-center justify-center border-2 border-border">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-lg">👩</span>
+              )}
+            </button>
           </motion.div>
 
           {/* Partner's Mood */}
