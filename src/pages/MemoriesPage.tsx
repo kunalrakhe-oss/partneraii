@@ -1,0 +1,383 @@
+import { useState, useRef } from "react";
+import { Plus, Camera, Heart, Star, Calendar, MapPin, X, Image as ImageIcon, Award, BookOpen } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useLocalStorage, generateId, type Memory } from "@/lib/store";
+import PageTransition from "@/components/PageTransition";
+import { format, parseISO } from "date-fns";
+
+const MILESTONE_OPTIONS = [
+  { label: "Anniversary", emoji: "💍" },
+  { label: "First Date", emoji: "🌹" },
+  { label: "First Trip", emoji: "✈️" },
+  { label: "Moved In", emoji: "🏡" },
+  { label: "First Kiss", emoji: "💋" },
+  { label: "Got Engaged", emoji: "💎" },
+  { label: "Custom", emoji: "⭐" },
+];
+
+type FilterType = "all" | "photo" | "milestone" | "note";
+
+export default function MemoriesPage() {
+  const [memories, setMemories] = useLocalStorage<Memory[]>("lovelist-memories", []);
+  const [showAdd, setShowAdd] = useState(false);
+  const [filter, setFilter] = useState<FilterType>("all");
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // Form state
+  const [formTitle, setFormTitle] = useState("");
+  const [formDesc, setFormDesc] = useState("");
+  const [formDate, setFormDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [formType, setFormType] = useState<Memory["type"]>("photo");
+  const [formPhoto, setFormPhoto] = useState<string>("");
+  const [formMilestone, setFormMilestone] = useState("");
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Photo must be under 5MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setFormPhoto(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const handleAdd = () => {
+    if (!formTitle.trim()) return;
+    const newMemory: Memory = {
+      id: generateId(),
+      title: formTitle.trim(),
+      description: formDesc.trim(),
+      date: formDate,
+      type: formType,
+      photo: formPhoto || undefined,
+      milestone: formMilestone || undefined,
+    };
+    setMemories([...memories, newMemory]);
+    resetForm();
+    setShowAdd(false);
+  };
+
+  const resetForm = () => {
+    setFormTitle("");
+    setFormDesc("");
+    setFormDate(format(new Date(), "yyyy-MM-dd"));
+    setFormType("photo");
+    setFormPhoto("");
+    setFormMilestone("");
+  };
+
+  const deleteMemory = (id: string) => {
+    setMemories(memories.filter(m => m.id !== id));
+  };
+
+  const filtered = memories
+    .filter(m => filter === "all" || m.type === filter)
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  // Group by year-month
+  const grouped: Record<string, Memory[]> = {};
+  filtered.forEach(m => {
+    const key = format(parseISO(m.date), "MMMM yyyy");
+    (grouped[key] = grouped[key] || []).push(m);
+  });
+
+  return (
+    <PageTransition>
+      <div className="px-5 pt-10 pb-24">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-1">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Memories</h1>
+            <p className="text-xs text-muted-foreground">Your love story, one moment at a time 💕</p>
+          </div>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="w-10 h-10 rounded-full love-gradient flex items-center justify-center shadow-soft"
+          >
+            <Plus size={18} className="text-primary-foreground" />
+          </button>
+        </div>
+
+        {/* Stats banner */}
+        <div className="bg-[hsl(100,20%,72%)] rounded-2xl p-4 mt-5 mb-5 flex items-center gap-4">
+          <div className="flex-1">
+            <p className="text-xs text-foreground/70">Together since</p>
+            <p className="text-base font-bold text-foreground">March 2023</p>
+          </div>
+          <div className="flex gap-4">
+            <div className="text-center">
+              <p className="text-lg font-bold text-foreground">{memories.filter(m => m.type === "photo").length}</p>
+              <p className="text-[10px] text-foreground/70">Photos</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-foreground">{memories.filter(m => m.type === "milestone").length}</p>
+              <p className="text-[10px] text-foreground/70">Milestones</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Filter tabs */}
+        <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
+          {([
+            { key: "all", label: "All", icon: BookOpen },
+            { key: "photo", label: "Photos", icon: Camera },
+            { key: "milestone", label: "Milestones", icon: Award },
+            { key: "note", label: "Notes", icon: Star },
+          ] as { key: FilterType; label: string; icon: any }[]).map(f => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap shrink-0 ${
+                filter === f.key
+                  ? "bg-[hsl(100,20%,72%)] text-foreground"
+                  : "bg-card shadow-card text-muted-foreground border border-border"
+              }`}
+            >
+              <f.icon size={12} />
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Timeline */}
+        {Object.keys(grouped).length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+              <Heart size={28} className="text-muted-foreground" />
+            </div>
+            <p className="text-sm font-semibold text-foreground mb-1">No memories yet</p>
+            <p className="text-xs text-muted-foreground mb-4">Start capturing your love story</p>
+            <button
+              onClick={() => setShowAdd(true)}
+              className="px-5 py-2.5 rounded-full bg-foreground text-background text-xs font-semibold inline-flex items-center gap-1.5"
+            >
+              <Plus size={14} /> Add First Memory
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {Object.entries(grouped).map(([monthYear, monthMemories]) => (
+              <div key={monthYear}>
+                {/* Month header */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-2 h-2 rounded-full bg-primary" />
+                  <h2 className="text-sm font-bold text-foreground">{monthYear}</h2>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+
+                {/* Cards */}
+                <div className="space-y-3 pl-4 border-l-2 border-border ml-0.5">
+                  {monthMemories.map(memory => (
+                    <motion.div
+                      key={memory.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-card rounded-2xl shadow-card border border-border overflow-hidden relative"
+                    >
+                      {/* Photo */}
+                      {memory.photo && (
+                        <div className="h-44 overflow-hidden">
+                          <img
+                            src={memory.photo}
+                            alt={memory.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+
+                      {/* Content */}
+                      <div className="p-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1">
+                            {memory.type === "milestone" && memory.milestone && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full mb-2">
+                                {MILESTONE_OPTIONS.find(m => m.label === memory.milestone)?.emoji || "⭐"} {memory.milestone}
+                              </span>
+                            )}
+                            {memory.type === "photo" && !memory.milestone && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-success bg-success/10 px-2 py-0.5 rounded-full mb-2">
+                                📷 Photo
+                              </span>
+                            )}
+                            {memory.type === "note" && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full mb-2">
+                                ✏️ Note
+                              </span>
+                            )}
+                            <p className="text-sm font-bold text-foreground">{memory.title}</p>
+                            {memory.description && (
+                              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{memory.description}</p>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => deleteMemory(memory.id)}
+                            className="text-muted-foreground hover:text-destructive shrink-0 mt-1"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2 mt-2.5">
+                          <Calendar size={10} className="text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">
+                            {format(parseISO(memory.date), "EEEE, MMMM d, yyyy")}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* FAB */}
+        {memories.length > 0 && (
+          <div className="flex justify-end mt-6">
+            <button
+              onClick={() => setShowAdd(true)}
+              className="bg-foreground text-background px-5 py-3 rounded-full flex items-center gap-2 shadow-elevated text-sm font-semibold"
+            >
+              <Plus size={16} /> Add Memory
+            </button>
+          </div>
+        )}
+
+        {/* Add Memory Modal */}
+        <AnimatePresence>
+          {showAdd && (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-foreground/30 z-50 flex items-end justify-center"
+              onClick={() => { setShowAdd(false); resetForm(); }}
+            >
+              <motion.div
+                initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                onClick={e => e.stopPropagation()}
+                className="bg-card w-full max-w-lg rounded-t-2xl p-5 shadow-elevated max-h-[85vh] overflow-y-auto"
+              >
+                <h3 className="text-lg font-bold text-foreground mb-4">New Memory</h3>
+
+                {/* Type selector */}
+                <div className="flex gap-2 mb-4">
+                  {([
+                    { key: "photo", label: "Photo", icon: Camera },
+                    { key: "milestone", label: "Milestone", icon: Award },
+                    { key: "note", label: "Note", icon: Star },
+                  ] as { key: Memory["type"]; label: string; icon: any }[]).map(t => (
+                    <button
+                      key={t.key}
+                      onClick={() => setFormType(t.key)}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium transition-colors ${
+                        formType === t.key
+                          ? "bg-[hsl(100,20%,72%)] text-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      <t.icon size={14} />
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Photo upload */}
+                {(formType === "photo" || formType === "milestone") && (
+                  <div className="mb-4">
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
+                    {formPhoto ? (
+                      <div className="relative rounded-xl overflow-hidden h-40">
+                        <img src={formPhoto} alt="Upload preview" className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => setFormPhoto("")}
+                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-foreground/60 flex items-center justify-center"
+                        >
+                          <X size={14} className="text-background" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => fileRef.current?.click()}
+                        className="w-full h-32 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                      >
+                        <ImageIcon size={24} />
+                        <span className="text-xs font-medium">Tap to add a photo</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Milestone picker */}
+                {formType === "milestone" && (
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-foreground mb-2">Milestone Type</p>
+                    <div className="flex flex-wrap gap-2">
+                      {MILESTONE_OPTIONS.map(ms => (
+                        <button
+                          key={ms.label}
+                          onClick={() => setFormMilestone(ms.label)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                            formMilestone === ms.label
+                              ? "bg-primary/15 text-primary ring-1 ring-primary"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {ms.emoji} {ms.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Title */}
+                <input
+                  value={formTitle}
+                  onChange={e => setFormTitle(e.target.value)}
+                  placeholder="Give this memory a title"
+                  className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary mb-3"
+                />
+
+                {/* Description */}
+                <textarea
+                  value={formDesc}
+                  onChange={e => setFormDesc(e.target.value)}
+                  placeholder="What made this moment special?"
+                  rows={2}
+                  className="w-full px-4 py-3 rounded-xl bg-muted text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none mb-3"
+                />
+
+                {/* Date */}
+                <div className="flex items-center gap-2 mb-4">
+                  <Calendar size={14} className="text-muted-foreground" />
+                  <input
+                    type="date"
+                    value={formDate}
+                    onChange={e => setFormDate(e.target.value)}
+                    className="h-11 px-4 rounded-xl bg-muted text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary flex-1"
+                  />
+                </div>
+
+                {/* Submit */}
+                <button
+                  onClick={handleAdd}
+                  disabled={!formTitle.trim()}
+                  className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm shadow-soft disabled:opacity-40 transition-opacity"
+                >
+                  Save Memory
+                </button>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </PageTransition>
+  );
+}
