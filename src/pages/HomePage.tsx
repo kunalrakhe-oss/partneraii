@@ -139,7 +139,7 @@ export default function HomePage() {
                   <div key={event.id} className="flex items-center gap-3">
                     <div className="w-0.5 h-8 bg-foreground/30 rounded-full" />
                     <div>
-                      <p className="text-[10px] text-foreground/60">{event.time || "All day"}</p>
+                      <p className="text-[10px] text-foreground/60">{event.event_time || "All day"}</p>
                       <p className="text-sm font-semibold text-foreground">{event.title}</p>
                     </div>
                   </div>
@@ -162,7 +162,7 @@ export default function HomePage() {
                 <MessageSquare size={18} className="text-primary" />
               </div>
               <p className="text-sm font-bold text-foreground">Chat</p>
-              <p className="text-xs text-muted-foreground">{messages.length} msgs</p>
+              <p className="text-xs text-muted-foreground">{messageCount} msgs</p>
             </Link>
             <Link to="/memories" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
               <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
