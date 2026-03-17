@@ -526,7 +526,7 @@ export default function HomePage() {
 
                 <div className="flex gap-2 mt-3">
                   <button
-                    onClick={() => { setShowMoodPopup(false); setMoodReaction(""); navigate("/chat"); }}
+                    onClick={() => { setShowMoodPopup(false); setMoodReaction(""); setReactionMessage(""); navigate("/chat"); }}
                     className="flex-1 text-center text-xs text-primary font-medium py-2"
                   >
                     Write a message instead
