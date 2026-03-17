@@ -160,6 +160,7 @@ export type Database = {
           calories: number | null
           created_at: string
           description: string
+          event_time: string | null
           id: string
           is_completed: boolean
           log_date: string
@@ -173,6 +174,7 @@ export type Database = {
           calories?: number | null
           created_at?: string
           description: string
+          event_time?: string | null
           id?: string
           is_completed?: boolean
           log_date?: string
@@ -186,6 +188,7 @@ export type Database = {
           calories?: number | null
           created_at?: string
           description?: string
+          event_time?: string | null
           id?: string
           is_completed?: boolean
           log_date?: string
