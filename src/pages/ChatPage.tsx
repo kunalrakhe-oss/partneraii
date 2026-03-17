@@ -158,9 +158,24 @@ export default function ChatPage() {
           <button className="w-9 h-9 rounded-full flex items-center justify-center"><MoreVertical size={18} className="text-foreground" /></button>
         </div>
 
+        {/* Chat Filter Tabs */}
+        <div className="px-5 py-2 flex gap-2 overflow-x-auto border-b border-border/30">
+          {([
+            { key: "all" as ChatFilter, label: "All" },
+            { key: "media" as ChatFilter, label: "Media" },
+            { key: "links" as ChatFilter, label: "Links" },
+            { key: "shared" as ChatFilter, label: "Reactions" },
+          ]).map(tab => (
+            <button key={tab.key} onClick={() => setChatFilter(tab.key)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                chatFilter === tab.key ? "bg-foreground text-background" : "bg-muted text-muted-foreground"
+              }`}>{tab.label}</button>
+          ))}
+        </div>
+
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-          {messages.length === 0 && (
+          {filteredMessages.length === 0 && (
             <div className="text-center py-12">
               <p className="text-4xl mb-3">💬</p>
               <p className="text-sm font-semibold text-foreground mb-1">Start your conversation</p>
