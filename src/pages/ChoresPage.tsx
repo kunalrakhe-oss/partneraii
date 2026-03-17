@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, forwardRef } from "react";
-import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, ChevronRight, Repeat, User, Users } from "lucide-react";
+import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users } from "lucide-react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,9 +7,7 @@ import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
-import { cn } from "@/lib/utils";
 import type { Tables } from "@/integrations/supabase/types";
 
 type ChoreRow = Tables<"chores">;
@@ -493,15 +491,13 @@ export default function ChoresPage() {
         )}
 
         {/* FAB */}
-        <div className="fixed bottom-24 left-0 right-0 flex justify-center z-30 pointer-events-none">
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowAdd(true)}
-            className="pointer-events-auto love-gradient text-primary-foreground px-6 py-3.5 rounded-full flex items-center gap-2 shadow-elevated text-sm font-bold"
-          >
-            <Plus size={16} strokeWidth={2.5} /> New Chore
-          </motion.button>
-        </div>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setShowAdd(true)}
+          className="fixed bottom-24 right-5 z-30 w-14 h-14 rounded-full love-gradient text-primary-foreground shadow-elevated flex items-center justify-center"
+        >
+          <Plus size={24} strokeWidth={2.5} />
+        </motion.button>
 
         {/* Add Chore Modal — Apple Calendar style */}
         <AnimatePresence>
@@ -581,7 +577,7 @@ export default function ChoresPage() {
                       />
                     </div>
 
-                    {/* Due Date picker — expands when toggled */}
+                    {/* Due Date picker — inline calendar */}
                     <AnimatePresence>
                       {hasDueDate && (
                         <motion.div
@@ -591,26 +587,16 @@ export default function ChoresPage() {
                           transition={{ duration: 0.2 }}
                           className="overflow-hidden"
                         >
-                          <div className="px-4 py-2">
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <button className="w-full flex items-center justify-between py-2 text-sm">
-                                  <span className="text-primary font-medium">
-                                    {newDueDate ? format(newDueDate, "EEE, MMM d, yyyy") : "Select date"}
-                                  </span>
-                                  <ChevronRight size={16} className="text-muted-foreground" />
-                                </button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="center" side="top">
-                                <Calendar
-                                  mode="single"
-                                  selected={newDueDate}
-                                  onSelect={setNewDueDate}
-                                  initialFocus
-                                  className={cn("p-3 pointer-events-auto")}
-                                />
-                              </PopoverContent>
-                            </Popover>
+                          <div className="px-2 py-2 flex flex-col items-center">
+                            <p className="text-xs text-primary font-medium mb-1">
+                              {newDueDate ? format(newDueDate, "EEE, MMM d, yyyy") : "Select date"}
+                            </p>
+                            <Calendar
+                              mode="single"
+                              selected={newDueDate}
+                              onSelect={setNewDueDate}
+                              className="p-2 pointer-events-auto"
+                            />
                           </div>
                         </motion.div>
                       )}
