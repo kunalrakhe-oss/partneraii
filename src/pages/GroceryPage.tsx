@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Sparkles, Check, Trash2, ShoppingCart, ClipboardList, Gift, Plane, Heart, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Sparkles, Check, Trash2, ShoppingCart, ClipboardList, Gift, Plane, Heart, ChevronUp, ChevronDown, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { categorizeGroceryItem } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
