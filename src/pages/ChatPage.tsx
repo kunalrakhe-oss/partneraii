@@ -226,7 +226,7 @@ export default function ChatPage() {
               )}
               <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-success border-[1.5px] border-card" />
             </div>
-            <span className="truncate max-w-[100px]">{partnerProfile?.display_name || "Partner"}</span>
+            <span className="truncate max-w-[100px]">{partnerFirstName}</span>
           </button>
 
           <button
