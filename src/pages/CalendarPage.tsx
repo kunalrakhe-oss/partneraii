@@ -471,8 +471,8 @@ export default function CalendarPage() {
   const deleteEvent = async (id: string) => {
     const { error } = await supabase.from("calendar_events").delete().eq("id", id);
     if (error) { toast.error("Failed to delete"); return; }
-    setEvents((prev) => prev.filter((e) => e.id !== id));
     toast.success("Event removed");
+    await refreshEvents();
   };
 
   const toggleComplete = async (event: CalendarEvent) => {
