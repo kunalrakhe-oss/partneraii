@@ -64,6 +64,7 @@ export default function GroceryPage() {
   const { toast } = useToast();
   const { isDemoMode } = useDemo();
   const [allItems, setAllItems] = useState<GroceryRow[]>([]);
+  const [categorizingAnim, setCategorizingAnim] = useState(false);
   const [input, setInput] = useState("");
   const [showSuggestion, setShowSuggestion] = useState(true);
   const [loading, setLoading] = useState(true);
