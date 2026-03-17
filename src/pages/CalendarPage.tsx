@@ -481,6 +481,16 @@ export default function CalendarPage() {
           )}
         </div>
 
+        {/* Today button - bottom left */}
+        {!isToday(selectedDate) && (
+          <button
+            onClick={goToToday}
+            className="fixed bottom-20 left-5 bg-card text-primary font-semibold text-xs px-4 py-2.5 rounded-full shadow-elevated border border-border z-40"
+          >
+            Today
+          </button>
+        )}
+
         {/* FAB */}
         <button
           onClick={() => openAddForm()}
