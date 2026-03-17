@@ -63,6 +63,8 @@ export default function AddEventModal({
   const [formReminder, setFormReminder] = useState("none");
   const [formCountdown, setFormCountdown] = useState("none");
   const [formType, setFormType] = useState<"event" | "reminder" | "countdown" | "birthday">("event");
+  const [formFile, setFormFile] = useState<File | null>(null);
+  const [formFilePreview, setFormFilePreview] = useState("");
 
   // Reset form when modal opens
   const resetForAdd = () => {

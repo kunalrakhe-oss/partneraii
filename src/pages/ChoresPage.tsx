@@ -687,6 +687,17 @@ export default function ChoresPage() {
                     </div>
                   </div>
 
+                  {/* Photo attachment */}
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden p-4">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">Photo (optional)</p>
+                    <MediaPicker
+                      imageUrl={null}
+                      preview={newFilePreview}
+                      onFileSelect={(file, url) => { setNewFile(file); setNewFilePreview(url); }}
+                      onClear={() => { setNewFile(null); setNewFilePreview(""); }}
+                    />
+                  </div>
+
                   {/* Add button (secondary, for users who scroll) */}
                   <button
                     onClick={addChore}
