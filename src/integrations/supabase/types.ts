@@ -140,6 +140,7 @@ export type Database = {
           list_type: string
           name: string
           partner_pair: string
+          sort_order: number
           user_id: string
         }
         Insert: {
@@ -150,6 +151,7 @@ export type Database = {
           list_type?: string
           name: string
           partner_pair: string
+          sort_order?: number
           user_id: string
         }
         Update: {
@@ -160,6 +162,7 @@ export type Database = {
           list_type?: string
           name?: string
           partner_pair?: string
+          sort_order?: number
           user_id?: string
         }
         Relationships: []
