@@ -596,14 +596,25 @@ export default function CalendarPage() {
         {/* Content area */}
         <div className="flex-1 overflow-y-auto">
           {viewMode === "day" && (
-            <DayView
-              date={selectedDate}
-              events={dayEvents}
-              onAddEvent={(time) => openAddForm(selectedDate, time)}
-              onEditEvent={openEditForm}
-              onToggle={toggleComplete}
-              onScheduleItem={scheduleItem}
-            />
+            <>
+              <DayView
+                date={selectedDate}
+                events={dayEvents}
+                onAddEvent={(time) => openAddForm(selectedDate, time)}
+                onEditEvent={openEditForm}
+                onToggle={toggleComplete}
+                onScheduleItem={scheduleItem}
+              />
+              <div className="mt-4">
+                <p className="px-5 text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Upcoming Events</p>
+                <ListView
+                  events={events}
+                  onEditEvent={openEditForm}
+                  onToggle={toggleComplete}
+                  onAddEvent={() => openAddForm()}
+                />
+              </div>
+            </>
           )}
 
           {viewMode === "multiday" && (
