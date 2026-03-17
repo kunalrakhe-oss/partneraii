@@ -141,12 +141,31 @@ export default function GroceryPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-1">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Grocery List</h1>
+            <h1 className="text-2xl font-bold text-foreground">Love List</h1>
             <p className="text-xs text-muted-foreground">Shared list • {uncheckedCount} items left</p>
           </div>
           <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card shadow-card text-xs font-medium text-muted-foreground border border-border">
             <Sparkles size={12} /> AI Sorting
           </button>
+        </div>
+
+        {/* Quick List Suggestions */}
+        <div className="flex gap-2 mt-4 overflow-x-auto pb-1">
+          {[
+            { icon: ShoppingCart, label: "Grocery", emoji: "🛒" },
+            { icon: ClipboardList, label: "To-Do", emoji: "📋" },
+            { icon: Gift, label: "Gift Ideas", emoji: "🎁" },
+            { icon: Plane, label: "Travel Pack", emoji: "✈️" },
+            { icon: Heart, label: "Date Ideas", emoji: "💕" },
+          ].map(list => (
+            <button
+              key={list.label}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-card shadow-card text-xs font-medium text-muted-foreground border border-border whitespace-nowrap shrink-0 hover:bg-muted transition-colors"
+            >
+              <span className="text-sm">{list.emoji}</span>
+              {list.label}
+            </button>
+          ))}
         </div>
 
         {/* Add input */}
