@@ -144,8 +144,8 @@ export default function MoodPage() {
             <h1 className="text-2xl font-bold text-foreground">How are you, {displayName}?</h1>
             <p className="text-sm text-muted-foreground">Share your vibe with your partner</p>
           </div>
-          <button className="w-10 h-10 rounded-btn bg-secondary/20 flex items-center justify-center">
-            <Heart size={18} className="text-secondary" fill="currentColor" />
+          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+            <X size={18} className="text-muted-foreground" />
           </button>
         </div>
 
