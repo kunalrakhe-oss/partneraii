@@ -179,7 +179,7 @@ export default function AddEventModal({
       {open && (
         <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[60] flex items-end justify-center bg-foreground/30 pb-20 sm:pb-0"
+          className="fixed inset-0 z-[60] flex items-end justify-center bg-foreground/30"
           onClick={onClose}
         >
           <motion.div
@@ -192,7 +192,7 @@ export default function AddEventModal({
               if (info.offset.y > 100 || info.velocity.y > 500) onClose();
             }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-card w-full max-w-lg rounded-t-3xl shadow-elevated h-[85vh] max-h-[90vh] flex flex-col overflow-hidden"
+            className="bg-card w-full max-w-lg rounded-t-3xl shadow-elevated max-h-[72vh] flex flex-col overflow-hidden"
           >
             <div className="shrink-0 bg-card px-5 pt-4 pb-0">
               {/* Swipe handle */}
