@@ -459,6 +459,7 @@ export default function DietPage() {
           event_date: data.log_date,
           event_time: data.event_time || null,
           assigned_to: data.assigned_to,
+          recurrence: data.recurrence,
         })
         .eq("category", "diet")
         .eq("event_date", editingItem.log_date)
