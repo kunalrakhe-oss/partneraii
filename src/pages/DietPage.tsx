@@ -366,7 +366,9 @@ export default function DietPage() {
 
   useEffect(() => {
     if (!partnerPair) return;
-    supabase.from("diet_logs").select("*").eq("partner_pair", partnerPair).eq("log_date", today)
+    const dayOfWeek = new Date().getDay();
+    supabase.from("diet_logs").select("*").eq("partner_pair", partnerPair)
+      .or(`log_date.eq.${today},recurrence.eq.daily,and(recurrence.eq.weekly,recurrence_day.eq.${dayOfWeek})`)
       .order("created_at", { ascending: true })
       .then(({ data }) => { if (data) setItems(data as DietItem[]); });
   }, [partnerPair, today]);
