@@ -282,8 +282,9 @@ function CategorySection({
                       <p className={`text-sm font-semibold ${item.is_completed ? "line-through text-muted-foreground" : "text-foreground"}`}>
                         {item.description}
                       </p>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <span className="text-[10px] text-muted-foreground">{assignLabel}</span>
+                        {item.event_time && <span className="text-[10px] text-muted-foreground">· 🕐 {item.event_time}</span>}
                         {item.notes && <span className="text-[10px] text-muted-foreground">· {item.notes}</span>}
                         {item.calories && <span className="text-[10px] text-muted-foreground">· {item.calories} cal</span>}
                       </div>
