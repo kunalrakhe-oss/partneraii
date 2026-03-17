@@ -14,12 +14,17 @@ const MOODS = [
   { key: "excited", emoji: "🤩", label: "Excited" },
   { key: "neutral", emoji: "🥰", label: "Loved" },
   { key: "calm", emoji: "😌", label: "Calm" },
-  { key: "tired", emoji: "😵‍💫", label: "Tired" },
-  { key: "sad", emoji: "😢", label: "Sad" },
-  { key: "angry", emoji: "😫", label: "Stressed" },
-  { key: "anxious", emoji: "😰", label: "Anxious" },
   { key: "grateful", emoji: "🙏", label: "Grateful" },
   { key: "silly", emoji: "🤪", label: "Silly" },
+  { key: "tired", emoji: "😵‍💫", label: "Tired" },
+  { key: "sad", emoji: "😢", label: "Sad" },
+  { key: "stressed", emoji: "😫", label: "Stressed" },
+  { key: "anxious", emoji: "😰", label: "Anxious" },
+  { key: "angry", emoji: "😠", label: "Angry" },
+  { key: "furious", emoji: "🤬", label: "Furious" },
+  { key: "lonely", emoji: "🥺", label: "Lonely" },
+  { key: "hopeful", emoji: "🌟", label: "Hopeful" },
+  { key: "confused", emoji: "😕", label: "Confused" },
 ] as const;
 
 const MOOD_EMOJI_MAP: Record<string, string> = Object.fromEntries(MOODS.map(m => [m.key, m.emoji]));
