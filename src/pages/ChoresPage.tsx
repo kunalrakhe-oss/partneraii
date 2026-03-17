@@ -9,7 +9,6 @@ import PageTransition from "@/components/PageTransition";
 import { Calendar } from "@/components/ui/calendar";
 import { Switch } from "@/components/ui/switch";
 import type { Tables } from "@/integrations/supabase/types";
-import type { Tables } from "@/integrations/supabase/types";
 
 type ChoreRow = Tables<"chores">;
 
