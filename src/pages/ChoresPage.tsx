@@ -147,30 +147,44 @@ export default function ChoresPage() {
   const myProfile = userId ? profiles[userId] : null;
   const partnerProfile = Object.values(profiles).find(p => p.user_id !== userId) || null;
 
-  const addChore = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!userId || !partnerPair) return;
-    setSubmitting(true);
-    const fd = new FormData(e.currentTarget);
-    const title = (fd.get("name") as string).trim();
-    if (!title) { setSubmitting(false); return; }
+  // New chore form state
+  const [newTitle, setNewTitle] = useState("");
+  const [newFrequency, setNewFrequency] = useState("weekly");
+  const [newAssign, setNewAssign] = useState("");
+  const [newDueDate, setNewDueDate] = useState<Date | undefined>(undefined);
+  const [hasDueDate, setHasDueDate] = useState(false);
 
-    const assignVal = fd.get("assignedTo") as string;
+  const resetForm = () => {
+    setNewTitle("");
+    setNewFrequency("weekly");
+    setNewAssign("");
+    setNewDueDate(undefined);
+    setHasDueDate(false);
+  };
+
+  const addChore = async () => {
+    if (!userId || !partnerPair) return;
+    const title = newTitle.trim();
+    if (!title) return;
+    setSubmitting(true);
+
     let assignedTo: string | null = null;
-    if (assignVal === "me") assignedTo = userId;
-    else if (assignVal === "partner" && partnerProfile) assignedTo = partnerProfile.user_id;
+    if (newAssign === "me") assignedTo = userId;
+    else if (newAssign === "partner" && partnerProfile) assignedTo = partnerProfile.user_id;
 
     const { error } = await supabase.from("chores").insert({
       title,
-      recurrence: (fd.get("frequency") as string) || null,
+      recurrence: newFrequency || null,
       assigned_to: assignedTo,
       user_id: userId,
       partner_pair: partnerPair,
+      due_date: hasDueDate && newDueDate ? format(newDueDate, "yyyy-MM-dd") : null,
     });
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       setShowAdd(false);
+      resetForm();
       fetchChores();
     }
     setSubmitting(false);
