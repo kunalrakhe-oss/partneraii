@@ -135,33 +135,45 @@ export type Database = {
         Row: {
           category: string | null
           created_at: string
+          due_date: string | null
           id: string
           is_checked: boolean
+          is_flagged: boolean
           list_type: string
           name: string
+          notes: string | null
           partner_pair: string
+          priority: string
           sort_order: number
           user_id: string
         }
         Insert: {
           category?: string | null
           created_at?: string
+          due_date?: string | null
           id?: string
           is_checked?: boolean
+          is_flagged?: boolean
           list_type?: string
           name: string
+          notes?: string | null
           partner_pair: string
+          priority?: string
           sort_order?: number
           user_id: string
         }
         Update: {
           category?: string | null
           created_at?: string
+          due_date?: string | null
           id?: string
           is_checked?: boolean
+          is_flagged?: boolean
           list_type?: string
           name?: string
+          notes?: string | null
           partner_pair?: string
+          priority?: string
           sort_order?: number
           user_id?: string
         }
