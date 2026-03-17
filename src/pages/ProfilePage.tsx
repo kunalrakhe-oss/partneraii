@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
+import { useTheme } from "@/contexts/ThemeContext";
+import { Monitor } from "lucide-react";
 
 type SheetType = "personal" | "notifications" | "theme" | null;
 
@@ -38,6 +40,39 @@ function BottomSheet({ open, onClose, title, children }: { open: boolean; onClos
         </>
       )}
     </AnimatePresence>
+  );
+}
+
+function ThemeSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { theme, setTheme } = useTheme();
+  const options: { value: "light" | "dark" | "system"; label: string; icon: typeof Sun; desc: string }[] = [
+    { value: "light", label: "Light", icon: Sun, desc: "Warm & bright" },
+    { value: "dark", label: "Dark", icon: Moon, desc: "Easy on the eyes" },
+    { value: "system", label: "System", icon: Monitor, desc: "Match your device" },
+  ];
+  return (
+    <BottomSheet open={open} onClose={onClose} title="Theme & Appearance">
+      <div className="space-y-2">
+        <p className="text-xs text-muted-foreground mb-1">Choose your preferred look</p>
+        {options.map(t => (
+          <button key={t.value} onClick={() => setTheme(t.value)}
+            className={`w-full flex items-center gap-3 bg-muted rounded-xl px-4 py-3 border transition-colors ${theme === t.value ? "border-primary" : "border-border"}`}>
+            <div className="w-9 h-9 rounded-xl bg-card flex items-center justify-center">
+              <t.icon size={16} className="text-foreground" />
+            </div>
+            <div className="text-left flex-1">
+              <p className="text-sm font-medium text-foreground">{t.label}</p>
+              <p className="text-[10px] text-muted-foreground">{t.desc}</p>
+            </div>
+            {theme === t.value && (
+              <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                <Check size={12} className="text-primary-foreground" />
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    </BottomSheet>
   );
 }
 
@@ -322,31 +357,7 @@ export default function ProfilePage() {
       </BottomSheet>
 
       {/* Theme Sheet */}
-      <BottomSheet open={activeSheet === "theme"} onClose={() => setActiveSheet(null)} title="Theme & Appearance">
-        <div className="space-y-3">
-          <p className="text-xs text-muted-foreground">Choose your preferred look</p>
-          {[
-            { label: "Light", icon: Sun, desc: "Default bright theme" },
-            { label: "Dark", icon: Moon, desc: "Coming soon" },
-          ].map(t => (
-            <button key={t.label} disabled={t.label === "Dark"}
-              className={`w-full flex items-center gap-3 bg-muted rounded-xl px-4 py-3 border ${t.label === "Light" ? "border-primary" : "border-border opacity-50"}`}>
-              <div className="w-9 h-9 rounded-xl bg-card flex items-center justify-center">
-                <t.icon size={16} className="text-foreground" />
-              </div>
-              <div className="text-left flex-1">
-                <p className="text-sm font-medium text-foreground">{t.label}</p>
-                <p className="text-[10px] text-muted-foreground">{t.desc}</p>
-              </div>
-              {t.label === "Light" && (
-                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                  <Check size={12} className="text-primary-foreground" />
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
-      </BottomSheet>
+      <ThemeSheet open={activeSheet === "theme"} onClose={() => setActiveSheet(null)} />
     </PageTransition>
   );
 }
