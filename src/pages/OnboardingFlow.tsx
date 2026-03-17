@@ -309,6 +309,8 @@ export default function OnboardingFlow() {
             <div className="w-full space-y-3">
               <button
                 onClick={() => {
+                  // Exit demo mode since user chose the real path
+                  exitDemo();
                   if (user) {
                     setStep("setup-names");
                   } else {
