@@ -592,6 +592,50 @@ export default function CalendarPage() {
           <Plus size={22} className={`transition-transform ${showFabMenu ? "rotate-45" : ""}`} />
         </button>
 
+        {/* Diet Form Bottom Sheet */}
+        <AnimatePresence>
+          {showDietForm && <CalendarDietForm
+            defaultDate={format(selectedDate, "yyyy-MM-dd")}
+            onClose={() => setShowDietForm(false)}
+            onSave={async (data) => {
+              if (!user || !partnerPair || dietSaving) return;
+              setDietSaving(true);
+              try {
+                const { data: row, error } = await supabase.from("diet_logs").insert({
+                  user_id: user.id, partner_pair: partnerPair, meal_type: data.category,
+                  description: data.description, notes: data.notes || null, assigned_to: data.assigned_to,
+                  calories: data.calories, log_date: data.log_date, event_time: data.event_time || null,
+                  recurrence: data.recurrence, recurrence_day: data.recurrence_day,
+                }).select().single();
+                if (!error && row) {
+                  // Also sync to calendar_events
+                  await supabase.from("calendar_events").insert({
+                    title: `🥗 ${data.description}`,
+                    description: `Diet: ${data.category}${data.notes ? ` — ${data.notes}` : ""}`,
+                    category: "diet",
+                    event_date: data.log_date,
+                    event_time: data.event_time || null,
+                    assigned_to: data.assigned_to,
+                    priority: "low",
+                    recurrence: data.recurrence,
+                    user_id: user.id,
+                    partner_pair: partnerPair,
+                  });
+                  // Refresh events
+                  const { data: freshEvents } = await supabase.from("calendar_events").select("*").eq("partner_pair", partnerPair);
+                  if (freshEvents) setEvents(expandRecurringEvents(freshEvents as CalendarEvent[]));
+                  toast.success("Diet item added!");
+                  setShowDietForm(false);
+                } else {
+                  toast.error("Failed to add diet item");
+                }
+              } finally {
+                setDietSaving(false);
+              }
+            }}
+          />}
+        </AnimatePresence>
+
         {/* Add/Edit Event Modal */}
         <AddEventModal
           open={showAdd}
