@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { Home, CalendarDays, ShoppingCart, MessageCircle, User } from "lucide-react";
 import { motion } from "framer-motion";
+import PartnerNotifications from "@/components/PartnerNotifications";
 
 const tabs = [
   { to: "/", icon: Home, label: "Home" },
