@@ -1,8 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Sparkles, Check, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLocalStorage, generateId, categorizeGroceryItem, type GroceryItem } from "@/lib/store";
+import { categorizeGroceryItem } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
+import { usePartnerPair } from "@/hooks/usePartnerPair";
+import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
+import type { Tables } from "@/integrations/supabase/types";
+
+type GroceryRow = Tables<"grocery_items">;
 
 const CATEGORY_DISPLAY: Record<string, string> = {
   fruits: "PRODUCE",
@@ -28,38 +34,115 @@ const CATEGORY_COLOR: Record<string, string> = {
 };
 
 export default function GroceryPage() {
-  const [items, setItems] = useLocalStorage<GroceryItem[]>("lovelist-groceries", []);
+  const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
+  const { toast } = useToast();
+  const [items, setItems] = useState<GroceryRow[]>([]);
   const [input, setInput] = useState("");
   const [showSuggestion, setShowSuggestion] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const addItem = () => {
-    if (!input.trim()) return;
+  const fetchItems = useCallback(async () => {
+    if (!partnerPair) return;
+    const { data } = await supabase
+      .from("grocery_items")
+      .select("*")
+      .eq("partner_pair", partnerPair)
+      .order("created_at", { ascending: true });
+    if (data) setItems(data);
+    setLoading(false);
+  }, [partnerPair]);
+
+  useEffect(() => {
+    if (pairLoading) return;
+    if (!partnerPair) { setLoading(false); return; }
+    fetchItems();
+  }, [partnerPair, pairLoading, fetchItems]);
+
+  // Realtime subscription
+  useEffect(() => {
+    if (!partnerPair) return;
+    const channel = supabase
+      .channel("grocery-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "grocery_items" }, () => {
+        fetchItems();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [partnerPair, fetchItems]);
+
+  const addItem = async () => {
+    if (!input.trim() || !userId || !partnerPair) return;
     const category = categorizeGroceryItem(input.trim());
-    setItems([...items, { id: generateId(), name: input.trim(), category, checked: false }]);
-    setInput("");
+    const { error } = await supabase.from("grocery_items").insert({
+      name: input.trim(),
+      category,
+      user_id: userId,
+      partner_pair: partnerPair,
+    });
+    if (error) {
+      toast({ title: "Error adding item", description: error.message, variant: "destructive" });
+    } else {
+      setInput("");
+      fetchItems();
+    }
   };
 
-  const toggleItem = (id: string) => {
-    setItems(items.map(i => i.id === id ? { ...i, checked: !i.checked } : i));
+  const toggleItem = async (id: string, currentChecked: boolean) => {
+    await supabase.from("grocery_items").update({ is_checked: !currentChecked }).eq("id", id);
+    fetchItems();
   };
 
-  const clearChecked = () => {
-    setItems(items.filter(i => !i.checked));
+  const clearChecked = async () => {
+    const checkedIds = items.filter(i => i.is_checked).map(i => i.id);
+    if (checkedIds.length === 0) return;
+    await supabase.from("grocery_items").delete().in("id", checkedIds);
+    fetchItems();
   };
 
-  const uncheckedCount = items.filter(i => !i.checked).length;
+  const addSuggestion = async () => {
+    if (!userId || !partnerPair) return;
+    await supabase.from("grocery_items").insert({
+      name: "Coffee Beans",
+      category: "beverages",
+      user_id: userId,
+      partner_pair: partnerPair,
+    });
+    setShowSuggestion(false);
+    fetchItems();
+  };
+
+  const uncheckedCount = items.filter(i => !i.is_checked).length;
 
   // Group by display category
-  const grouped: Record<string, GroceryItem[]> = {};
+  const grouped: Record<string, GroceryRow[]> = {};
   items.forEach(item => {
-    const display = CATEGORY_DISPLAY[item.category] || "OTHER";
+    const display = CATEGORY_DISPLAY[item.category ?? "other"] || "OTHER";
     (grouped[display] = grouped[display] || []).push(item);
   });
-
-  // Sort: unchecked first within each group
   Object.keys(grouped).forEach(key => {
-    grouped[key].sort((a, b) => Number(a.checked) - Number(b.checked));
+    grouped[key].sort((a, b) => Number(a.is_checked) - Number(b.is_checked));
   });
+
+  if (pairLoading || loading) {
+    return (
+      <PageTransition>
+        <div className="px-5 pt-10 pb-6 flex items-center justify-center min-h-[60vh]">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      </PageTransition>
+    );
+  }
+
+  if (!partnerPair) {
+    return (
+      <PageTransition>
+        <div className="px-5 pt-10 pb-6 text-center">
+          <p className="text-4xl mb-3">🔗</p>
+          <p className="text-sm text-muted-foreground">Connect with your partner to start sharing grocery lists</p>
+        </div>
+      </PageTransition>
+    );
+  }
 
   return (
     <PageTransition>
@@ -68,7 +151,7 @@ export default function GroceryPage() {
         <div className="flex items-center justify-between mb-1">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Grocery List</h1>
-            <p className="text-xs text-muted-foreground">Shared with Alex • {uncheckedCount} items left</p>
+            <p className="text-xs text-muted-foreground">Shared list • {uncheckedCount} items left</p>
           </div>
           <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card shadow-card text-xs font-medium text-muted-foreground border border-border">
             <Sparkles size={12} /> AI Sorting
@@ -115,22 +198,19 @@ export default function GroceryPage() {
                         initial={{ opacity: 0, x: -12 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 12 }}
-                        className={`bg-card rounded-2xl px-4 py-3.5 shadow-card flex items-center gap-3 border border-border ${item.checked ? "opacity-60" : ""}`}
+                        className={`bg-card rounded-2xl px-4 py-3.5 shadow-card flex items-center gap-3 border border-border ${item.is_checked ? "opacity-60" : ""}`}
                       >
                         <button
-                          onClick={() => toggleItem(item.id)}
+                          onClick={() => toggleItem(item.id, item.is_checked)}
                           className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
-                            item.checked ? "bg-success border-success" : "border-border"
+                            item.is_checked ? "bg-success border-success" : "border-border"
                           }`}
                         >
-                          {item.checked && <Check size={14} className="text-success-foreground" />}
+                          {item.is_checked && <Check size={14} className="text-success-foreground" />}
                         </button>
-                        <span className={`flex-1 text-sm font-medium ${item.checked ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                        <span className={`flex-1 text-sm font-medium ${item.is_checked ? "line-through text-muted-foreground" : "text-foreground"}`}>
                           {item.name}
                         </span>
-                        <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
-                          <span className="text-[10px] font-bold text-muted-foreground">A</span>
-                        </div>
                       </motion.div>
                     ))}
                   </AnimatePresence>
@@ -141,7 +221,7 @@ export default function GroceryPage() {
         )}
 
         {/* LoveList Suggestion */}
-        {showSuggestion && (
+        {showSuggestion && items.length > 0 && (
           <div className="love-gradient-soft border border-border rounded-2xl p-4 mt-6">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-sm">💡</span>
@@ -152,10 +232,7 @@ export default function GroceryPage() {
             </p>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => {
-                  setItems([...items, { id: generateId(), name: "Coffee Beans", category: "beverages", checked: false }]);
-                  setShowSuggestion(false);
-                }}
+                onClick={addSuggestion}
                 className="px-4 py-1.5 rounded-full bg-card shadow-card text-xs font-medium text-foreground border border-border"
               >
                 Yes, please
@@ -171,7 +248,7 @@ export default function GroceryPage() {
         )}
 
         {/* Clear Completed FAB */}
-        {items.some(i => i.checked) && (
+        {items.some(i => i.is_checked) && (
           <div className="flex justify-center mt-6">
             <button
               onClick={clearChecked}

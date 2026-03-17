@@ -1,13 +1,18 @@
-import { useState } from "react";
-import { Plus, Settings, Check, Clock, ChevronRight, Sparkles, Droplets, HelpCircle, UtensilsCrossed } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Settings, Check, Clock, Sparkles, Droplets, HelpCircle, UtensilsCrossed, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLocalStorage, generateId, type Chore } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
+import { usePartnerPair } from "@/hooks/usePartnerPair";
+import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
+import type { Tables } from "@/integrations/supabase/types";
 
-const DEFAULT_CHORES: Partial<Chore>[] = [
-  { name: "Deep Clean Kitchen", instructions: ["Clear all countertops", "Scrub sink and faucet", "Clean oven and microwave", "Mop the floor"], frequency: "weekly" },
-  { name: "Water the Plants", instructions: ["Check soil moisture; if top inch is dry, it's time.", "Use filtered water for the Monstera in the corner.", "Mist the ferns gently to maintain humidity."], frequency: "weekly" },
-  { name: "Vacuum Living Room", instructions: ["Clear floor of small items", "Vacuum all areas", "Move furniture edges"], frequency: "weekly" },
+type ChoreRow = Tables<"chores">;
+
+const DEFAULT_CHORES = [
+  { title: "Deep Clean Kitchen", recurrence: "weekly" as const },
+  { title: "Water the Plants", recurrence: "weekly" as const },
+  { title: "Vacuum Living Room", recurrence: "weekly" as const },
 ];
 
 const CHORE_ICONS: Record<string, any> = {
@@ -19,49 +24,112 @@ const CHORE_ICONS: Record<string, any> = {
 type FilterMode = "all" | "me" | "pending";
 
 export default function ChoresPage() {
-  const [chores, setChores] = useLocalStorage<Chore[]>("lovelist-chores", []);
+  const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
+  const { toast } = useToast();
+  const [chores, setChores] = useState<ChoreRow[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterMode>("all");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  const completedCount = chores.filter(c => c.completed).length;
+  const fetchChores = useCallback(async () => {
+    if (!partnerPair) return;
+    const { data } = await supabase
+      .from("chores")
+      .select("*")
+      .eq("partner_pair", partnerPair)
+      .order("created_at", { ascending: true });
+    if (data) setChores(data);
+    setLoading(false);
+  }, [partnerPair]);
+
+  useEffect(() => {
+    if (pairLoading) return;
+    if (!partnerPair) { setLoading(false); return; }
+    fetchChores();
+  }, [partnerPair, pairLoading, fetchChores]);
+
+  // Realtime
+  useEffect(() => {
+    if (!partnerPair) return;
+    const channel = supabase
+      .channel("chores-changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "chores" }, () => {
+        fetchChores();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [partnerPair, fetchChores]);
+
+  const completedCount = chores.filter(c => c.is_completed).length;
   const totalCount = chores.length;
   const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
-  const addChore = (e: React.FormEvent<HTMLFormElement>) => {
+  const addChore = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!userId || !partnerPair) return;
+    setSubmitting(true);
     const fd = new FormData(e.currentTarget);
-    const newChore: Chore = {
-      id: generateId(),
-      name: fd.get("name") as string,
-      instructions: (fd.get("instructions") as string).split("\n").filter(Boolean),
-      frequency: fd.get("frequency") as Chore["frequency"],
-      assignedTo: fd.get("assignedTo") as Chore["assignedTo"],
-      completed: false,
-    };
-    setChores([...chores, newChore]);
-    setShowAdd(false);
+    const { error } = await supabase.from("chores").insert({
+      title: fd.get("name") as string,
+      recurrence: (fd.get("frequency") as string) || null,
+      assigned_to: fd.get("assignedTo") === "me" ? userId : null,
+      user_id: userId,
+      partner_pair: partnerPair,
+    });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setShowAdd(false);
+      fetchChores();
+    }
+    setSubmitting(false);
   };
 
-  const toggleComplete = (id: string) => {
-    setChores(chores.map(c => c.id === id ? { ...c, completed: !c.completed, lastCompleted: new Date().toISOString() } : c));
+  const toggleComplete = async (id: string, current: boolean) => {
+    await supabase.from("chores").update({ is_completed: !current }).eq("id", id);
+    fetchChores();
   };
 
-  const addDefaults = () => {
-    const newChores = DEFAULT_CHORES.map(c => ({
-      ...c,
-      id: generateId(),
-      assignedTo: "rotating" as const,
-      completed: false,
-    })) as Chore[];
-    setChores([...chores, ...newChores]);
+  const addDefaults = async () => {
+    if (!userId || !partnerPair) return;
+    const rows = DEFAULT_CHORES.map(c => ({
+      title: c.title,
+      recurrence: c.recurrence,
+      user_id: userId,
+      partner_pair: partnerPair,
+    }));
+    await supabase.from("chores").insert(rows);
+    fetchChores();
   };
 
   const filteredChores = chores.filter(c => {
-    if (filter === "me") return c.assignedTo === "partner1";
-    if (filter === "pending") return !c.completed;
+    if (filter === "me") return c.assigned_to === userId;
+    if (filter === "pending") return !c.is_completed;
     return true;
   });
+
+  if (pairLoading || loading) {
+    return (
+      <PageTransition>
+        <div className="px-5 pt-10 pb-6 flex items-center justify-center min-h-[60vh]">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      </PageTransition>
+    );
+  }
+
+  if (!partnerPair) {
+    return (
+      <PageTransition>
+        <div className="px-5 pt-10 pb-6 text-center">
+          <p className="text-4xl mb-3">🔗</p>
+          <p className="text-sm text-muted-foreground">Connect with your partner to start sharing chores</p>
+        </div>
+      </PageTransition>
+    );
+  }
 
   return (
     <PageTransition>
@@ -125,7 +193,7 @@ export default function ChoresPage() {
           <div className="space-y-3">
             {filteredChores.map(chore => {
               const isExpanded = expandedId === chore.id;
-              const IconComp = CHORE_ICONS[chore.name] || HelpCircle;
+              const IconComp = CHORE_ICONS[chore.title] || HelpCircle;
               return (
                 <motion.div key={chore.id} layout className="bg-card rounded-2xl shadow-card overflow-hidden border border-border">
                   <div className="px-4 py-3.5 flex items-start gap-3">
@@ -134,74 +202,41 @@ export default function ChoresPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className={`text-sm font-bold ${chore.completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{chore.name}</p>
-                        {chore.completed ? (
+                        <p className={`text-sm font-bold ${chore.is_completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{chore.title}</p>
+                        {chore.is_completed ? (
                           <span className="flex items-center gap-1 text-[10px] font-medium text-success bg-success/10 px-2 py-0.5 rounded-full">
                             <Check size={10} /> Done
                           </span>
                         ) : (
                           <span className="flex items-center gap-1 text-[10px] font-medium text-accent bg-accent/10 px-2 py-0.5 rounded-full">
-                            <Clock size={10} /> Today
+                            <Clock size={10} /> {chore.due_date ? "Due" : "Today"}
                           </span>
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground capitalize mt-0.5">
-                        {chore.frequency === "weekly" ? "Every Saturday" : chore.frequency === "daily" ? "Every day" : chore.frequency}
+                        {chore.recurrence === "weekly" ? "Every Saturday" : chore.recurrence === "daily" ? "Every day" : chore.recurrence || "One-time"}
                       </p>
                     </div>
                   </div>
 
-                  {/* Assignee avatars + View Steps toggle */}
-                  {!isExpanded && (
-                    <div className="px-4 pb-3 flex items-center justify-between">
-                      <div className="flex -space-x-1">
-                        <div className="w-7 h-7 rounded-full bg-[hsl(100,20%,72%)] flex items-center justify-center text-[10px] font-bold text-foreground border-2 border-card">K</div>
-                        <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground border-2 border-card">A</div>
-                      </div>
-                      <button
-                        onClick={() => setExpandedId(chore.id)}
-                        className="flex items-center gap-1 text-xs text-muted-foreground font-medium"
-                      >
-                        <Sparkles size={12} /> View Steps
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Expanded instructions */}
-                  <AnimatePresence>
-                    {isExpanded && chore.instructions.length > 0 && (
-                      <motion.div
-                        initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <div className="mx-4 mb-3 bg-muted rounded-xl p-4">
-                          <p className="text-xs font-bold text-foreground mb-3 flex items-center gap-1.5">
-                            <Sparkles size={12} /> AI-Generated Instructions
-                          </p>
-                          <div className="space-y-2.5">
-                            {chore.instructions.map((step, i) => (
-                              <div key={i} className="flex gap-3 items-start">
-                                <span className="w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center shrink-0 text-[10px] font-bold text-primary">{i + 1}</span>
-                                <p className="text-xs text-foreground leading-relaxed">{step}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="px-4 pb-3 flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center text-[10px] font-bold text-primary">A</div>
-                            <span className="text-xs text-muted-foreground">Assigned to Anna</span>
-                          </div>
-                          <button
-                            onClick={() => toggleComplete(chore.id)}
-                            className="px-4 py-1.5 rounded-full bg-foreground text-background text-xs font-semibold"
-                          >
-                            Mark Done
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <div className="px-4 pb-3 flex items-center justify-between">
+                    <button
+                      onClick={() => setExpandedId(isExpanded ? null : chore.id)}
+                      className="flex items-center gap-1 text-xs text-muted-foreground font-medium"
+                    >
+                      <Sparkles size={12} /> {isExpanded ? "Collapse" : "Details"}
+                    </button>
+                    <button
+                      onClick={() => toggleComplete(chore.id, chore.is_completed)}
+                      className={`px-4 py-1.5 rounded-full text-xs font-semibold ${
+                        chore.is_completed
+                          ? "bg-muted text-muted-foreground"
+                          : "bg-foreground text-background"
+                      }`}
+                    >
+                      {chore.is_completed ? "Undo" : "Mark Done"}
+                    </button>
+                  </div>
                 </motion.div>
               );
             })}
@@ -235,22 +270,24 @@ export default function ChoresPage() {
                 <h3 className="text-lg font-bold text-foreground mb-4">New Chore</h3>
                 <form onSubmit={addChore} className="space-y-3">
                   <input name="name" required placeholder="Chore name" className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                  <textarea name="instructions" placeholder="Instructions (one per line)" rows={3} className="w-full px-4 py-3 rounded-xl bg-muted text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none" />
                   <div className="grid grid-cols-2 gap-3">
                     <select name="frequency" className="h-11 px-4 rounded-xl bg-muted text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
                       <option value="daily">Daily</option>
                       <option value="weekly">Weekly</option>
                       <option value="monthly">Monthly</option>
-                      <option value="once">One-time</option>
+                      <option value="">One-time</option>
                     </select>
                     <select name="assignedTo" className="h-11 px-4 rounded-xl bg-muted text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
-                      <option value="rotating">Rotating</option>
-                      <option value="partner1">Me</option>
-                      <option value="partner2">Partner</option>
+                      <option value="">Unassigned</option>
+                      <option value="me">Me</option>
                     </select>
                   </div>
-                  <button type="submit" className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm shadow-soft">
-                    Add Chore
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm shadow-soft flex items-center justify-center gap-2 disabled:opacity-60"
+                  >
+                    {submitting ? <Loader2 size={18} className="animate-spin" /> : "Add Chore"}
                   </button>
                 </form>
               </motion.div>
