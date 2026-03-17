@@ -575,7 +575,7 @@ export default function CalendarPage() {
               <CalendarPlus size={16} className="text-primary" /> Add Event
             </button>
             <button
-              onClick={() => { setShowFabMenu(false); navigate("/diet"); }}
+              onClick={() => { setShowFabMenu(false); setShowDietForm(true); }}
               className="flex items-center gap-2 bg-card text-foreground px-4 py-2.5 rounded-2xl shadow-elevated border border-border text-sm font-semibold"
             >
               <span className="text-base">🥗</span> Add Diet Item
