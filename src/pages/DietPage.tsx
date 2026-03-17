@@ -1,5 +1,8 @@
-import { useState, useEffect } from "react";
-import { ArrowLeft, Apple, Plus, Trash2, Droplets, Coffee, UtensilsCrossed, Cookie } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import {
+  ArrowLeft, Plus, Check, Trash2, Edit3, X, ChevronDown, ChevronRight,
+  Sparkles, PartyPopper, Users, User, Heart
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
@@ -7,52 +10,301 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { Progress } from "@/components/ui/progress";
 
-const MEAL_TYPES = [
-  { label: "Breakfast", emoji: "🥣", icon: Coffee },
-  { label: "Lunch", emoji: "🥗", icon: UtensilsCrossed },
-  { label: "Dinner", emoji: "🍽️", icon: UtensilsCrossed },
-  { label: "Snack", emoji: "🍎", icon: Cookie },
-];
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-interface DietLog {
+interface DietItem {
   id: string;
   user_id: string;
+  partner_pair: string;
   meal_type: string;
   description: string;
   calories: number | null;
+  notes: string | null;
+  assigned_to: string;
+  is_completed: boolean;
   log_date: string;
   created_at: string;
 }
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const CATEGORIES = [
+  { key: "morning", label: "Morning (After Wake Up)", emoji: "🌅", icon: "☀️" },
+  { key: "breakfast", label: "Breakfast", emoji: "🥣", icon: "🍳" },
+  { key: "lunch", label: "Lunch", emoji: "🥗", icon: "🍛" },
+  { key: "evening_snack", label: "Evening Snack", emoji: "🍎", icon: "🧃" },
+  { key: "dinner", label: "Dinner", emoji: "🍽️", icon: "🥘" },
+  { key: "night", label: "Night", emoji: "🌙", icon: "🥛" },
+];
+
+const ASSIGN_OPTIONS = [
+  { value: "me", label: "Me", icon: User },
+  { value: "partner", label: "Partner", icon: Heart },
+  { value: "both", label: "Both", icon: Users },
+];
+
+// ─── Confetti Component ──────────────────────────────────────────────────────
+
+function Confetti({ onDone }: { onDone: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 1500);
+    return () => clearTimeout(t);
+  }, [onDone]);
+
+  const particles = Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    delay: Math.random() * 0.3,
+    color: ["hsl(var(--primary))", "hsl(var(--secondary))", "hsl(var(--success))", "hsl(var(--warning))"][i % 4],
+    size: 4 + Math.random() * 6,
+  }));
+
+  return (
+    <div className="fixed inset-0 z-[80] pointer-events-none overflow-hidden">
+      {particles.map(p => (
+        <motion.div
+          key={p.id}
+          initial={{ y: "50vh", x: `${p.x}vw`, opacity: 1, scale: 1, rotate: 0 }}
+          animate={{ y: "-10vh", opacity: 0, scale: 0.5, rotate: 360 + Math.random() * 360 }}
+          transition={{ duration: 1.2, delay: p.delay, ease: "easeOut" }}
+          className="absolute rounded-full"
+          style={{ width: p.size, height: p.size, backgroundColor: p.color }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Add/Edit Modal ──────────────────────────────────────────────────────────
+
+function DietFormModal({
+  editing,
+  category,
+  onSave,
+  onClose,
+}: {
+  editing: DietItem | null;
+  category: string;
+  onSave: (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null }) => void;
+  onClose: () => void;
+}) {
+  const [desc, setDesc] = useState(editing?.description || "");
+  const [notes, setNotes] = useState(editing?.notes || "");
+  const [cal, setCal] = useState(editing?.calories?.toString() || "");
+  const [cat, setCat] = useState(editing?.meal_type || category);
+  const [assignedTo, setAssignedTo] = useState(editing?.assigned_to || "me");
+
+  return (
+    <>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-foreground/50 z-[60]" onClick={onClose} />
+      <motion.div
+        initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 28, stiffness: 300 }}
+        className="fixed inset-x-0 bottom-0 max-h-[72vh] bg-card rounded-t-3xl z-[60] overflow-y-auto safe-bottom"
+      >
+        <div className="w-10 h-1 rounded-full bg-muted mx-auto mt-3 mb-2" />
+        <div className="px-5 pb-8">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-lg font-bold text-foreground">{editing ? "Edit Item" : "Add Diet Item"}</h3>
+            <button onClick={onClose} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+              <X size={16} className="text-muted-foreground" />
+            </button>
+          </div>
+
+          {/* Food Name */}
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Food Name</label>
+          <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="e.g. Warm lemon water"
+            className="w-full h-11 bg-muted rounded-2xl px-4 text-sm text-foreground placeholder:text-muted-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring mb-4" />
+
+          {/* Category */}
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Category</label>
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            {CATEGORIES.map(c => (
+              <button key={c.key} onClick={() => setCat(c.key)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+                  cat === c.key ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
+                }`}>
+                <span>{c.icon}</span>
+                <span className="truncate">{c.label.split(" ")[0]}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Assigned To */}
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Assigned To</label>
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            {ASSIGN_OPTIONS.map(a => (
+              <button key={a.value} onClick={() => setAssignedTo(a.value)}
+                className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  assignedTo === a.value ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
+                }`}>
+                <a.icon size={14} />
+                {a.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Notes + Calories */}
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Notes</label>
+              <input value={notes} onChange={e => setNotes(e.target.value)} placeholder="No sugar, etc."
+                className="w-full h-11 bg-muted rounded-2xl px-4 text-sm text-foreground placeholder:text-muted-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Calories</label>
+              <input value={cal} onChange={e => setCal(e.target.value.replace(/\D/g, ""))} placeholder="Optional"
+                className="w-full h-11 bg-muted rounded-2xl px-4 text-sm text-foreground placeholder:text-muted-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button onClick={onClose} className="flex-1 h-11 rounded-2xl bg-muted text-foreground text-sm font-semibold">Cancel</button>
+            <button onClick={() => { if (desc.trim()) onSave({ description: desc.trim(), category: cat, notes: notes.trim() || "", assigned_to: assignedTo, calories: cal ? parseInt(cal) : null }); }}
+              disabled={!desc.trim()}
+              className="flex-1 h-11 rounded-2xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40">
+              {editing ? "Update" : "Add"}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
+// ─── Category Section ────────────────────────────────────────────────────────
+
+function CategorySection({
+  category,
+  items,
+  userId,
+  partnerName,
+  onToggle,
+  onEdit,
+  onDelete,
+  expanded,
+  onExpand,
+}: {
+  category: typeof CATEGORIES[0];
+  items: DietItem[];
+  userId: string;
+  partnerName: string;
+  onToggle: (id: string) => void;
+  onEdit: (item: DietItem) => void;
+  onDelete: (id: string) => void;
+  expanded: boolean;
+  onExpand: () => void;
+}) {
+  const done = items.filter(i => i.is_completed).length;
+
+  return (
+    <div className="mb-3">
+      <button onClick={onExpand}
+        className="w-full flex items-center gap-3 px-4 py-3 bg-card rounded-2xl shadow-soft transition-all active:scale-[0.98]">
+        <span className="text-xl">{category.emoji}</span>
+        <div className="flex-1 text-left">
+          <p className="text-sm font-bold text-foreground">{category.label}</p>
+          <p className="text-[10px] text-muted-foreground">{items.length} items · {done} done</p>
+        </div>
+        {items.length > 0 && (
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+            done === items.length && items.length > 0 ? "bg-success/20 text-success" : "bg-muted text-muted-foreground"
+          }`}>
+            {done}/{items.length}
+          </span>
+        )}
+        {expanded ? <ChevronDown size={16} className="text-muted-foreground" /> : <ChevronRight size={16} className="text-muted-foreground" />}
+      </button>
+
+      <AnimatePresence>
+        {expanded && items.length > 0 && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="pt-2 space-y-1.5 pl-2">
+              {items.map(item => {
+                const assignLabel = item.assigned_to === "me"
+                  ? (item.user_id === userId ? "You" : partnerName)
+                  : item.assigned_to === "partner"
+                    ? (item.user_id === userId ? partnerName : "You")
+                    : "Both";
+
+                return (
+                  <motion.div key={item.id} layout
+                    className={`flex items-center gap-3 rounded-2xl px-4 py-3 transition-all ${
+                      item.is_completed ? "bg-success/5 border border-success/20" : "bg-card border border-border shadow-soft"
+                    }`}
+                  >
+                    <button onClick={() => onToggle(item.id)}
+                      className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-all ${
+                        item.is_completed ? "bg-success" : "border-2 border-border"
+                      }`}>
+                      {item.is_completed && <Check size={12} className="text-success-foreground" />}
+                    </button>
+
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-semibold ${item.is_completed ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                        {item.description}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-muted-foreground">{assignLabel}</span>
+                        {item.notes && <span className="text-[10px] text-muted-foreground">· {item.notes}</span>}
+                        {item.calories && <span className="text-[10px] text-muted-foreground">· {item.calories} cal</span>}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => onEdit(item)} className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                        <Edit3 size={12} className="text-muted-foreground" />
+                      </button>
+                      <button onClick={() => onDelete(item.id)} className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                        <Trash2 size={12} className="text-muted-foreground" />
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Main Component ──────────────────────────────────────────────────────────
 
 export default function DietPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { partnerPair } = usePartnerPair();
-  const [logs, setLogs] = useState<DietLog[]>([]);
-  const [showAdd, setShowAdd] = useState(false);
-  const [mealType, setMealType] = useState("Lunch");
-  const [description, setDescription] = useState("");
-  const [calories, setCalories] = useState("");
-  const [saving, setSaving] = useState(false);
+
+  const [items, setItems] = useState<DietItem[]>([]);
   const [partnerName, setPartnerName] = useState("Partner");
-  const [waterCount, setWaterCount] = useState(0);
+  const [expandedCats, setExpandedCats] = useState<string[]>(["morning", "breakfast", "lunch"]);
+  const [showForm, setShowForm] = useState(false);
+  const [formCategory, setFormCategory] = useState("morning");
+  const [editingItem, setEditingItem] = useState<DietItem | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const today = format(new Date(), "yyyy-MM-dd");
 
+  // ─── Fetch ─────────────────────────────────────────────────────────────────
+
   useEffect(() => {
     if (!partnerPair) return;
-    supabase.from("diet_logs").select("*").eq("partner_pair", partnerPair)
-      .order("log_date", { ascending: false }).order("created_at", { ascending: false }).limit(30)
-      .then(({ data }) => { if (data) setLogs(data as DietLog[]); });
-  }, [partnerPair]);
+    supabase.from("diet_logs").select("*").eq("partner_pair", partnerPair).eq("log_date", today)
+      .order("created_at", { ascending: true })
+      .then(({ data }) => { if (data) setItems(data as DietItem[]); });
+  }, [partnerPair, today]);
 
   useEffect(() => {
     if (!user) return;
-    // Load water count from localStorage
-    const saved = localStorage.getItem(`water-${user.id}-${today}`);
-    if (saved) setWaterCount(parseInt(saved));
-
     supabase.from("profiles").select("partner_id").eq("user_id", user.id).maybeSingle()
       .then(({ data }) => {
         if (data?.partner_id) {
@@ -60,155 +312,196 @@ export default function DietPage() {
             .then(({ data: p }) => { if (p?.display_name) setPartnerName(p.display_name.split(" ")[0]); });
         }
       });
-  }, [user, today]);
+  }, [user]);
 
-  const addLog = async () => {
-    if (!user || !partnerPair || !description.trim() || saving) return;
+  // ─── Realtime sync ─────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!partnerPair) return;
+    const channel = supabase
+      .channel("diet-sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "diet_logs" }, (payload) => {
+        if (payload.eventType === "INSERT") {
+          const newItem = payload.new as DietItem;
+          if (newItem.partner_pair === partnerPair && newItem.log_date === today) {
+            setItems(prev => prev.some(i => i.id === newItem.id) ? prev : [...prev, newItem]);
+          }
+        } else if (payload.eventType === "UPDATE") {
+          const updated = payload.new as DietItem;
+          setItems(prev => prev.map(i => i.id === updated.id ? updated : i));
+        } else if (payload.eventType === "DELETE") {
+          const old = payload.old as { id: string };
+          setItems(prev => prev.filter(i => i.id !== old.id));
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [partnerPair, today]);
+
+  // ─── Actions ───────────────────────────────────────────────────────────────
+
+  const addItem = async (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null }) => {
+    if (!user || !partnerPair || saving) return;
     setSaving(true);
-    const { data, error } = await supabase.from("diet_logs").insert({
-      user_id: user.id, partner_pair: partnerPair, meal_type: mealType,
-      description: description.trim(), calories: calories ? parseInt(calories) : null, log_date: today,
+    const { data: row, error } = await supabase.from("diet_logs").insert({
+      user_id: user.id, partner_pair: partnerPair, meal_type: data.category,
+      description: data.description, notes: data.notes || null, assigned_to: data.assigned_to,
+      calories: data.calories, log_date: today,
     }).select().single();
-    if (!error && data) {
-      setLogs(prev => [data as DietLog, ...prev]);
-      setShowAdd(false); setDescription(""); setCalories(""); setMealType("Lunch");
+    if (!error && row) {
+      setItems(prev => [...prev, row as DietItem]);
+      setShowForm(false);
+      setEditingItem(null);
     }
     setSaving(false);
   };
 
-  const deleteLog = async (id: string) => {
+  const updateItem = async (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null }) => {
+    if (!editingItem || saving) return;
+    setSaving(true);
+    const { error } = await supabase.from("diet_logs").update({
+      meal_type: data.category, description: data.description, notes: data.notes || null,
+      assigned_to: data.assigned_to, calories: data.calories,
+    }).eq("id", editingItem.id);
+    if (!error) {
+      setItems(prev => prev.map(i => i.id === editingItem.id ? { ...i, meal_type: data.category, description: data.description, notes: data.notes || null, assigned_to: data.assigned_to, calories: data.calories } : i));
+      setShowForm(false);
+      setEditingItem(null);
+    }
+    setSaving(false);
+  };
+
+  const toggleComplete = async (id: string) => {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+    const next = !item.is_completed;
+    setItems(prev => prev.map(i => i.id === id ? { ...i, is_completed: next } : i));
+    if (next) setShowConfetti(true);
+    await supabase.from("diet_logs").update({ is_completed: next }).eq("id", id);
+  };
+
+  const deleteItem = async (id: string) => {
+    setItems(prev => prev.filter(i => i.id !== id));
     await supabase.from("diet_logs").delete().eq("id", id);
-    setLogs(prev => prev.filter(l => l.id !== id));
   };
 
-  const addWater = () => {
-    const next = waterCount + 1;
-    setWaterCount(next);
-    if (user) localStorage.setItem(`water-${user.id}-${today}`, String(next));
+  const toggleExpand = (key: string) => {
+    setExpandedCats(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
   };
 
-  const myLogs = logs.filter(l => l.user_id === user?.id);
-  const partnerLogs = logs.filter(l => l.user_id !== user?.id);
-  const todayLogs = myLogs.filter(l => l.log_date === today);
-  const todayCals = todayLogs.reduce((s, l) => s + (l.calories || 0), 0);
+  const openAdd = (catKey: string) => {
+    setEditingItem(null);
+    setFormCategory(catKey);
+    setShowForm(true);
+  };
 
-  const getMealEmoji = (t: string) => MEAL_TYPES.find(mt => mt.label === t)?.emoji || "🍽️";
+  const openEdit = (item: DietItem) => {
+    setEditingItem(item);
+    setFormCategory(item.meal_type);
+    setShowForm(true);
+  };
+
+  // ─── Derived ───────────────────────────────────────────────────────────────
+
+  const totalItems = items.length;
+  const completedItems = items.filter(i => i.is_completed).length;
+  const progressPct = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
   return (
     <PageTransition>
-      <div className="px-5 pt-10 pb-24">
-        <div className="flex items-center gap-3 mb-6">
+      <div className="px-5 pt-10 pb-28">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-5">
           <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
             <ArrowLeft size={18} className="text-foreground" />
           </button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Diet</h1>
-            <p className="text-sm text-muted-foreground">Eat well together 🥗</p>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-foreground">Diet Plan</h1>
+            <p className="text-sm text-muted-foreground">Stay healthy together 💚</p>
           </div>
         </div>
 
-        {/* Today's Summary */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-card rounded-2xl p-3 shadow-card text-center">
-            <UtensilsCrossed size={18} className="text-primary mx-auto mb-1" />
-            <p className="text-lg font-bold text-foreground">{todayLogs.length}</p>
-            <p className="text-[10px] text-muted-foreground">Meals Today</p>
+        {/* Progress Card */}
+        <div className="bg-card rounded-2xl p-4 shadow-card mb-5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Sparkles size={16} className="text-primary" />
+              <p className="text-sm font-bold text-foreground">Daily Progress</p>
+            </div>
+            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
+              progressPct === 100 && totalItems > 0 ? "bg-success/20 text-success" : "bg-muted text-muted-foreground"
+            }`}>
+              {completedItems}/{totalItems}
+            </span>
           </div>
-          <div className="bg-card rounded-2xl p-3 shadow-card text-center">
-            <Apple size={18} className="text-secondary mx-auto mb-1" />
-            <p className="text-lg font-bold text-foreground">{todayCals || "—"}</p>
-            <p className="text-[10px] text-muted-foreground">Calories</p>
+          <Progress value={progressPct} className="h-2.5 rounded-full" />
+          {progressPct === 100 && totalItems > 0 && (
+            <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }}
+              className="text-xs text-success font-semibold mt-2 flex items-center gap-1">
+              <PartyPopper size={14} /> All done for today! Amazing work! 🎉
+            </motion.p>
+          )}
+        </div>
+
+        {/* Category Sections */}
+        {CATEGORIES.map(cat => {
+          const catItems = items.filter(i => i.meal_type === cat.key);
+          return (
+            <div key={cat.key}>
+              <CategorySection
+                category={cat}
+                items={catItems}
+                userId={user?.id || ""}
+                partnerName={partnerName}
+                onToggle={toggleComplete}
+                onEdit={openEdit}
+                onDelete={deleteItem}
+                expanded={expandedCats.includes(cat.key)}
+                onExpand={() => toggleExpand(cat.key)}
+              />
+              {expandedCats.includes(cat.key) && (
+                <button onClick={() => openAdd(cat.key)}
+                  className="w-full flex items-center justify-center gap-1.5 py-2 mb-3 text-xs font-semibold text-primary hover:bg-primary/5 rounded-xl transition-colors">
+                  <Plus size={14} /> Add to {cat.label.split(" ")[0]}
+                </button>
+              )}
+            </div>
+          );
+        })}
+
+        {totalItems === 0 && (
+          <div className="text-center py-10">
+            <span className="text-4xl mb-3 block">🥗</span>
+            <p className="text-sm text-muted-foreground mb-1">No diet items for today</p>
+            <p className="text-xs text-muted-foreground">Tap + below to start planning</p>
           </div>
-          <button onClick={addWater} className="bg-card rounded-2xl p-3 shadow-card text-center active:scale-95 transition-transform">
-            <Droplets size={18} className="text-blue-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-foreground">{waterCount}</p>
-            <p className="text-[10px] text-muted-foreground">Water 💧</p>
-          </button>
-        </div>
-
-        {/* Add Button */}
-        <button onClick={() => setShowAdd(true)} className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 mb-6 shadow-soft">
-          <Plus size={18} /> Log Meal
-        </button>
-
-        {/* Add Form */}
-        <AnimatePresence>
-          {showAdd && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mb-6">
-              <div className="bg-card rounded-2xl p-4 shadow-card border border-border space-y-4">
-                <p className="text-sm font-bold text-foreground">Log a Meal</p>
-                <div className="grid grid-cols-4 gap-2">
-                  {MEAL_TYPES.map(mt => (
-                    <button key={mt.label} onClick={() => setMealType(mt.label)}
-                      className={`flex flex-col items-center gap-1 p-2.5 rounded-xl text-xs transition-all ${mealType === mt.label ? "bg-primary/20 ring-2 ring-primary" : "bg-muted"}`}>
-                      <span className="text-lg">{mt.emoji}</span>
-                      <span className="text-[10px] text-foreground">{mt.label}</span>
-                    </button>
-                  ))}
-                </div>
-                <input value={description} onChange={e => setDescription(e.target.value)} placeholder="What did you eat?"
-                  className="w-full h-10 bg-muted rounded-xl px-3 text-sm text-foreground placeholder:text-muted-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring" />
-                <input value={calories} onChange={e => setCalories(e.target.value.replace(/\D/g, ""))} placeholder="Calories (optional)"
-                  className="w-full h-10 bg-muted rounded-xl px-3 text-sm text-foreground placeholder:text-muted-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring" />
-                <div className="flex gap-2">
-                  <button onClick={() => setShowAdd(false)} className="flex-1 h-10 rounded-xl bg-muted text-foreground text-sm font-semibold">Cancel</button>
-                  <button onClick={addLog} disabled={!description.trim() || saving} className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40">
-                    {saving ? "Saving..." : "Save"}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* My Meals */}
-        <div className="mb-6">
-          <p className="text-sm font-bold text-foreground mb-3">My Meals</p>
-          {myLogs.length === 0 ? (
-            <div className="bg-card rounded-2xl p-4 shadow-card text-center">
-              <Apple size={24} className="text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">No meals logged yet</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {myLogs.map(l => (
-                <div key={l.id} className="bg-card rounded-2xl px-4 py-3 shadow-card flex items-center gap-3">
-                  <span className="text-xl">{getMealEmoji(l.meal_type)}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground">{l.description}</p>
-                    <p className="text-xs text-muted-foreground">{l.meal_type} · {format(new Date(l.log_date), "MMM d")}{l.calories ? ` · ${l.calories} cal` : ""}</p>
-                  </div>
-                  <button onClick={() => deleteLog(l.id)} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <Trash2 size={14} className="text-muted-foreground" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Partner Meals */}
-        <div>
-          <p className="text-sm font-bold text-foreground mb-3">{partnerName}'s Meals</p>
-          {partnerLogs.length === 0 ? (
-            <div className="bg-card rounded-2xl p-4 shadow-card text-center">
-              <p className="text-sm text-muted-foreground">No meals from {partnerName} yet</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {partnerLogs.map(l => (
-                <div key={l.id} className="bg-card rounded-2xl px-4 py-3 shadow-card flex items-center gap-3">
-                  <span className="text-xl">{getMealEmoji(l.meal_type)}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground">{l.description}</p>
-                    <p className="text-xs text-muted-foreground">{l.meal_type} · {format(new Date(l.log_date), "MMM d")}{l.calories ? ` · ${l.calories} cal` : ""}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        )}
       </div>
+
+      {/* Sticky Add Button */}
+      <div className="fixed bottom-20 right-5 z-50">
+        <button onClick={() => openAdd("morning")}
+          className="w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-elevated flex items-center justify-center active:scale-95 transition-transform">
+          <Plus size={24} />
+        </button>
+      </div>
+
+      {/* Form Modal */}
+      <AnimatePresence>
+        {showForm && (
+          <DietFormModal
+            editing={editingItem}
+            category={formCategory}
+            onSave={editingItem ? updateItem : addItem}
+            onClose={() => { setShowForm(false); setEditingItem(null); }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Confetti */}
+      <AnimatePresence>
+        {showConfetti && <Confetti onDone={() => setShowConfetti(false)} />}
+      </AnimatePresence>
     </PageTransition>
   );
 }
