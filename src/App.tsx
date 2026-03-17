@@ -12,6 +12,7 @@ import ChoresPage from "@/pages/ChoresPage";
 import ChatPage from "@/pages/ChatPage";
 import ProfilePage from "@/pages/ProfilePage";
 import WelcomePage from "@/pages/WelcomePage";
+import PartnerConnectPage from "@/pages/PartnerConnectPage";
 import NotFound from "@/pages/NotFound";
 import { useState } from "react";
 
@@ -36,6 +37,7 @@ function AppRoutes() {
     return (
       <Routes>
         <Route path="/welcome" element={<WelcomePage onComplete={handleOnboard} />} />
+        <Route path="/connect" element={<PartnerConnectPage />} />
         <Route path="*" element={<Navigate to="/welcome" replace />} />
       </Routes>
     );
@@ -51,6 +53,7 @@ function AppRoutes() {
         <Route path="/chores" element={<ChoresPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/connect" element={<PartnerConnectPage />} />
       </Route>
       <Route path="/welcome" element={<Navigate to="/" replace />} />
       <Route path="*" element={<NotFound />} />
