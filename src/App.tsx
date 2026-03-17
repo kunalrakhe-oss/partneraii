@@ -12,6 +12,7 @@ import ChoresPage from "@/pages/ChoresPage";
 import ChatPage from "@/pages/ChatPage";
 import ProfilePage from "@/pages/ProfilePage";
 import WelcomePage from "@/pages/WelcomePage";
+import PartnerConnectPage from "@/pages/PartnerConnectPage";
 import NotFound from "@/pages/NotFound";
 import { useState } from "react";
 
