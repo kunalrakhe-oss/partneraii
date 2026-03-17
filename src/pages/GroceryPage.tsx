@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Sparkles, Check, Trash2, ShoppingCart, ClipboardList, Gift, Plane, Heart, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Sparkles, Check, Trash2, ShoppingCart, ClipboardList, Gift, Plane, Heart, ChevronUp, ChevronDown, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { categorizeGroceryItem } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,6 +59,7 @@ export default function GroceryPage() {
   const [showSuggestion, setShowSuggestion] = useState(true);
   const [loading, setLoading] = useState(true);
   const [activeList, setActiveList] = useState<ListType>("grocery");
+  const [editingItem, setEditingItem] = useState<GroceryRow | null>(null);
 
   const fetchItems = useCallback(async () => {
     if (!partnerPair) return;
@@ -148,6 +149,13 @@ export default function GroceryPage() {
   const renameItem = async (id: string, newName: string) => {
     await supabase.from("grocery_items").update({ name: newName }).eq("id", id);
     setAllItems(prev => prev.map(i => i.id === id ? { ...i, name: newName } : i));
+    setEditingItem(null);
+  };
+
+  const deleteItem = async (id: string) => {
+    await supabase.from("grocery_items").delete().eq("id", id);
+    setEditingItem(null);
+    fetchItems();
   };
 
   const clearChecked = async () => {
@@ -275,7 +283,7 @@ export default function GroceryPage() {
                           item={item}
                           onToggle={toggleItem}
                           onMove={moveItem}
-                          onRename={renameItem}
+                          onEdit={setEditingItem}
                           isFirst={uncheckedCat[0]?.id === item.id}
                           isLast={uncheckedCat[uncheckedCat.length - 1]?.id === item.id}
                         />
@@ -295,7 +303,7 @@ export default function GroceryPage() {
                   item={item}
                   onToggle={toggleItem}
                   onMove={moveItem}
-                  onRename={renameItem}
+                  onEdit={setEditingItem}
                   isFirst={uncheckedItems[0]?.id === item.id}
                   isLast={uncheckedItems[uncheckedItems.length - 1]?.id === item.id}
                 />
@@ -337,7 +345,90 @@ export default function GroceryPage() {
           </div>
         )}
       </div>
+
+      {/* Edit Task Bottom Sheet */}
+      <AnimatePresence>
+        {editingItem && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 z-50"
+              onClick={() => setEditingItem(null)}
+            />
+            <EditSheet
+              item={editingItem}
+              onSave={renameItem}
+              onDelete={deleteItem}
+              onClose={() => setEditingItem(null)}
+            />
+          </>
+        )}
+      </AnimatePresence>
     </PageTransition>
+  );
+}
+
+function EditSheet({
+  item,
+  onSave,
+  onDelete,
+  onClose,
+}: {
+  item: GroceryRow;
+  onSave: (id: string, newName: string) => void;
+  onDelete: (id: string) => void;
+  onClose: () => void;
+}) {
+  const [value, setValue] = useState(item.name);
+
+  return (
+    <motion.div
+      initial={{ y: "100%" }}
+      animate={{ y: 0 }}
+      exit={{ y: "100%" }}
+      transition={{ type: "spring", damping: 28, stiffness: 350 }}
+      className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto"
+    >
+      <div className="bg-card rounded-t-3xl border border-border border-b-0 shadow-lg p-5 pb-8">
+        {/* Handle */}
+        <div className="flex justify-center mb-4">
+          <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+        </div>
+
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-base font-bold text-foreground">Edit Item</h3>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+            <X size={16} className="text-muted-foreground" />
+          </button>
+        </div>
+
+        <input
+          autoFocus
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter" && value.trim()) onSave(item.id, value.trim()); }}
+          placeholder="Item name"
+          className="w-full px-4 py-3 rounded-2xl bg-muted text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary border border-border mb-4"
+        />
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => { if (value.trim()) onSave(item.id, value.trim()); }}
+            className="flex-1 h-12 rounded-2xl bg-foreground text-background text-sm font-semibold shadow-soft"
+          >
+            Save
+          </button>
+          <button
+            onClick={() => onDelete(item.id)}
+            className="h-12 px-5 rounded-2xl bg-destructive/10 text-destructive text-sm font-semibold border border-destructive/20"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -345,30 +436,17 @@ function ItemRow({
   item,
   onToggle,
   onMove,
-  onRename,
+  onEdit,
   isFirst,
   isLast,
 }: {
   item: GroceryRow;
   onToggle: (id: string, checked: boolean) => void;
   onMove: (id: string, direction: "up" | "down") => void;
-  onRename: (id: string, newName: string) => void;
+  onEdit: (item: GroceryRow) => void;
   isFirst: boolean;
   isLast: boolean;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [editValue, setEditValue] = useState(item.name);
-
-  const commitEdit = () => {
-    const trimmed = editValue.trim();
-    if (trimmed && trimmed !== item.name) {
-      onRename(item.id, trimmed);
-    } else {
-      setEditValue(item.name);
-    }
-    setEditing(false);
-  };
-
   return (
     <motion.div
       layout
@@ -385,24 +463,13 @@ function ItemRow({
       >
         {item.is_checked && <Check size={14} className="text-success-foreground" />}
       </button>
-      {editing ? (
-        <input
-          autoFocus
-          value={editValue}
-          onChange={e => setEditValue(e.target.value)}
-          onBlur={commitEdit}
-          onKeyDown={e => { if (e.key === "Enter") commitEdit(); if (e.key === "Escape") { setEditValue(item.name); setEditing(false); } }}
-          className="flex-1 text-sm font-medium text-foreground bg-transparent border-b border-primary focus:outline-none"
-        />
-      ) : (
-        <span
-          onClick={() => { if (!item.is_checked) { setEditing(true); setEditValue(item.name); } }}
-          className={`flex-1 text-sm font-medium cursor-pointer ${item.is_checked ? "line-through text-muted-foreground" : "text-foreground"}`}
-        >
-          {item.name}
-        </span>
-      )}
-      {!item.is_checked && !editing && (
+      <span
+        onClick={() => { if (!item.is_checked) onEdit(item); }}
+        className={`flex-1 text-sm font-medium cursor-pointer ${item.is_checked ? "line-through text-muted-foreground" : "text-foreground"}`}
+      >
+        {item.name}
+      </span>
+      {!item.is_checked && (
         <div className="flex items-center gap-0.5 shrink-0">
           <button
             onClick={() => onMove(item.id, "up")}
