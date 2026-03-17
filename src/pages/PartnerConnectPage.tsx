@@ -186,32 +186,89 @@ export default function PartnerConnectPage() {
   };
 
   if (alreadyPaired) {
+    const age = partnerDetails?.birthday
+      ? differenceInYears(new Date(), new Date(partnerDetails.birthday))
+      : null;
+
+    const detailRows = [
+      { icon: User, label: "Name", value: partnerDetails?.display_name || "—" },
+      { icon: Calendar, label: "Birthday", value: partnerDetails?.birthday ? format(new Date(partnerDetails.birthday), "MMMM d, yyyy") : "Not set" },
+      ...(age !== null ? [{ icon: User, label: "Age", value: `${age} years` }] : []),
+      { icon: Users, label: "Gender", value: partnerDetails?.gender ? partnerDetails.gender.charAt(0).toUpperCase() + partnerDetails.gender.slice(1) : "Not set" },
+      { icon: Phone, label: "Phone", value: partnerDetails?.phone || "Not set" },
+    ];
+
     return (
       <PageTransition>
-        <div className="min-h-screen bg-background max-w-lg mx-auto px-5 flex flex-col items-center justify-center gap-4">
-          <div className="w-20 h-20 rounded-full bg-success/15 flex items-center justify-center">
-            <CheckCircle size={40} className="text-success" />
+        <div className="min-h-screen bg-background max-w-lg mx-auto px-5 pb-24">
+          {/* Header */}
+          <div className="sticky top-0 z-10 bg-background pt-4 pb-2 flex items-center justify-between">
+            <button onClick={() => navigate(-1)} className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
+              <ChevronLeft size={20} className="text-foreground" />
+            </button>
+            <h1 className="text-base font-bold text-foreground">Partner Profile</h1>
+            <div className="w-9" />
           </div>
-          <h1 className="text-xl font-bold text-foreground">You're connected!</h1>
-          <p className="text-sm text-muted-foreground text-center">
-            You and {partnerName || "your partner"} are linked and sharing everything.
-          </p>
-          <button
-            onClick={() => navigate("/")}
-            className="mt-4 px-6 h-11 rounded-xl love-gradient text-primary-foreground font-semibold text-sm"
-          >
-            Go Home
-          </button>
 
+          {/* Partner Avatar & Name */}
+          <div className="flex flex-col items-center mt-6 mb-8">
+            <div className="w-24 h-24 rounded-full bg-muted border-4 border-card shadow-elevated flex items-center justify-center overflow-hidden mb-4">
+              {partnerDetails?.avatar_url ? (
+                <img src={partnerDetails.avatar_url} alt="Partner" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-4xl">💑</span>
+              )}
+            </div>
+            <h2 className="text-xl font-bold text-foreground">{partnerDetails?.display_name || "Your Partner"}</h2>
+            <div className="flex items-center gap-1.5 mt-1">
+              <div className="w-2 h-2 rounded-full bg-success" />
+              <p className="text-xs text-muted-foreground">Connected</p>
+            </div>
+          </div>
+
+          {/* Detail Cards */}
+          <div className="space-y-2 mb-8">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Partner Details</p>
+            {detailRows.map((row, i) => (
+              <div key={i} className="bg-card rounded-2xl px-4 py-3.5 shadow-card border border-border flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                  <row.icon size={16} className="text-foreground" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[10px] text-muted-foreground">{row.label}</p>
+                  <p className="text-sm font-medium text-foreground">{row.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Actions */}
+          <div className="space-y-2">
+            <button
+              onClick={() => navigate("/chat")}
+              className="w-full h-12 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-elevated"
+            >
+              <MessageCircle size={16} />
+              Send a Message
+            </button>
+            <button
+              onClick={() => navigate("/")}
+              className="w-full h-12 rounded-2xl bg-card border border-border text-foreground font-medium text-sm flex items-center justify-center gap-2"
+            >
+              Go Home
+            </button>
+          </div>
+
+          {/* Remove Partner */}
           {!confirmRemove ? (
             <button
               onClick={() => setConfirmRemove(true)}
-              className="text-xs text-muted-foreground font-medium mt-2"
+              className="w-full text-center text-xs text-muted-foreground font-medium mt-6 py-2"
             >
               Remove partner
             </button>
           ) : (
-            <div className="bg-card rounded-2xl p-4 border border-border shadow-card w-full max-w-xs text-center space-y-3 mt-2">
+            <div className="bg-card rounded-2xl p-4 border border-border shadow-card w-full text-center space-y-3 mt-4">
               <p className="text-sm font-semibold text-foreground">Disconnect from {partnerName}?</p>
               <p className="text-xs text-muted-foreground">Shared data will remain but won't sync.</p>
               <div className="flex gap-2">
