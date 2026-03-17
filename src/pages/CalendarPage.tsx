@@ -692,7 +692,7 @@ function MonthView({ currentDate, selectedDate, events, onSelectDate, onEditEven
           <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
             {isToday(selectedDate) ? "Today" : format(selectedDate, "EEE, MMM d")}
           </h3>
-          <span className="text-[10px] text-muted-foreground">{selectedEvents.length} events</span>
+          <span className="text-[10px] text-muted-foreground">{selectedEvents.length} item{selectedEvents.length !== 1 ? "s" : ""}</span>
         </div>
 
         {selectedEvents.length === 0 ? (
