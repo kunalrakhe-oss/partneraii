@@ -180,16 +180,21 @@ export default function MemoriesPage() {
       <div className="px-5 pt-10 pb-24">
         {/* Header */}
         <div className="flex items-center justify-between mb-1">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Memories</h1>
-            <p className="text-xs text-muted-foreground">Your love story, one moment at a time 💕</p>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+              <ChevronLeft size={18} className="text-foreground" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">Memories</h1>
+              <p className="text-xs text-muted-foreground">Your love story, one moment at a time 💕</p>
+            </div>
           </div>
-          <button
-            onClick={() => setShowAdd(true)}
-            className="w-10 h-10 rounded-full love-gradient flex items-center justify-center shadow-soft"
-          >
-            <Plus size={18} className="text-primary-foreground" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+              <X size={16} className="text-muted-foreground" />
+            </button>
+            <ProfileButton />
+          </div>
         </div>
 
         {/* Stats banner */}
