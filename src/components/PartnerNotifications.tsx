@@ -195,6 +195,7 @@ export default function PartnerNotifications() {
         (payload) => {
           const reaction = payload.new as { user_id: string; emoji: string };
           if (reaction.user_id !== user.id && locationRef.current !== "/chat") {
+            notifyPartnerAction();
             toast(`Partner reacted ${reaction.emoji}`, {
               icon: <MessageCircle size={16} className="text-primary" />,
               duration: 3000,
