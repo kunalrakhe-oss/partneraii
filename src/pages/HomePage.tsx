@@ -190,19 +190,14 @@ export default function HomePage() {
                     <button
                       onClick={() => toggleChore(chore.id)}
                       className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
-                        chore.completed ? "bg-success border-success" : "border-border"
+                        chore.is_completed ? "bg-success border-success" : "border-border"
                       }`}
                     >
-                      {chore.completed && <Check size={14} className="text-success-foreground" />}
+                      {chore.is_completed && <Check size={14} className="text-success-foreground" />}
                     </button>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium ${chore.completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{chore.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{chore.frequency === "daily" ? "Due now" : chore.frequency}</p>
-                    </div>
-                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
-                      <span className="text-[10px] font-bold text-muted-foreground">
-                        {chore.assignedTo === "partner1" ? "S" : chore.assignedTo === "partner2" ? "J" : "R"}
-                      </span>
+                      <p className={`text-sm font-medium ${chore.is_completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{chore.title}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{chore.recurrence === "daily" ? "Due now" : chore.recurrence || "Once"}</p>
                     </div>
                   </div>
                 ))
