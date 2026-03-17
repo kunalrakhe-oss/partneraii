@@ -520,7 +520,7 @@ export default function WorkoutPage() {
                 </div>
                 <div className="px-5 pb-5 pt-2 border-t border-border">
                   <div className="flex gap-2">
-                    <input ref={useRef<HTMLInputElement>(null)} value={chatInput} onChange={e => setChatInput(e.target.value)}
+                    <input value={chatInput} onChange={e => setChatInput(e.target.value)}
                       onKeyDown={e => e.key === "Enter" && sendChat(chatInput)}
                       placeholder="Ask FitBot..." disabled={isStreaming}
                       className="flex-1 h-10 bg-muted rounded-xl px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50" />
