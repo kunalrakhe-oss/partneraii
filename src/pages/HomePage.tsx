@@ -70,7 +70,7 @@ export default function HomePage() {
 
     // Next upcoming event (today or future, not completed)
     supabase.from("calendar_events")
-      .select("id, title, event_date, event_time, category")
+      .select("id, title, event_date, event_time, category, countdown_type")
       .eq("partner_pair", partnerPair)
       .eq("is_completed", false)
       .gte("event_date", today)

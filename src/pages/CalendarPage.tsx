@@ -46,6 +46,27 @@ interface CalendarEvent {
   is_completed: boolean;
   user_id: string;
   partner_pair: string;
+  reminder?: string;
+  countdown_type?: string;
+}
+
+function countdownBadge(event: CalendarEvent): string | null {
+  if (!event.countdown_type || event.countdown_type === "none") return null;
+  const today = startOfDay(new Date());
+  const eventDay = startOfDay(parseISO(event.event_date));
+  const diff = Math.round((eventDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  if (event.countdown_type === "days-until") {
+    if (diff === 0) return "Today!";
+    if (diff === 1) return "Tomorrow!";
+    if (diff > 0) return `${diff}d until`;
+    return `${Math.abs(diff)}d ago`;
+  }
+  if (event.countdown_type === "days-since") {
+    if (diff === 0) return "Today!";
+    if (diff < 0) return `${Math.abs(diff)}d since`;
+    return `In ${diff}d`;
+  }
+  return null;
 }
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
