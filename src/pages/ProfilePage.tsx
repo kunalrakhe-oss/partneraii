@@ -291,8 +291,11 @@ export default function ProfilePage() {
       case "Notifications":
         setActiveSheet("notifications");
         break;
+      case "Partner Profile":
+        navigate("/couple");
+        break;
       case "Couple Connection":
-        navigate("/connect");
+        navigate("/couple");
         break;
       case "Remove Partner":
         setActiveSheet("remove-partner");

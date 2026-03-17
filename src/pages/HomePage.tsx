@@ -263,7 +263,7 @@ export default function HomePage() {
             <div className="flex items-center gap-2">
               {/* Couple Avatars */}
               {partnerProfile && !isDemoMode && (
-                <button onClick={() => navigate("/connect")} className="flex -space-x-2.5 mr-1">
+                <button onClick={() => navigate("/couple")} className="flex -space-x-2.5 mr-1">
                   {avatarUrl ? (
                     <img src={avatarUrl} alt="Me" className="w-9 h-9 rounded-full object-cover border-2 border-card z-10 ring-1 ring-primary/20" />
                   ) : (
