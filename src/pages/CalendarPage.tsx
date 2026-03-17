@@ -107,6 +107,38 @@ function formatHour(h: number): string {
   return `${h - 12} PM`;
 }
 
+// Expand recurring events into virtual daily/weekly instances
+function expandRecurringEvents(events: CalendarEvent[]): CalendarEvent[] {
+  const today = new Date();
+  const windowStart = subDays(today, 30);
+  const windowEnd = addDays(today, 60);
+  const result: CalendarEvent[] = [];
+
+  for (const event of events) {
+    if (event.recurrence === "daily") {
+      // Create an instance for each day in the window
+      const days = eachDayOfInterval({ start: windowStart, end: windowEnd });
+      for (const day of days) {
+        const dateStr = format(day, "yyyy-MM-dd");
+        result.push({ ...event, event_date: dateStr, id: `${event.id}-daily-${dateStr}` });
+      }
+    } else if (event.recurrence === "weekly") {
+      // Find the day-of-week from the original event_date
+      const originalDay = parseISO(event.event_date).getDay();
+      const days = eachDayOfInterval({ start: windowStart, end: windowEnd });
+      for (const day of days) {
+        if (day.getDay() === originalDay) {
+          const dateStr = format(day, "yyyy-MM-dd");
+          result.push({ ...event, event_date: dateStr, id: `${event.id}-weekly-${dateStr}` });
+        }
+      }
+    } else {
+      result.push(event);
+    }
+  }
+  return result;
+}
+
 export default function CalendarPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -176,7 +208,10 @@ export default function CalendarPage() {
         _sourceId: item.id,
       }));
 
-      setEvents([...calEvents, ...choreEvents, ...groceryEvents]);
+      // Expand recurring events into virtual instances for a 90-day window
+      const baseEvents = [...calEvents, ...choreEvents, ...groceryEvents];
+      const expanded = expandRecurringEvents(baseEvents);
+      setEvents(expanded);
     });
   }, [partnerPair]);
 
