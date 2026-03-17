@@ -152,6 +152,9 @@ export default function ChoresPage() {
   const [newAssign, setNewAssign] = useState("");
   const [newDueDate, setNewDueDate] = useState<Date | undefined>(undefined);
   const [hasDueDate, setHasDueDate] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(true);
+  const [newFile, setNewFile] = useState<File | null>(null);
+  const [newFilePreview, setNewFilePreview] = useState("");
 
   const resetForm = () => {
     setNewTitle("");
@@ -159,6 +162,9 @@ export default function ChoresPage() {
     setNewAssign("");
     setNewDueDate(undefined);
     setHasDueDate(false);
+    setShowCalendar(true);
+    setNewFile(null);
+    setNewFilePreview("");
   };
 
   const addChore = async () => {
