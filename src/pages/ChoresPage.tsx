@@ -493,15 +493,13 @@ export default function ChoresPage() {
         )}
 
         {/* FAB */}
-        <div className="fixed bottom-24 left-0 right-0 flex justify-center z-30 pointer-events-none">
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowAdd(true)}
-            className="pointer-events-auto love-gradient text-primary-foreground px-6 py-3.5 rounded-full flex items-center gap-2 shadow-elevated text-sm font-bold"
-          >
-            <Plus size={16} strokeWidth={2.5} /> New Chore
-          </motion.button>
-        </div>
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setShowAdd(true)}
+          className="fixed bottom-24 right-5 z-30 w-14 h-14 rounded-full love-gradient text-primary-foreground shadow-elevated flex items-center justify-center"
+        >
+          <Plus size={24} strokeWidth={2.5} />
+        </motion.button>
 
         {/* Add Chore Modal — Apple Calendar style */}
         <AnimatePresence>
