@@ -162,6 +162,8 @@ export default function ProfilePage() {
   const openPersonalInfo = () => {
     setEditName(displayName);
     setEditPhone(phone);
+    setEditGender(gender);
+    setEditBirthday(birthday);
     setActiveSheet("personal");
   };
 
