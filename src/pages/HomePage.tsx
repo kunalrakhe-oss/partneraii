@@ -444,9 +444,6 @@ export default function HomePage() {
                     )}
                   </div>
                 </div>
-                <div className="w-12 h-12 rounded-btn bg-secondary/20 flex items-center justify-center shrink-0">
-                  <Heart size={20} className="text-secondary" fill="currentColor" />
-                </div>
               </div>
             </button>
           </motion.div>

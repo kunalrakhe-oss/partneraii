@@ -641,14 +641,6 @@ export default function CalendarPage() {
             />
           )}
 
-          {viewMode === "list" && (
-            <ListView
-              events={events}
-              onEditEvent={openEditForm}
-              onToggle={toggleComplete}
-              onAddEvent={() => openAddForm()}
-            />
-          )}
         </div>
 
 
