@@ -111,6 +111,12 @@ export default function AddEventModal({
     e.preventDefault();
     if (!user || !partnerPair || !formTitle.trim()) return;
 
+    let imageUrl: string | null = null;
+    if (formFile) {
+      imageUrl = await uploadAttachment(formFile, user.id);
+      if (!imageUrl) { toast.error("Upload failed"); return; }
+    }
+
     if (editingEvent) {
       const { data, error } = await supabase
         .from("calendar_events")
@@ -124,7 +130,8 @@ export default function AddEventModal({
           event_date: formDate,
           reminder: formReminder,
           countdown_type: formCountdown,
-        })
+          ...(imageUrl ? { image_url: imageUrl } : {}),
+        } as any)
         .eq("id", editingEvent.id)
         .select()
         .single();
@@ -147,7 +154,8 @@ export default function AddEventModal({
           recurrence: "once",
           user_id: user.id,
           partner_pair: partnerPair,
-        })
+          image_url: imageUrl,
+        } as any)
         .select()
         .single();
       if (error) { toast.error("Failed to add event"); return; }
