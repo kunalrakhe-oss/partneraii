@@ -313,12 +313,14 @@ export default function ChoresPage() {
       <div className="px-5 pt-10 pb-28">
         {/* Header */}
         <div className="flex items-center justify-between mb-1">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground font-heading">Chore Manager</h1>
-            <p className="text-xs text-muted-foreground">Keeping our home cozy, together</p>
+          <div className="flex items-center gap-3">
+            <ProfileButton />
+            <div>
+              <h1 className="text-2xl font-bold text-foreground font-heading">Chore Manager</h1>
+              <p className="text-xs text-muted-foreground">Keeping our home cozy, together</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            <ProfileButton />
             <div className="relative" ref={settingsRef}>
             <button
               onClick={() => setShowSettings(s => !s)}
