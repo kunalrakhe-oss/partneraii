@@ -53,6 +53,7 @@ function AppRoutes() {
         <Route path="/chores" element={<ChoresPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/connect" element={<PartnerConnectPage />} />
       </Route>
       <Route path="/welcome" element={<Navigate to="/" replace />} />
       <Route path="*" element={<NotFound />} />
