@@ -48,6 +48,7 @@ export default function PartnerNotifications() {
           const msg = payload.new as { user_id: string; message: string; type: string };
           if (msg.user_id !== user.id && locationRef.current !== "/chat") {
             const preview = msg.type === "image" ? "📷 Sent a photo" : msg.message.length > 60 ? msg.message.slice(0, 60) + "…" : msg.message;
+            notifyPartnerAction();
             toast("New message 💬", {
               description: preview,
               icon: <MessageCircle size={16} className="text-primary" />,
