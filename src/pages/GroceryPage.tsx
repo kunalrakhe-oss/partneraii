@@ -15,7 +15,7 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type GroceryRow = Tables<"grocery_items">;
 
-const LIST_TABS = [
+const DEFAULT_TABS = [
   { key: "grocery", label: "Grocery", emoji: "🛒" },
   { key: "todo", label: "To-Do", emoji: "📋" },
   { key: "gift", label: "Gift Ideas", emoji: "🎁" },
@@ -23,7 +23,7 @@ const LIST_TABS = [
   { key: "date", label: "Date Ideas", emoji: "💕" },
 ] as const;
 
-type ListType = (typeof LIST_TABS)[number]["key"];
+type ListType = string;
 
 const LIST_CONFIG: Record<ListType, { placeholder: string; emptyEmoji: string; emptyText: string; emptyHint: string }> = {
   grocery: { placeholder: "Add milk, eggs, or bread...", emptyEmoji: "🛒", emptyText: "Your grocery list is empty", emptyHint: "Items are auto-categorized by AI" },
