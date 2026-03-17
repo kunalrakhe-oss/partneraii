@@ -152,6 +152,8 @@ export default function CalendarPage() {
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [showFabMenu, setShowFabMenu] = useState(false);
   const [showViewMenu, setShowViewMenu] = useState(false);
+  const [showDietForm, setShowDietForm] = useState(false);
+  const [dietSaving, setDietSaving] = useState(false);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
