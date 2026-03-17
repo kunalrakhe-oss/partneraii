@@ -76,7 +76,7 @@ export default function AuthPage() {
       setLoading(false);
     }
   };
-  };
+
 
   return (
     <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto">
