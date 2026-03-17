@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
 import HomePage from "@/pages/HomePage";
 import CalendarPage from "@/pages/CalendarPage";
@@ -12,40 +13,39 @@ import ChoresPage from "@/pages/ChoresPage";
 import ChatPage from "@/pages/ChatPage";
 import ProfilePage from "@/pages/ProfilePage";
 import MemoriesPage from "@/pages/MemoriesPage";
-import WelcomePage from "@/pages/WelcomePage";
 import PartnerConnectPage from "@/pages/PartnerConnectPage";
+import AuthPage from "@/pages/AuthPage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NotFound from "@/pages/NotFound";
-import { useState } from "react";
 
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const [onboarded, setOnboarded] = useState(() => {
-    try {
-      const val = localStorage.getItem("lovelist-onboarded");
-      return val ? JSON.parse(val) : "";
-    } catch {
-      return "";
-    }
-  });
+  const { user, loading } = useAuth();
 
-  const handleOnboard = () => {
-    localStorage.setItem("lovelist-onboarded", JSON.stringify("true"));
-    setOnboarded("true");
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
-  if (!onboarded) {
+  // Not authenticated — show auth pages only
+  if (!user) {
     return (
       <Routes>
-        <Route path="/welcome" element={<WelcomePage onComplete={handleOnboard} />} />
-        <Route path="/connect" element={<PartnerConnectPage />} />
-        <Route path="*" element={<Navigate to="/welcome" replace />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="*" element={<Navigate to="/auth" replace />} />
       </Routes>
     );
   }
 
+  // Authenticated
   return (
     <Routes>
+      <Route path="/connect" element={<PartnerConnectPage />} />
       <Route element={<AppLayout />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/calendar" element={<CalendarPage />} />
@@ -54,10 +54,10 @@ function AppRoutes() {
         <Route path="/chores" element={<ChoresPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/connect" element={<PartnerConnectPage />} />
         <Route path="/memories" element={<MemoriesPage />} />
       </Route>
-      <Route path="/welcome" element={<Navigate to="/" replace />} />
+      <Route path="/auth" element={<Navigate to="/" replace />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -65,13 +65,15 @@ function AppRoutes() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
