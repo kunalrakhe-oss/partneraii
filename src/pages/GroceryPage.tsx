@@ -13,6 +13,8 @@ import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
 import type { Tables } from "@/integrations/supabase/types";
+import { useDemo } from "@/contexts/DemoContext";
+import { DEMO_GROCERY_ITEMS } from "@/lib/demoData";
 
 type GroceryRow = Tables<"grocery_items">;
 
