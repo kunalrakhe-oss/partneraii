@@ -363,7 +363,7 @@ export default function GroceryPage() {
             />
             <EditSheet
               item={editingItem}
-              onSave={renameItem}
+              onSave={saveItem}
               onDelete={deleteItem}
               onClose={() => setEditingItem(null)}
             />
