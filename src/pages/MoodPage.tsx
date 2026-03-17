@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const MOODS = [
   { key: "happy", emoji: "😊", label: "Happy" },
