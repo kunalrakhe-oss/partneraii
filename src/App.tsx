@@ -48,9 +48,12 @@ function AppRoutes() {
     );
   }
 
-  // Authenticated
+  // Authenticated — check if onboarding needed
+  const onboardingDone2 = localStorage.getItem("lovelist-onboarding-done") === "true";
+
   return (
     <Routes>
+      <Route path="/onboarding" element={<OnboardingFlow />} />
       <Route element={<AppLayout />}>
         <Route path="/connect" element={<PartnerConnectPage />} />
         <Route path="/" element={<HomePage />} />
@@ -62,7 +65,7 @@ function AppRoutes() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/memories" element={<MemoriesPage />} />
       </Route>
-      <Route path="/auth" element={<Navigate to="/" replace />} />
+      <Route path="/auth" element={<Navigate to={onboardingDone2 ? "/" : "/onboarding"} replace />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
