@@ -37,6 +37,7 @@ function AppRoutes() {
     return (
       <Routes>
         <Route path="/welcome" element={<WelcomePage onComplete={handleOnboard} />} />
+        <Route path="/connect" element={<PartnerConnectPage />} />
         <Route path="*" element={<Navigate to="/welcome" replace />} />
       </Routes>
     );
