@@ -192,8 +192,12 @@ export default function ChatPage() {
   };
 
   // Group messages by date
+  const filteredMessages = searchQuery
+    ? messages.filter(m => m.type === "text" && m.message.toLowerCase().includes(searchQuery.toLowerCase()))
+    : messages;
+
   const groupedMessages: { date: string; msgs: ChatMsg[] }[] = [];
-  messages.forEach(msg => {
+  filteredMessages.forEach(msg => {
     const dateKey = format(new Date(msg.created_at), "yyyy-MM-dd");
     const last = groupedMessages[groupedMessages.length - 1];
     if (last && last.date === dateKey) last.msgs.push(msg);
