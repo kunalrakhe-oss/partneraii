@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Trash2 } from "lucide-react";
+import { X, Trash2, Bell, Timer } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,8 @@ export interface CalendarEventData {
   is_completed: boolean;
   user_id: string;
   partner_pair: string;
+  reminder?: string;
+  countdown_type?: string;
 }
 
 interface AddEventModalProps {
@@ -57,6 +59,8 @@ export default function AddEventModal({
   const [formAssigned, setFormAssigned] = useState("both");
   const [formPriority, setFormPriority] = useState("medium");
   const [formDate, setFormDate] = useState("");
+  const [formReminder, setFormReminder] = useState("none");
+  const [formCountdown, setFormCountdown] = useState("none");
 
   // Reset form when modal opens
   const resetForAdd = () => {
@@ -67,6 +71,8 @@ export default function AddEventModal({
     setFormAssigned("both");
     setFormPriority("medium");
     setFormDate(format(defaultDate || new Date(), "yyyy-MM-dd"));
+    setFormReminder("none");
+    setFormCountdown("none");
   };
 
   const resetForEdit = (event: CalendarEventData) => {
@@ -77,6 +83,8 @@ export default function AddEventModal({
     setFormAssigned(event.assigned_to);
     setFormPriority(event.priority);
     setFormDate(event.event_date);
+    setFormReminder(event.reminder || "none");
+    setFormCountdown(event.countdown_type || "none");
   };
 
   // Use a ref-like pattern: reset when open changes
@@ -102,6 +110,8 @@ export default function AddEventModal({
           assigned_to: formAssigned,
           priority: formPriority,
           event_date: formDate,
+          reminder: formReminder,
+          countdown_type: formCountdown,
         })
         .eq("id", editingEvent.id)
         .select()
@@ -120,6 +130,8 @@ export default function AddEventModal({
           event_time: formTime || null,
           assigned_to: formAssigned,
           priority: formPriority,
+          reminder: formReminder,
+          countdown_type: formCountdown,
           recurrence: "once",
           user_id: user.id,
           partner_pair: partnerPair,
@@ -223,6 +235,49 @@ export default function AddEventModal({
                         <option value="medium">Medium</option>
                         <option value="high">High</option>
                       </select>
+                    </div>
+                  </div>
+                  {/* Reminder */}
+                  <div>
+                    <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                      <Bell size={12} /> Reminder
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: "none", label: "None" },
+                        { value: "at-time", label: "At time" },
+                        { value: "5min", label: "5 min before" },
+                        { value: "15min", label: "15 min" },
+                        { value: "1hour", label: "1 hour" },
+                        { value: "1day", label: "1 day" },
+                      ].map((r) => (
+                        <button key={r.value} type="button" onClick={() => setFormReminder(r.value)}
+                          className={`rounded-btn px-3 py-1.5 text-xs font-medium transition-colors ${
+                            formReminder === r.value ? "love-gradient text-primary-foreground" : "bg-muted text-muted-foreground"
+                          }`}>
+                          {r.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Countdown */}
+                  <div>
+                    <label className="mb-1 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                      <Timer size={12} /> Countdown
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { value: "none", label: "None" },
+                        { value: "days-until", label: "Days until" },
+                        { value: "days-since", label: "Days since" },
+                      ].map((c) => (
+                        <button key={c.value} type="button" onClick={() => setFormCountdown(c.value)}
+                          className={`rounded-btn px-3 py-1.5 text-xs font-medium transition-colors ${
+                            formCountdown === c.value ? "love-gradient text-primary-foreground" : "bg-muted text-muted-foreground"
+                          }`}>
+                          {c.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
