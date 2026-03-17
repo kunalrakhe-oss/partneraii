@@ -404,6 +404,7 @@ export default function GroceryPage() {
           )}
         </AnimatePresence>
 
+        {items.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-4xl mb-3">{config.emptyEmoji}</p>
             <p className="text-sm text-muted-foreground">{config.emptyText}</p>
