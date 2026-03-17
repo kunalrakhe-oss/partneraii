@@ -447,10 +447,10 @@ export default function DietPage() {
     const { error } = await supabase.from("diet_logs").update({
       meal_type: data.category, description: data.description, notes: data.notes || null,
       assigned_to: data.assigned_to, calories: data.calories, log_date: data.log_date,
-      event_time: data.event_time || null,
+      event_time: data.event_time || null, recurrence: data.recurrence, recurrence_day: data.recurrence_day,
     }).eq("id", editingItem.id);
     if (!error) {
-      setItems(prev => prev.map(i => i.id === editingItem.id ? { ...i, meal_type: data.category, description: data.description, notes: data.notes || null, assigned_to: data.assigned_to, calories: data.calories, log_date: data.log_date, event_time: data.event_time || null } : i));
+      setItems(prev => prev.map(i => i.id === editingItem.id ? { ...i, meal_type: data.category, description: data.description, notes: data.notes || null, assigned_to: data.assigned_to, calories: data.calories, log_date: data.log_date, event_time: data.event_time || null, recurrence: data.recurrence, recurrence_day: data.recurrence_day } : i));
       // Update matching calendar event
       await supabase.from("calendar_events")
         .update({
