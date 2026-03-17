@@ -37,6 +37,7 @@ export default function HomePage() {
   const [showMoodPopup, setShowMoodPopup] = useState(false);
   const [moodReaction, setMoodReaction] = useState("");
   const [sendingReaction, setSendingReaction] = useState(false);
+  const [reactionMessage, setReactionMessage] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const unreadCount = useNotificationCount();
 
@@ -485,12 +486,26 @@ export default function HomePage() {
                   ))}
                 </div>
 
+                {/* Personal message */}
+                <div className="mb-4">
+                  <input
+                    value={reactionMessage}
+                    onChange={e => setReactionMessage(e.target.value)}
+                    placeholder="Add a personal message..."
+                    className="w-full bg-muted rounded-xl px-4 h-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+
                 <button
                   onClick={async () => {
-                    if (!moodReaction || !user || !partnerPair) return;
+                    if ((!moodReaction && !reactionMessage.trim()) || !user || !partnerPair) return;
                     setSendingReaction(true);
                     const moodEmoji = partnerMood.mood === "happy" ? "😊" : partnerMood.mood === "tired" ? "😵‍💫" : partnerMood.mood === "sad" ? "😢" : partnerMood.mood === "angry" ? "😫" : "🥰";
-                    const msg = `${moodReaction} Reacted to your mood ${moodEmoji}`;
+                    const parts = [
+                      moodReaction ? `${moodReaction} Reacted to your mood ${moodEmoji}` : "",
+                      reactionMessage.trim(),
+                    ].filter(Boolean);
+                    const msg = parts.join("\n");
                     await supabase.from("chat_messages").insert({
                       user_id: user.id,
                       partner_pair: partnerPair,
@@ -499,24 +514,25 @@ export default function HomePage() {
                     });
                     setSendingReaction(false);
                     setMoodReaction("");
+                    setReactionMessage("");
                     setShowMoodPopup(false);
                   }}
-                  disabled={!moodReaction || sendingReaction}
+                  disabled={(!moodReaction && !reactionMessage.trim()) || sendingReaction}
                   className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-40"
                 >
                   <Send size={14} />
-                  {sendingReaction ? "Sending..." : moodReaction ? `Send ${moodReaction} reaction` : "Select a reaction"}
+                  {sendingReaction ? "Sending..." : "Send"}
                 </button>
 
                 <div className="flex gap-2 mt-3">
                   <button
-                    onClick={() => { setShowMoodPopup(false); setMoodReaction(""); navigate("/chat"); }}
+                    onClick={() => { setShowMoodPopup(false); setMoodReaction(""); setReactionMessage(""); navigate("/chat"); }}
                     className="flex-1 text-center text-xs text-primary font-medium py-2"
                   >
                     Write a message instead
                   </button>
                   <button
-                    onClick={() => { setShowMoodPopup(false); setMoodReaction(""); navigate("/mood"); }}
+                    onClick={() => { setShowMoodPopup(false); setMoodReaction(""); setReactionMessage(""); navigate("/mood"); }}
                     className="flex-1 text-center text-xs text-muted-foreground font-medium py-2"
                   >
                     Log your mood too
