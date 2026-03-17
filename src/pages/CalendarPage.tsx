@@ -510,12 +510,12 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
   const gridRef = useRef<HTMLDivElement>(null);
   const nowHour = new Date().getHours();
   const [draggingEvent, setDraggingEvent] = useState<CalendarEvent | null>(null);
-  const [dropHour, setDropHour] = useState<number | null>(null);
+  const [dropMinutes, setDropMinutes] = useState<number | null>(null);
   const [parkedExpanded, setParkedExpanded] = useState(false);
 
   useEffect(() => {
     if (scrollRef.current) {
-      const target = Math.max(0, nowHour - 2) * 60;
+      const target = Math.max(0, nowHour - 2) * SLOT_HEIGHT;
       scrollRef.current.scrollTop = target;
     }
   }, []);
@@ -524,28 +524,37 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
   const timedEvents = events.filter((e) => e.event_time);
   const visibleParked = parkedExpanded ? parkedEvents : parkedEvents.slice(0, 3);
 
+  // Convert pixel Y position to snapped minutes
+  const yToMinutes = (clientY: number): number => {
+    if (!gridRef.current || !scrollRef.current) return 0;
+    const gridRect = gridRef.current.getBoundingClientRect();
+    const relativeY = clientY - gridRect.top + scrollRef.current.scrollTop;
+    const rawMinutes = Math.max(0, Math.min(23 * 60 + 45, relativeY));
+    return snapTo15(rawMinutes);
+  };
+
   const handleDragStart = (evt: CalendarEvent) => (e: React.DragEvent) => {
     setDraggingEvent(evt);
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", evt.id);
   };
 
-  const handleDragOver = (hour: number) => (e: React.DragEvent) => {
+  const handleDragOverGrid = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-    setDropHour(hour);
+    setDropMinutes(yToMinutes(e.clientY));
   };
 
-  const handleDrop = (hour: number) => (e: React.DragEvent) => {
+  const handleDropGrid = (e: React.DragEvent) => {
     e.preventDefault();
-    setDropHour(null);
-    if (draggingEvent && onScheduleItem) {
-      onScheduleItem(draggingEvent, `${hour.toString().padStart(2, "0")}:00`);
+    if (draggingEvent && onScheduleItem && dropMinutes !== null) {
+      onScheduleItem(draggingEvent, minutesToTime(dropMinutes));
     }
     setDraggingEvent(null);
+    setDropMinutes(null);
   };
 
-  const handleDragEnd = () => { setDraggingEvent(null); setDropHour(null); };
+  const handleDragEnd = () => { setDraggingEvent(null); setDropMinutes(null); };
 
   // Touch-based drag for mobile
   const touchDragRef = useRef<CalendarEvent | null>(null);
@@ -554,25 +563,24 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
     setDraggingEvent(evt);
   };
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!touchDragRef.current || !gridRef.current || !scrollRef.current) return;
+    if (!touchDragRef.current) return;
     const touch = e.touches[0];
-    const gridRect = gridRef.current.getBoundingClientRect();
-    const relativeY = touch.clientY - gridRect.top + scrollRef.current.scrollTop;
-    const hour = Math.max(0, Math.min(23, Math.floor(relativeY / 60)));
-    setDropHour(hour);
+    setDropMinutes(yToMinutes(touch.clientY));
   };
   const handleTouchEnd = () => {
-    if (touchDragRef.current && dropHour !== null && onScheduleItem) {
-      onScheduleItem(touchDragRef.current, `${dropHour.toString().padStart(2, "0")}:00`);
+    if (touchDragRef.current && dropMinutes !== null && onScheduleItem) {
+      onScheduleItem(touchDragRef.current, minutesToTime(dropMinutes));
     }
     touchDragRef.current = null;
     setDraggingEvent(null);
-    setDropHour(null);
+    setDropMinutes(null);
   };
+
+  const dropHour = dropMinutes !== null ? Math.floor(dropMinutes / 60) : null;
 
   return (
     <div className="flex flex-col" style={{ maxHeight: "calc(100vh - 200px)" }}>
-      {/* ── Parked items strip (Microsoft Calendar style) ── */}
+      {/* ── Parked items strip ── */}
       {parkedEvents.length > 0 && (
         <div className="border-b border-border bg-muted/30 px-4 py-2 shrink-0">
           <div className="flex items-center justify-between mb-1">
@@ -626,7 +634,29 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
 
       {/* ── Time grid ── */}
       <div ref={scrollRef} className="overflow-y-auto flex-1">
-        <div ref={gridRef} className="relative">
+        <div
+          ref={gridRef}
+          className="relative"
+          onDragOver={handleDragOverGrid}
+          onDrop={handleDropGrid}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Drop indicator line with 15-min precision */}
+          {dropMinutes !== null && draggingEvent && (
+            <div
+              className="absolute left-14 right-2 z-20 flex items-center pointer-events-none"
+              style={{ top: `${dropMinutes}px` }}
+            >
+              <div className="w-3 h-3 rounded-full bg-primary -ml-1.5" />
+              <div className="flex-1 h-[2px] bg-primary" />
+              <span className="text-[10px] font-bold text-primary bg-background/90 px-1.5 py-0.5 rounded ml-1">
+                {minutesToTime(dropMinutes)}
+              </span>
+            </div>
+          )}
+
+          {/* Current time indicator */}
           {isToday(date) && (
             <div
               className="absolute left-0 right-0 z-10 flex items-center pointer-events-none"
@@ -642,46 +672,54 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
               const m = timeToMinutes(e.event_time);
               return m >= hour * 60 && m < (hour + 1) * 60;
             });
-            const isDropTarget = dropHour === hour;
 
             return (
               <div
                 key={hour}
-                className={`flex border-b border-border/50 min-h-[60px] cursor-pointer transition-colors ${
-                  isDropTarget ? "bg-primary/15 ring-1 ring-primary/30 ring-inset" : "hover:bg-muted/30"
+                className={`flex border-b border-border/50 min-h-[${SLOT_HEIGHT}px] cursor-pointer transition-colors ${
+                  dropHour === hour && draggingEvent ? "bg-primary/10" : "hover:bg-muted/30"
                 }`}
+                style={{ minHeight: `${SLOT_HEIGHT}px` }}
                 onClick={() => onAddEvent(`${hour.toString().padStart(2, "0")}:00`)}
-                onDragOver={handleDragOver(hour)}
-                onDrop={handleDrop(hour)}
               >
                 <div className="w-14 shrink-0 pr-2 pt-0.5 text-right">
                   <span className="text-[10px] text-muted-foreground font-medium">{formatHour(hour)}</span>
                 </div>
                 <div className="flex-1 relative border-l border-border/50 pl-2 py-0.5">
-                  {isDropTarget && draggingEvent && (
-                    <div className="w-full text-left px-2.5 py-1.5 rounded-lg mb-0.5 text-xs font-medium border-2 border-dashed border-primary/40 bg-primary/5 text-primary">
-                      Schedule here · {formatHour(hour)}
-                    </div>
-                  )}
-                  {hourEvents.map((evt) => (
-                    <button
-                      key={evt.id}
-                      onClick={(e) => { e.stopPropagation(); onEditEvent(evt); }}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg mb-0.5 text-xs font-medium border-l-[3px] ${
-                        evt.is_completed ? "opacity-50" : ""
-                      }`}
-                      style={{
-                        backgroundColor: `hsl(var(--${evt.category === "date-night" ? "secondary" : evt.category === "groceries" ? "success" : evt.category === "chore" ? "warning" : "primary"}) / 0.15)`,
-                        borderLeftColor: `hsl(var(--${evt.category === "date-night" ? "secondary" : evt.category === "groceries" ? "success" : evt.category === "chore" ? "warning" : "primary"}))`,
-                      }}
-                    >
-                      <span className={`text-foreground ${evt.is_completed ? "line-through" : ""}`}>{evt.title}</span>
-                      {countdownBadge(evt) && (
-                        <span className="ml-1 text-[8px] font-bold bg-primary-foreground/20 px-1.5 py-0.5 rounded-full">{countdownBadge(evt)}</span>
-                      )}
-                      <span className="text-muted-foreground ml-1">{evt.event_time}</span>
-                    </button>
-                  ))}
+                  {hourEvents.map((evt) => {
+                    const evtMin = timeToMinutes(evt.event_time);
+                    const offsetInHour = evtMin - hour * 60;
+                    return (
+                      <div
+                        key={evt.id}
+                        draggable
+                        onDragStart={handleDragStart(evt)}
+                        onDragEnd={handleDragEnd}
+                        onTouchStart={handleTouchStart(evt)}
+                        className={`absolute left-2 right-1 cursor-grab active:cursor-grabbing ${
+                          draggingEvent?.id === evt.id ? "opacity-40 scale-95" : ""
+                        }`}
+                        style={{ top: `${offsetInHour}px` }}
+                      >
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onEditEvent(evt); }}
+                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium border-l-[3px] ${
+                            evt.is_completed ? "opacity-50" : ""
+                          }`}
+                          style={{
+                            backgroundColor: `hsl(var(--${evt.category === "date-night" ? "secondary" : evt.category === "groceries" ? "success" : evt.category === "chore" ? "warning" : "primary"}) / 0.15)`,
+                            borderLeftColor: `hsl(var(--${evt.category === "date-night" ? "secondary" : evt.category === "groceries" ? "success" : evt.category === "chore" ? "warning" : "primary"}))`,
+                          }}
+                        >
+                          <span className={`text-foreground ${evt.is_completed ? "line-through" : ""}`}>{evt.title}</span>
+                          {countdownBadge(evt) && (
+                            <span className="ml-1 text-[8px] font-bold bg-primary-foreground/20 px-1.5 py-0.5 rounded-full">{countdownBadge(evt)}</span>
+                          )}
+                          <span className="text-muted-foreground ml-1">{evt.event_time}</span>
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -692,24 +730,65 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
   );
 }
 
-/* ─────────────── MULTI-DAY VIEW (3-day Apple style) ─────────────── */
+/* ─────────────── MULTI-DAY VIEW (3-day with drag support) ─────────────── */
 
-function MultiDayView({ startDate, events, onSelectDate, onAddEvent, onEditEvent, onToggle }: {
+function MultiDayView({ startDate, events, onSelectDate, onAddEvent, onEditEvent, onToggle, onScheduleItem }: {
   startDate: Date;
   events: CalendarEvent[];
   onSelectDate: (d: Date) => void;
   onAddEvent: (d: Date, t?: string) => void;
   onEditEvent: (e: CalendarEvent) => void;
   onToggle: (e: CalendarEvent) => void;
+  onScheduleItem?: (event: CalendarEvent, time: string, targetDate?: string) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
   const days = [startDate, addDays(startDate, 1), addDays(startDate, 2)];
   const nowHour = new Date().getHours();
+  const [draggingEvent, setDraggingEvent] = useState<CalendarEvent | null>(null);
+  const [dropMinutes, setDropMinutes] = useState<number | null>(null);
+  const [dropDayIdx, setDropDayIdx] = useState<number | null>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = Math.max(0, nowHour - 2) * 60;
+      scrollRef.current.scrollTop = Math.max(0, nowHour - 2) * SLOT_HEIGHT;
     }
+  }, []);
+
+  const handleDragStart = (evt: CalendarEvent) => (e: React.DragEvent) => {
+    setDraggingEvent(evt);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", evt.id);
+  };
+
+  const handleDragOverGrid = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (!gridRef.current || !scrollRef.current) return;
+    const gridRect = gridRef.current.getBoundingClientRect();
+    const relativeY = e.clientY - gridRect.top + scrollRef.current.scrollTop;
+    const rawMinutes = Math.max(0, Math.min(23 * 60 + 45, relativeY));
+    setDropMinutes(snapTo15(rawMinutes));
+    // Determine which day column
+    const timeColWidth = 48; // w-12 = 48px
+    const relativeX = e.clientX - gridRect.left - timeColWidth;
+    const colWidth = (gridRect.width - timeColWidth) / 3;
+    const dayIdx = Math.max(0, Math.min(2, Math.floor(relativeX / colWidth)));
+    setDropDayIdx(dayIdx);
+  };
+
+  const handleDropGrid = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (draggingEvent && onScheduleItem && dropMinutes !== null && dropDayIdx !== null) {
+      const targetDate = format(days[dropDayIdx], "yyyy-MM-dd");
+      onScheduleItem(draggingEvent, minutesToTime(dropMinutes), targetDate);
+    }
+    setDraggingEvent(null);
+    setDropMinutes(null);
+    setDropDayIdx(null);
+  };
+
+  const handleDragEnd = () => { setDraggingEvent(null); setDropMinutes(null); setDropDayIdx(null); };
   }, []);
 
   return (
