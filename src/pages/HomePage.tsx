@@ -420,6 +420,75 @@ export default function HomePage() {
           open={showAddEvent}
           onClose={() => setShowAddEvent(false)}
         />
+
+        {/* Partner Mood Detail Popup */}
+        <AnimatePresence>
+          {showMoodPopup && partnerMood && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-foreground/40 z-[60]"
+                onClick={() => setShowMoodPopup(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="fixed inset-x-5 top-1/3 max-w-sm mx-auto bg-card rounded-3xl shadow-elevated z-[60] p-5"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-sm font-bold text-foreground">Partner's Mood</p>
+                  <button onClick={() => setShowMoodPopup(false)} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                    <X size={14} className="text-muted-foreground" />
+                  </button>
+                </div>
+
+                <div className="flex flex-col items-center py-4">
+                  <span className="text-5xl mb-3">
+                    {partnerMood.mood === "happy" ? "😊" : partnerMood.mood === "tired" ? "😵‍💫" : partnerMood.mood === "sad" ? "😢" : partnerMood.mood === "angry" ? "😫" : "🥰"}
+                  </span>
+                  <p className="text-lg font-bold text-foreground">
+                    {partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1)}
+                  </p>
+                  {partnerMood.note && (
+                    <p className="text-sm text-muted-foreground mt-1 text-center">"{partnerMood.note}"</p>
+                  )}
+                </div>
+
+                {/* Quick reactions */}
+                <div className="flex justify-center gap-3 mb-4">
+                  {["❤️", "🤗", "💪", "😘"].map(emoji => (
+                    <button
+                      key={emoji}
+                      onClick={() => {
+                        setMoodReaction(emoji);
+                        setTimeout(() => { setMoodReaction(""); setShowMoodPopup(false); navigate("/chat"); }, 400);
+                      }}
+                      className={`w-11 h-11 rounded-full bg-muted flex items-center justify-center text-xl transition-transform ${moodReaction === emoji ? "scale-125 bg-primary/20" : ""}`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => { setShowMoodPopup(false); navigate("/chat"); }}
+                  className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2"
+                >
+                  <Send size={14} />
+                  Send a message
+                </button>
+
+                <button
+                  onClick={() => { setShowMoodPopup(false); navigate("/mood"); }}
+                  className="w-full text-center text-xs text-muted-foreground font-medium mt-3"
+                >
+                  Log your mood too
+                </button>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
     </PageTransition>
   );
