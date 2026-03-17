@@ -87,6 +87,11 @@ export default function AddEventModal({
     setFormDate(event.event_date);
     setFormReminder(event.reminder || "none");
     setFormCountdown(event.countdown_type || "none");
+    // Infer type from stored data
+    if (event.countdown_type === "days-until" || event.countdown_type === "days-since") setFormType("countdown");
+    else if (event.category === "birthday") setFormType("birthday");
+    else if (event.reminder && event.reminder !== "none") setFormType("reminder");
+    else setFormType("event");
   };
 
   // Use a ref-like pattern: reset when open changes
