@@ -185,6 +185,7 @@ function CategorySection({
   onToggle,
   onEdit,
   onDelete,
+  onAdd,
   expanded,
   onExpand,
 }: {
@@ -195,6 +196,7 @@ function CategorySection({
   onToggle: (id: string) => void;
   onEdit: (item: DietItem) => void;
   onDelete: (id: string) => void;
+  onAdd: () => void;
   expanded: boolean;
   onExpand: () => void;
 }) {
@@ -202,13 +204,14 @@ function CategorySection({
 
   return (
     <div className="mb-3">
-      <button onClick={onExpand}
-        className="w-full flex items-center gap-3 px-4 py-3 bg-card rounded-2xl shadow-soft transition-all active:scale-[0.98]">
-        <span className="text-xl">{category.emoji}</span>
-        <div className="flex-1 text-left">
-          <p className="text-sm font-bold text-foreground">{category.label}</p>
-          <p className="text-[10px] text-muted-foreground">{items.length} items · {done} done</p>
-        </div>
+      <div className="w-full flex items-center gap-3 px-4 py-3 bg-card rounded-2xl shadow-soft transition-all">
+        <button onClick={onExpand} className="flex items-center gap-3 flex-1 active:scale-[0.98] transition-transform">
+          <span className="text-xl">{category.emoji}</span>
+          <div className="flex-1 text-left">
+            <p className="text-sm font-bold text-foreground">{category.label}</p>
+            <p className="text-[10px] text-muted-foreground">{items.length} items · {done} done</p>
+          </div>
+        </button>
         {items.length > 0 && (
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
             done === items.length && items.length > 0 ? "bg-success/20 text-success" : "bg-muted text-muted-foreground"
@@ -216,8 +219,14 @@ function CategorySection({
             {done}/{items.length}
           </span>
         )}
-        {expanded ? <ChevronDown size={16} className="text-muted-foreground" /> : <ChevronRight size={16} className="text-muted-foreground" />}
-      </button>
+        <button onClick={(e) => { e.stopPropagation(); onAdd(); }}
+          className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors">
+          <Plus size={14} className="text-primary" />
+        </button>
+        <button onClick={onExpand}>
+          {expanded ? <ChevronDown size={16} className="text-muted-foreground" /> : <ChevronRight size={16} className="text-muted-foreground" />}
+        </button>
+      </div>
 
       <AnimatePresence>
         {expanded && items.length > 0 && (
@@ -350,6 +359,19 @@ export default function DietPage() {
     }).select().single();
     if (!error && row) {
       setItems(prev => [...prev, row as DietItem]);
+      // Sync to calendar
+      await supabase.from("calendar_events").insert({
+        title: `🥗 ${data.description}`,
+        description: `Diet: ${CATEGORIES.find(c => c.key === data.category)?.label || data.category}${data.notes ? ` — ${data.notes}` : ""}`,
+        category: "diet",
+        event_date: today,
+        event_time: null,
+        assigned_to: data.assigned_to,
+        priority: "low",
+        recurrence: "once",
+        user_id: user.id,
+        partner_pair: partnerPair,
+      });
       setShowForm(false);
       setEditingItem(null);
     }
@@ -447,25 +469,19 @@ export default function DietPage() {
         {CATEGORIES.map(cat => {
           const catItems = items.filter(i => i.meal_type === cat.key);
           return (
-            <div key={cat.key}>
-              <CategorySection
-                category={cat}
-                items={catItems}
-                userId={user?.id || ""}
-                partnerName={partnerName}
-                onToggle={toggleComplete}
-                onEdit={openEdit}
-                onDelete={deleteItem}
-                expanded={expandedCats.includes(cat.key)}
-                onExpand={() => toggleExpand(cat.key)}
-              />
-              {expandedCats.includes(cat.key) && (
-                <button onClick={() => openAdd(cat.key)}
-                  className="w-full flex items-center justify-center gap-1.5 py-2 mb-3 text-xs font-semibold text-primary hover:bg-primary/5 rounded-xl transition-colors">
-                  <Plus size={14} /> Add to {cat.label.split(" ")[0]}
-                </button>
-              )}
-            </div>
+            <CategorySection
+              key={cat.key}
+              category={cat}
+              items={catItems}
+              userId={user?.id || ""}
+              partnerName={partnerName}
+              onToggle={toggleComplete}
+              onEdit={openEdit}
+              onDelete={deleteItem}
+              onAdd={() => openAdd(cat.key)}
+              expanded={expandedCats.includes(cat.key)}
+              onExpand={() => toggleExpand(cat.key)}
+            />
           );
         })}
 
@@ -473,17 +489,9 @@ export default function DietPage() {
           <div className="text-center py-10">
             <span className="text-4xl mb-3 block">🥗</span>
             <p className="text-sm text-muted-foreground mb-1">No diet items for today</p>
-            <p className="text-xs text-muted-foreground">Tap + below to start planning</p>
+            <p className="text-xs text-muted-foreground">Tap + on any category to start planning</p>
           </div>
         )}
-      </div>
-
-      {/* Sticky Add Button */}
-      <div className="fixed bottom-20 right-5 z-50">
-        <button onClick={() => openAdd("morning")}
-          className="w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-elevated flex items-center justify-center active:scale-95 transition-transform">
-          <Plus size={24} />
-        </button>
       </div>
 
       {/* Form Modal */}

@@ -10,6 +10,7 @@ import {
   List, CalendarDays, Calendar, LayoutGrid, ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import ProfileButton from "@/components/ProfileButton";
 import AddEventModal from "@/components/AddEventModal";
 import PageTransition from "@/components/PageTransition";
@@ -20,21 +21,24 @@ import { toast } from "sonner";
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_CALENDAR_EVENTS } from "@/lib/demoData";
 
-const CATEGORIES = ["date-night", "groceries", "cleaning", "bills", "travel", "family", "chore", "reminder", "birthday", "grocery-due"] as const;
+const CATEGORIES = ["date-night", "groceries", "cleaning", "bills", "travel", "family", "chore", "reminder", "birthday", "grocery-due", "diet"] as const;
 const CATEGORY_ICONS: Record<string, any> = {
   "date-night": Coffee, groceries: ShoppingCart, cleaning: Tv,
   travel: Cake, family: Users, bills: Tag,
   chore: Tv, reminder: Clock, birthday: Cake, "grocery-due": ShoppingCart,
+  diet: Coffee,
 };
 const CATEGORY_COLORS: Record<string, string> = {
   "date-night": "bg-secondary/70", groceries: "bg-success/70", cleaning: "bg-accent",
   travel: "bg-warning/70", family: "bg-primary/70", bills: "bg-muted-foreground/50",
   chore: "bg-orange-400/70", reminder: "bg-blue-400/70", birthday: "bg-pink-400/70", "grocery-due": "bg-emerald-400/70",
+  diet: "bg-green-400/70",
 };
 const CATEGORY_LABEL: Record<string, string> = {
   "date-night": "Romance", groceries: "Household", cleaning: "Cleaning",
   bills: "Bills", travel: "Travel", family: "Family",
   chore: "Chore", reminder: "Reminder", birthday: "Birthday", "grocery-due": "Shopping",
+  diet: "Diet",
 };
 
 type ViewMode = "day" | "multiday" | "month" | "list";
@@ -104,6 +108,7 @@ function formatHour(h: number): string {
 }
 
 export default function CalendarPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { partnerPair, loading: ppLoading } = usePartnerPair();
   const { isDemoMode } = useDemo();
@@ -224,6 +229,11 @@ export default function CalendarPage() {
   };
 
   const openEditForm = (event: CalendarEvent) => {
+    // Diet items — navigate to diet page
+    if (event.category === "diet") {
+      navigate("/diet");
+      return;
+    }
     // Chore/grocery items are view-only on calendar — just toggle completion
     if (event._source === "chore" || event._source === "grocery") {
       toast.info(`${event._source === "chore" ? "Chore" : "Grocery item"} — tap ✓ to toggle completion`);
