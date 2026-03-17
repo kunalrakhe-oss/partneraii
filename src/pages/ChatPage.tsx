@@ -456,7 +456,7 @@ export default function ChatPage() {
                 <Plus size={18} className="text-primary" />
               </motion.div>
             </motion.button>
-            <div className="flex-1 bg-muted rounded-full flex items-center px-4 gap-2">
+            <div className="flex-1 bg-muted rounded-full flex items-center px-4 gap-2 relative">
               <input
                 ref={inputRef}
                 value={input}
@@ -465,6 +465,9 @@ export default function ChatPage() {
                 placeholder={replyTo ? "Write a reply..." : `Message ${partnerProfile?.display_name || "your partner"}...`}
                 className="flex-1 h-10 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
+              <button onClick={() => { setShowEmojiPicker(prev => !prev); setShowAttachMenu(false); }} className="shrink-0">
+                <Smile size={18} className="text-muted-foreground hover:text-primary transition-colors" />
+              </button>
             </div>
             <motion.button whileTap={{ scale: 0.95 }} onClick={() => sendMessage()}
               disabled={sending || !input.trim()}
