@@ -323,16 +323,12 @@ export default function MemoriesPage() {
         )}
 
         {/* FAB */}
-        {memories.length > 0 && (
-          <div className="flex justify-end mt-6">
-            <button
-              onClick={() => setShowAdd(true)}
-              className="bg-foreground text-background px-5 py-3 rounded-full flex items-center gap-2 shadow-elevated text-sm font-semibold"
-            >
-              <Plus size={16} /> Add Memory
-            </button>
-          </div>
-        )}
+        <button
+          onClick={() => setShowAdd(true)}
+          className="fixed bottom-20 right-5 max-w-lg love-gradient text-primary-foreground w-14 h-14 rounded-full flex items-center justify-center shadow-elevated z-40"
+        >
+          <Plus size={22} />
+        </button>
 
         {/* Add Memory Modal */}
         <AnimatePresence>
