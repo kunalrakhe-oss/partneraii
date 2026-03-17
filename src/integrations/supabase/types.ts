@@ -195,6 +195,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_partner_invite: { Args: { code: string }; Returns: Json }
       get_partner_pair: { Args: { uid: string }; Returns: string }
     }
     Enums: {

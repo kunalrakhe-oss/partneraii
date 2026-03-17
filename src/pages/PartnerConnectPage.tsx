@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { Copy, QrCode, HelpCircle, Heart, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Copy, QrCode, HelpCircle, Heart, ChevronRight, Loader2, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { useLocalStorage, generateId } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
 import partnerHero from "@/assets/partner-hero.jpg";
 
@@ -13,14 +15,74 @@ function generateLinkCode(): string {
 
 export default function PartnerConnectPage() {
   const navigate = useNavigate();
-  const [myCode] = useLocalStorage<string>("lovelist-link-code", generateLinkCode());
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [myCode, setMyCode] = useState<string | null>(null);
   const [partnerCode, setPartnerCode] = useState("");
   const [copied, setCopied] = useState(false);
-  const [connected, setConnected] = useLocalStorage<string>("lovelist-partner-connected", "");
+  const [loading, setLoading] = useState(true);
+  const [connecting, setConnecting] = useState(false);
+  const [alreadyPaired, setAlreadyPaired] = useState(false);
 
-  const codeChars = myCode.split("");
+  // On mount: check if already paired, or fetch/create invite code
+  useEffect(() => {
+    if (!user) return;
+
+    async function init() {
+      // Check if already paired
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("partner_id")
+        .eq("user_id", user!.id)
+        .single();
+
+      if (profile?.partner_id) {
+        setAlreadyPaired(true);
+        setLoading(false);
+        return;
+      }
+
+      // Check for existing active invite
+      const { data: existing } = await supabase
+        .from("partner_invites")
+        .select("invite_code")
+        .eq("inviter_id", user!.id)
+        .is("accepted_by", null)
+        .gt("expires_at", new Date().toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (existing) {
+        setMyCode(existing.invite_code);
+      } else {
+        // Create a new invite
+        const code = generateLinkCode();
+        const { error } = await supabase
+          .from("partner_invites")
+          .insert({ inviter_id: user!.id, invite_code: code });
+
+        if (error) {
+          // Code collision — retry once
+          const retryCode = generateLinkCode();
+          await supabase
+            .from("partner_invites")
+            .insert({ inviter_id: user!.id, invite_code: retryCode });
+          setMyCode(retryCode);
+        } else {
+          setMyCode(code);
+        }
+      }
+      setLoading(false);
+    }
+
+    init();
+  }, [user]);
+
+  const codeChars = (myCode ?? "-----").split("");
 
   const handleCopy = async () => {
+    if (!myCode) return;
     try {
       await navigator.clipboard.writeText(myCode);
       setCopied(true);
@@ -31,16 +93,50 @@ export default function PartnerConnectPage() {
     }
   };
 
-  const handleConnect = () => {
-    if (partnerCode.length === 5) {
-      setConnected("true");
-      navigate("/");
+  const handleConnect = async () => {
+    if (partnerCode.length !== 5) return;
+    setConnecting(true);
+
+    const { data, error } = await supabase.rpc("accept_partner_invite", {
+      code: partnerCode,
+    });
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      setConnecting(false);
+      return;
     }
+
+    const result = data as { success: boolean; error?: string };
+
+    if (result.success) {
+      toast({ title: "Connected! 💕", description: "You and your partner are now linked." });
+      setTimeout(() => navigate("/"), 1000);
+    } else {
+      toast({ title: "Couldn't connect", description: result.error ?? "Unknown error", variant: "destructive" });
+    }
+    setConnecting(false);
   };
 
-  const handleSkip = () => {
-    navigate("/");
-  };
+  const handleSkip = () => navigate("/");
+
+  if (alreadyPaired) {
+    return (
+      <PageTransition>
+        <div className="min-h-screen bg-background max-w-lg mx-auto px-5 flex flex-col items-center justify-center gap-4">
+          <CheckCircle size={48} className="text-success" />
+          <h1 className="text-xl font-bold text-foreground">You're already connected!</h1>
+          <p className="text-sm text-muted-foreground text-center">You and your partner are linked.</p>
+          <button
+            onClick={() => navigate("/")}
+            className="mt-4 px-6 h-11 rounded-xl love-gradient text-primary-foreground font-semibold text-sm"
+          >
+            Go Home
+          </button>
+        </div>
+      </PageTransition>
+    );
+  }
 
   return (
     <PageTransition>
@@ -85,7 +181,11 @@ export default function PartnerConnectPage() {
                 transition={{ delay: i * 0.08 }}
                 className="w-12 h-14 rounded-xl border-2 border-[hsl(100,20%,72%)] flex items-center justify-center"
               >
-                <span className="text-xl font-bold text-foreground">{char}</span>
+                {loading ? (
+                  <div className="w-3 h-3 rounded-full bg-muted animate-pulse" />
+                ) : (
+                  <span className="text-xl font-bold text-foreground">{char}</span>
+                )}
               </motion.div>
             ))}
           </div>
@@ -93,7 +193,8 @@ export default function PartnerConnectPage() {
           {/* Copy & Share */}
           <button
             onClick={handleCopy}
-            className="w-full h-11 rounded-xl bg-[hsl(100,20%,72%)] text-foreground font-semibold text-sm flex items-center justify-center gap-2 mb-5"
+            disabled={loading}
+            className="w-full h-11 rounded-xl bg-[hsl(100,20%,72%)] text-foreground font-semibold text-sm flex items-center justify-center gap-2 mb-5 disabled:opacity-50"
           >
             <Copy size={14} />
             {copied ? "Copied!" : "Copy & Share Link"}
@@ -117,10 +218,10 @@ export default function PartnerConnectPage() {
             </div>
             <button
               onClick={handleConnect}
-              disabled={partnerCode.length < 5}
-              className="px-5 h-11 rounded-xl bg-primary/80 text-primary-foreground text-sm font-semibold disabled:opacity-40 transition-opacity"
+              disabled={partnerCode.length < 5 || connecting}
+              className="px-5 h-11 rounded-xl bg-primary/80 text-primary-foreground text-sm font-semibold disabled:opacity-40 transition-opacity flex items-center gap-2"
             >
-              Connect
+              {connecting ? <Loader2 size={16} className="animate-spin" /> : "Connect"}
             </button>
           </div>
         </div>
