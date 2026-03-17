@@ -478,22 +478,12 @@ export default function CalendarPage() {
   const toggleComplete = async (event: CalendarEvent) => {
     if (event._source === "chore") {
       await supabase.from("chores").update({ is_completed: !event.is_completed }).eq("id", event._sourceId!);
-      setEvents((prev) => prev.map((ev) => (ev.id === event.id ? { ...ev, is_completed: !ev.is_completed } : ev)));
-      return;
-    }
-    if (event._source === "grocery") {
+    } else if (event._source === "grocery") {
       await supabase.from("grocery_items").update({ is_checked: !event.is_completed }).eq("id", event._sourceId!);
-      setEvents((prev) => prev.map((ev) => (ev.id === event.id ? { ...ev, is_completed: !ev.is_completed } : ev)));
-      return;
+    } else {
+      await supabase.from("calendar_events").update({ is_completed: !event.is_completed }).eq("id", event.id);
     }
-    const { data, error } = await supabase
-      .from("calendar_events")
-      .update({ is_completed: !event.is_completed })
-      .eq("id", event.id)
-      .select()
-      .single();
-    if (error) return;
-    setEvents((prev) => prev.map((ev) => (ev.id === event.id ? data : ev)));
+    await refreshEvents();
   };
 
   // Schedule/reschedule an item to a specific time slot (15-min granularity)
