@@ -260,14 +260,35 @@ export default function HomePage() {
                 <p className="text-sm text-muted-foreground">{format(new Date(), "EEEE, MMMM d")}</p>
               </div>
             </div>
-            <button onClick={() => setShowNotifications(true)} className="relative w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-              <Bell size={18} className="text-foreground" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[9px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
+            <div className="flex items-center gap-2">
+              {/* Couple Avatars */}
+              {partnerProfile && !isDemoMode && (
+                <button onClick={() => navigate("/connect")} className="flex -space-x-2.5 mr-1">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Me" className="w-9 h-9 rounded-full object-cover border-2 border-card z-10 ring-1 ring-primary/20" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-primary/15 border-2 border-card z-10 flex items-center justify-center text-xs font-bold text-primary ring-1 ring-primary/20">
+                      {firstName?.charAt(0) || "?"}
+                    </div>
+                  )}
+                  {partnerProfile.avatar_url ? (
+                    <img src={partnerProfile.avatar_url} alt="Partner" className="w-9 h-9 rounded-full object-cover border-2 border-card ring-1 ring-secondary/20" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-secondary/15 border-2 border-card flex items-center justify-center text-xs font-bold text-secondary ring-1 ring-secondary/20">
+                      {partnerProfile.display_name?.charAt(0) || "❤️"}
+                    </div>
+                  )}
+                </button>
               )}
-            </button>
+              <button onClick={() => setShowNotifications(true)} className="relative w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                <Bell size={18} className="text-foreground" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[9px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </button>
+            </div>
           </motion.div>
 
           {/* Partner Details Card */}
