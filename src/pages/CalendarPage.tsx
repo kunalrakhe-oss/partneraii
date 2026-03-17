@@ -867,7 +867,7 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
   const dropHour = dropMinutes !== null ? Math.floor(dropMinutes / 60) : null;
 
   return <div />;
-
+}
 
 /* ─────────────── MULTI-DAY VIEW (3-day with drag support) ─────────────── */
 
