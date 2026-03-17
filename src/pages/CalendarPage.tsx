@@ -175,6 +175,13 @@ export default function CalendarPage() {
     });
   }, [partnerPair]);
 
+  // Inject demo events when in demo mode and no real data
+  useEffect(() => {
+    if (isDemoMode && events.length === 0) {
+      setEvents(DEMO_CALENDAR_EVENTS as CalendarEvent[]);
+    }
+  }, [isDemoMode, events.length]);
+
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
   const dayEvents = events.filter((e) => e.event_date === selectedDateStr);
 
