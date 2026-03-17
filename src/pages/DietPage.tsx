@@ -82,12 +82,14 @@ function Confetti({ onDone }: { onDone: () => void }) {
 function DietFormModal({
   editing,
   category,
+  defaultDate,
   onSave,
   onClose,
 }: {
   editing: DietItem | null;
   category: string;
-  onSave: (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null }) => void;
+  defaultDate: string;
+  onSave: (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string }) => void;
   onClose: () => void;
 }) {
   const [desc, setDesc] = useState(editing?.description || "");
@@ -95,6 +97,8 @@ function DietFormModal({
   const [cal, setCal] = useState(editing?.calories?.toString() || "");
   const [cat, setCat] = useState(editing?.meal_type || category);
   const [assignedTo, setAssignedTo] = useState(editing?.assigned_to || "me");
+  const [logDate, setLogDate] = useState(editing?.log_date || defaultDate);
+  const [eventTime, setEventTime] = useState(editing?.event_time || "");
 
   return (
     <>
@@ -103,7 +107,7 @@ function DietFormModal({
       <motion.div
         initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 28, stiffness: 300 }}
-        className="fixed inset-x-0 bottom-0 max-h-[72vh] bg-card rounded-t-3xl z-[60] overflow-y-auto safe-bottom"
+        className="fixed inset-x-0 bottom-0 max-h-[80vh] bg-card rounded-t-3xl z-[60] overflow-y-auto safe-bottom"
       >
         <div className="w-10 h-1 rounded-full bg-muted mx-auto mt-3 mb-2" />
         <div className="px-5 pb-8">
@@ -118,6 +122,24 @@ function DietFormModal({
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Food Name</label>
           <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="e.g. Warm lemon water"
             className="w-full h-11 bg-muted rounded-2xl px-4 text-sm text-foreground placeholder:text-muted-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring mb-4" />
+
+          {/* Date & Time */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <CalendarDays size={12} /> Date
+              </label>
+              <input type="date" value={logDate} onChange={e => setLogDate(e.target.value)}
+                className="w-full h-11 bg-muted rounded-2xl px-4 text-sm text-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <Clock size={12} /> Time
+              </label>
+              <input type="time" value={eventTime} onChange={e => setEventTime(e.target.value)}
+                className="w-full h-11 bg-muted rounded-2xl px-4 text-sm text-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring" />
+            </div>
+          </div>
 
           {/* Category */}
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Category</label>
@@ -163,7 +185,7 @@ function DietFormModal({
 
           <div className="flex gap-3">
             <button onClick={onClose} className="flex-1 h-11 rounded-2xl bg-muted text-foreground text-sm font-semibold">Cancel</button>
-            <button onClick={() => { if (desc.trim()) onSave({ description: desc.trim(), category: cat, notes: notes.trim() || "", assigned_to: assignedTo, calories: cal ? parseInt(cal) : null }); }}
+            <button onClick={() => { if (desc.trim()) onSave({ description: desc.trim(), category: cat, notes: notes.trim() || "", assigned_to: assignedTo, calories: cal ? parseInt(cal) : null, log_date: logDate, event_time: eventTime }); }}
               disabled={!desc.trim()}
               className="flex-1 h-11 rounded-2xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40">
               {editing ? "Update" : "Add"}
