@@ -130,6 +130,7 @@ export default function PartnerNotifications() {
         (payload) => {
           const item = payload.new as { user_id: string; name: string };
           if (item.user_id !== user.id && locationRef.current !== "/lists") {
+            notifyPartnerAction();
             toast("Item added to list 🛒", {
               description: item.name,
               icon: <ShoppingCart size={16} className="text-primary" />,
