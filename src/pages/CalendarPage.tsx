@@ -629,6 +629,89 @@ export default function CalendarPage() {
   );
 }
 
+function DayStrip({
+  selectedDate,
+  currentDate,
+  events,
+  onSelect,
+}: {
+  selectedDate: Date;
+  currentDate: Date;
+  events: CalendarEvent[];
+  onSelect: (day: Date) => void;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const todayRef = useRef<HTMLButtonElement>(null);
+
+  // Show 14 days before and 14 days after current date
+  const days = eachDayOfInterval({
+    start: subDays(currentDate, 14),
+    end: addDays(currentDate, 14),
+  });
+
+  useEffect(() => {
+    // Scroll to today/selected on mount
+    if (todayRef.current && scrollRef.current) {
+      const container = scrollRef.current;
+      const el = todayRef.current;
+      container.scrollLeft = el.offsetLeft - container.offsetWidth / 2 + el.offsetWidth / 2;
+    }
+  }, [currentDate]);
+
+  return (
+    <div ref={scrollRef} className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-5 px-5 scrollbar-hide">
+      {days.map((day) => {
+        const isSelected = isSameDay(day, selectedDate);
+        const dateStr = format(day, "yyyy-MM-dd");
+        const hasEvt = events.some((e) => e.event_date === dateStr);
+        const isPast = day < new Date(new Date().setHours(0, 0, 0, 0)) && !isToday(day);
+
+        return (
+          <button
+            key={day.toISOString()}
+            ref={isSameDay(day, currentDate) ? todayRef : undefined}
+            onClick={() => onSelect(day)}
+            className={`flex flex-col items-center min-w-[48px] py-2.5 px-2 rounded-2xl transition-all shrink-0 ${
+              isSelected
+                ? "love-gradient shadow-soft text-primary-foreground"
+                : isToday(day)
+                ? "bg-primary/15 shadow-card"
+                : isPast
+                ? "opacity-60"
+                : ""
+            }`}
+          >
+            <span
+              className={`text-[10px] font-medium mb-1 ${
+                isSelected ? "text-primary-foreground/80" : "text-muted-foreground"
+              }`}
+            >
+              {format(day, "EEE")}
+            </span>
+            <span
+              className={`text-base font-bold ${
+                isSelected ? "text-primary-foreground" : "text-foreground"
+              }`}
+            >
+              {format(day, "d")}
+            </span>
+            <span
+              className={`text-[8px] mt-0.5 ${
+                isSelected ? "text-primary-foreground/70" : "text-muted-foreground"
+              }`}
+            >
+              {format(day, "MMM")}
+            </span>
+            {hasEvt && !isSelected && (
+              <div className="w-1 h-1 rounded-full bg-secondary mt-0.5" />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function EventCard({
   event,
   icon: Icon,
