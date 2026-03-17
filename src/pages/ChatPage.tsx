@@ -143,9 +143,34 @@ export default function ChatPage() {
   return (
     <PageTransition>
       <div className="flex flex-col h-[calc(100vh-4rem)]">
-        {/* Header */}
-        <div className="px-5 pt-8 pb-3 flex items-center gap-3 border-b border-border/50">
-          <ProfileButton />
+        {/* Top Tab Switcher */}
+        <div className="px-5 pt-8 pb-0">
+          <div className="flex bg-muted rounded-2xl p-1 gap-1">
+            <button
+              onClick={() => setActiveTab("partner")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                activeTab === "partner" ? "bg-card shadow-card text-foreground" : "text-muted-foreground"
+              }`}
+            >
+              💬 {partnerProfile?.display_name || "Partner"}
+            </button>
+            <button
+              onClick={() => setActiveTab("ai")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                activeTab === "ai" ? "bg-card shadow-card text-foreground" : "text-muted-foreground"
+              }`}
+            >
+              <MessageCircleHeart size={16} /> LoveBot AI
+            </button>
+          </div>
+        </div>
+
+        {activeTab === "ai" ? (
+          <AIChatbot embedded />
+        ) : (
+        <>
+        {/* Partner Chat Header */}
+        <div className="px-5 pt-3 pb-3 flex items-center gap-3 border-b border-border/50">
           <div className="w-11 h-11 rounded-full bg-muted overflow-hidden flex items-center justify-center relative">
             {partnerProfile?.avatar_url ? (
               <img src={partnerProfile.avatar_url} alt="" className="w-full h-full object-cover" />
