@@ -374,6 +374,13 @@ export default function GroceryPage() {
   );
 }
 
+const PRIORITY_OPTIONS = [
+  { value: "none", label: "None" },
+  { value: "low", label: "Low", color: "text-blue-500" },
+  { value: "medium", label: "Medium", color: "text-warning" },
+  { value: "high", label: "High", color: "text-destructive" },
+];
+
 function EditSheet({
   item,
   onSave,
@@ -381,11 +388,29 @@ function EditSheet({
   onClose,
 }: {
   item: GroceryRow;
-  onSave: (id: string, newName: string) => void;
+  onSave: (id: string, updates: Record<string, any>) => void;
   onDelete: (id: string) => void;
   onClose: () => void;
 }) {
-  const [value, setValue] = useState(item.name);
+  const [name, setName] = useState(item.name);
+  const [notes, setNotes] = useState((item as any).notes || "");
+  const [dueDate, setDueDate] = useState<Date | undefined>(
+    (item as any).due_date ? new Date((item as any).due_date) : undefined
+  );
+  const [showDate, setShowDate] = useState(!!((item as any).due_date));
+  const [isFlagged, setIsFlagged] = useState((item as any).is_flagged || false);
+  const [priority, setPriority] = useState((item as any).priority || "none");
+
+  const handleSave = () => {
+    if (!name.trim()) return;
+    onSave(item.id, {
+      name: name.trim(),
+      notes: notes.trim() || null,
+      due_date: showDate && dueDate ? format(dueDate, "yyyy-MM-dd") : null,
+      is_flagged: isFlagged,
+      priority,
+    });
+  };
 
   return (
     <motion.div
@@ -395,41 +420,152 @@ function EditSheet({
       transition={{ type: "spring", damping: 28, stiffness: 350 }}
       className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto"
     >
-      <div className="bg-card rounded-t-3xl border border-border border-b-0 shadow-lg p-5 pb-8">
-        {/* Handle */}
-        <div className="flex justify-center mb-4">
-          <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+      <div className="bg-card rounded-t-3xl border border-border border-b-0 shadow-lg max-h-[85vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-card z-10 px-5 pt-4 pb-2">
+          <div className="flex justify-center mb-3">
+            <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+          </div>
+          <div className="flex items-center justify-between">
+            <button onClick={onClose} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+              <X size={16} className="text-muted-foreground" />
+            </button>
+            <h3 className="text-sm font-bold text-foreground">Task Details</h3>
+            <button
+              onClick={handleSave}
+              className="w-8 h-8 rounded-full bg-primary flex items-center justify-center"
+            >
+              <Check size={16} className="text-primary-foreground" />
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-foreground">Edit Item</h3>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-            <X size={16} className="text-muted-foreground" />
-          </button>
-        </div>
+        <div className="px-5 pb-8 space-y-4">
+          {/* Name & Notes */}
+          <div className="bg-muted/50 rounded-2xl p-4 space-y-3 border border-border">
+            <input
+              autoFocus
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Task name"
+              className="w-full text-lg font-bold text-foreground bg-transparent focus:outline-none placeholder:text-muted-foreground"
+            />
+            <div className="h-px bg-border" />
+            <textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder="Notes"
+              rows={2}
+              className="w-full text-sm text-foreground bg-transparent focus:outline-none placeholder:text-muted-foreground resize-none"
+            />
+          </div>
 
-        <input
-          autoFocus
-          value={value}
-          onChange={e => setValue(e.target.value)}
-          onKeyDown={e => { if (e.key === "Enter" && value.trim()) onSave(item.id, value.trim()); }}
-          placeholder="Item name"
-          className="w-full px-4 py-3 rounded-2xl bg-muted text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary border border-border mb-4"
-        />
+          {/* Date & Time */}
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">Date & Time</p>
+            <div className="bg-muted/50 rounded-2xl border border-border divide-y divide-border">
+              {/* Date toggle */}
+              <div className="flex items-center gap-3 px-4 py-3">
+                <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
+                  <CalendarIcon size={16} className="text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground">Date</p>
+                  {showDate && dueDate && (
+                    <p className="text-xs text-primary font-medium">{format(dueDate, "EEEE, MMMM d, yyyy")}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => { setShowDate(!showDate); if (!showDate && !dueDate) setDueDate(new Date()); }}
+                  className={`w-11 h-6 rounded-full transition-colors ${showDate ? "bg-primary" : "bg-muted-foreground/30"}`}
+                >
+                  <motion.div
+                    animate={{ x: showDate ? 20 : 2 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    className="w-5 h-5 rounded-full bg-card shadow-sm"
+                  />
+                </button>
+              </div>
 
-        <div className="flex gap-3">
-          <button
-            onClick={() => { if (value.trim()) onSave(item.id, value.trim()); }}
-            className="flex-1 h-12 rounded-2xl bg-foreground text-background text-sm font-semibold shadow-soft"
-          >
-            Save
-          </button>
-          <button
-            onClick={() => onDelete(item.id)}
-            className="h-12 px-5 rounded-2xl bg-destructive/10 text-destructive text-sm font-semibold border border-destructive/20"
-          >
-            <Trash2 size={16} />
-          </button>
+              {/* Calendar (shown when date enabled) */}
+              <AnimatePresence>
+                {showDate && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-2 py-2">
+                      <Calendar
+                        mode="single"
+                        selected={dueDate}
+                        onSelect={d => { if (d) setDueDate(d); }}
+                        className={cn("p-2 pointer-events-auto")}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Flag */}
+              <div className="flex items-center gap-3 px-4 py-3">
+                <div className="w-8 h-8 rounded-lg bg-warning/15 flex items-center justify-center">
+                  <Flag size={16} className="text-warning" />
+                </div>
+                <p className="flex-1 text-sm font-medium text-foreground">Flag</p>
+                <button
+                  onClick={() => setIsFlagged(!isFlagged)}
+                  className={`w-11 h-6 rounded-full transition-colors ${isFlagged ? "bg-warning" : "bg-muted-foreground/30"}`}
+                >
+                  <motion.div
+                    animate={{ x: isFlagged ? 20 : 2 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    className="w-5 h-5 rounded-full bg-card shadow-sm"
+                  />
+                </button>
+              </div>
+
+              {/* Priority */}
+              <div className="flex items-center gap-3 px-4 py-3">
+                <div className="w-8 h-8 rounded-lg bg-destructive/15 flex items-center justify-center">
+                  <AlertTriangle size={16} className="text-destructive" />
+                </div>
+                <p className="flex-1 text-sm font-medium text-foreground">Priority</p>
+                <div className="flex gap-1">
+                  {PRIORITY_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setPriority(opt.value)}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors ${
+                        priority === opt.value
+                          ? "bg-foreground text-background"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={handleSave}
+              className="flex-1 h-12 rounded-2xl bg-foreground text-background text-sm font-semibold shadow-soft"
+            >
+              Save Changes
+            </button>
+            <button
+              onClick={() => onDelete(item.id)}
+              className="h-12 px-5 rounded-2xl bg-destructive/10 text-destructive text-sm font-semibold border border-destructive/20 flex items-center gap-2"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
         </div>
       </div>
     </motion.div>
