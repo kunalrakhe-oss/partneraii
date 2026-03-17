@@ -560,6 +560,17 @@ function EditSheet({
             </div>
           </div>
 
+          {/* Photo */}
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">Photo</p>
+            <MediaPicker
+              imageUrl={(item as any).image_url || null}
+              preview={imgPreview}
+              onFileSelect={(file, url) => { setImgFile(file); setImgPreview(url); }}
+              onClear={() => { setImgFile(null); setImgPreview(""); }}
+            />
+          </div>
+
           {/* Actions */}
           <div className="flex gap-3 pt-2">
             <button
