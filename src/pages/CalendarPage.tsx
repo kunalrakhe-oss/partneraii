@@ -309,58 +309,52 @@ export default function CalendarPage() {
   const [formPriority, setFormPriority] = useState("medium");
   const [formDate, setFormDate] = useState("");
 
-  useEffect(() => {
+  const refreshEvents = async () => {
     if (!partnerPair) return;
-
-    // Fetch calendar events, ALL chores, and grocery items with due dates in parallel
-    Promise.all([
+    const [eventsRes, choresRes, groceryRes] = await Promise.all([
       supabase.from("calendar_events").select("*").eq("partner_pair", partnerPair),
       supabase.from("chores").select("*").eq("partner_pair", partnerPair),
       supabase.from("grocery_items").select("*").eq("partner_pair", partnerPair).not("due_date", "is", null),
-    ]).then(([eventsRes, choresRes, groceryRes]) => {
-      const calEvents: CalendarEvent[] = eventsRes.data || [];
+    ]);
+    const calEvents: CalendarEvent[] = eventsRes.data || [];
+    const choreEvents: CalendarEvent[] = (choresRes.data || []).map((chore: any) => ({
+      id: `chore-${chore.id}`,
+      title: `🧹 ${chore.title}`,
+      description: chore.recurrence ? `Repeats ${chore.recurrence}` : null,
+      category: "chore",
+      event_date: chore.due_date || chore.created_at.split("T")[0],
+      event_time: null,
+      assigned_to: chore.assigned_to ? "assigned" : "both",
+      priority: "medium",
+      recurrence: chore.recurrence || "once",
+      is_completed: chore.is_completed,
+      user_id: chore.user_id,
+      partner_pair: chore.partner_pair,
+      _source: "chore" as const,
+      _sourceId: chore.id,
+    }));
+    const groceryEvents: CalendarEvent[] = (groceryRes.data || []).map((item: any) => ({
+      id: `grocery-${item.id}`,
+      title: `🛒 ${item.name}`,
+      description: item.notes || null,
+      category: "grocery-due",
+      event_date: item.due_date,
+      event_time: null,
+      assigned_to: "both",
+      priority: item.priority || "none",
+      recurrence: "once",
+      is_completed: item.is_checked,
+      user_id: item.user_id,
+      partner_pair: item.partner_pair,
+      _source: "grocery" as const,
+      _sourceId: item.id,
+    }));
+    const baseEvents = [...calEvents, ...choreEvents, ...groceryEvents];
+    setEvents(expandRecurringEvents(baseEvents));
+  };
 
-      // Convert chores to calendar events — use due_date if set, otherwise created_at date
-      const choreEvents: CalendarEvent[] = (choresRes.data || []).map((chore: any) => ({
-        id: `chore-${chore.id}`,
-        title: `🧹 ${chore.title}`,
-        description: chore.recurrence ? `Repeats ${chore.recurrence}` : null,
-        category: "chore",
-        event_date: chore.due_date || chore.created_at.split("T")[0],
-        event_time: null,
-        assigned_to: chore.assigned_to ? "assigned" : "both",
-        priority: "medium",
-        recurrence: chore.recurrence || "once",
-        is_completed: chore.is_completed,
-        user_id: chore.user_id,
-        partner_pair: chore.partner_pair,
-        _source: "chore",
-        _sourceId: chore.id,
-      }));
-
-      // Convert grocery items to calendar events
-      const groceryEvents: CalendarEvent[] = (groceryRes.data || []).map((item: any) => ({
-        id: `grocery-${item.id}`,
-        title: `🛒 ${item.name}`,
-        description: item.notes || null,
-        category: "grocery-due",
-        event_date: item.due_date,
-        event_time: null,
-        assigned_to: "both",
-        priority: item.priority || "none",
-        recurrence: "once",
-        is_completed: item.is_checked,
-        user_id: item.user_id,
-        partner_pair: item.partner_pair,
-        _source: "grocery",
-        _sourceId: item.id,
-      }));
-
-      // Expand recurring events into virtual instances for a 90-day window
-      const baseEvents = [...calEvents, ...choreEvents, ...groceryEvents];
-      const expanded = expandRecurringEvents(baseEvents);
-      setEvents(expanded);
-    });
+  useEffect(() => {
+    refreshEvents();
   }, [partnerPair]);
 
   // Inject demo events when in demo mode and no real data
