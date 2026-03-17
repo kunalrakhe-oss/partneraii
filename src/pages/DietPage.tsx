@@ -48,6 +48,9 @@ const ASSIGN_OPTIONS = [
   { value: "both", label: "Both", icon: Users },
 ];
 
+const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 // ─── Confetti Component ──────────────────────────────────────────────────────
 
 function Confetti({ onDone }: { onDone: () => void }) {
