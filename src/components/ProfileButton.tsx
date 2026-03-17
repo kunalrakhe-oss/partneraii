@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
+import ProfileDrawer from "@/components/ProfileDrawer";
 
 export default function ProfileButton({ className = "" }: { className?: string }) {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -17,15 +18,18 @@ export default function ProfileButton({ className = "" }: { className?: string }
   }, [user]);
 
   return (
-    <button
-      onClick={() => navigate("/profile")}
-      className={`w-9 h-9 rounded-full bg-muted overflow-hidden flex items-center justify-center border-2 border-border shrink-0 ${className}`}
-    >
-      {avatarUrl ? (
-        <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-      ) : (
-        <span className="text-sm">👩</span>
-      )}
-    </button>
+    <>
+      <button
+        onClick={() => setDrawerOpen(true)}
+        className={`w-9 h-9 rounded-full bg-muted overflow-hidden flex items-center justify-center border-2 border-border shrink-0 ${className}`}
+      >
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+        ) : (
+          <span className="text-sm">👩</span>
+        )}
+      </button>
+      <ProfileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+    </>
   );
 }
