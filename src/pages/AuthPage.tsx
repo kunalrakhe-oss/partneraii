@@ -79,10 +79,10 @@ export default function AuthPage() {
 
         {/* Mode tabs */}
         <div className="flex gap-1 bg-muted rounded-xl p-1 w-full mb-4">
-          {(["login", "signup", "forgot"] as const).map((m) => (
+          {(["login", "signup"] as const).map((m) => (
             <button key={m} onClick={() => setMode(m)}
               className={`flex-1 text-xs font-medium py-2 rounded-lg transition-colors ${mode === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
-              {m === "login" ? "Sign In" : m === "signup" ? "Sign Up" : "Reset"}
+              {m === "login" ? "Sign In" : "Sign Up"}
             </button>
           ))}
         </div>
