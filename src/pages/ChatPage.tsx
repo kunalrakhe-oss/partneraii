@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Search, MoreVertical, Mic, Paperclip, Smile, ShoppingCart, CheckSquare, SmilePlus, Image as ImageIcon, X } from "lucide-react";
+import { Send, Search, MoreVertical, ShoppingCart, CheckSquare, SmilePlus, Image as ImageIcon, X, Plus, Camera, FileText, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import { format } from "date-fns";
