@@ -62,7 +62,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("display_name, avatar_url, created_at").eq("user_id", user.id).maybeSingle()
+    supabase.from("profiles").select("display_name, avatar_url, created_at, partner_id").eq("user_id", user.id).maybeSingle()
       .then(({ data }) => {
         const raw = data?.display_name || user.user_metadata?.full_name || user.user_metadata?.display_name || user.user_metadata?.name || user.email?.split("@")[0] || "there";
         setFirstName(raw.split(" ")[0]);
@@ -71,6 +71,13 @@ export default function HomePage() {
           const created = new Date(data.created_at);
           const diff = Math.max(1, Math.floor((Date.now() - created.getTime()) / (1000 * 60 * 60 * 24)));
           setDaysTogether(diff);
+        }
+        // Fetch partner profile if connected
+        if (data?.partner_id) {
+          supabase.from("profiles").select("display_name, avatar_url").eq("id", data.partner_id).maybeSingle()
+            .then(({ data: partner }) => {
+              if (partner) setPartnerProfile(partner);
+            });
         }
       });
   }, [user]);
