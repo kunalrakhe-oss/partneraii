@@ -109,6 +109,7 @@ export default function CalendarPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("day");
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
+  const [showViewMenu, setShowViewMenu] = useState(false);
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
