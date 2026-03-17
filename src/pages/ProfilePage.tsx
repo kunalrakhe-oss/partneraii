@@ -103,7 +103,7 @@ export default function ProfilePage() {
     const fetchProfile = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, partner_id, phone")
+        .select("display_name, avatar_url, partner_id, phone, gender, birthday")
         .eq("user_id", user.id)
         .single();
       if (data) {
