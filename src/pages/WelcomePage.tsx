@@ -1,21 +1,12 @@
 import { Heart, PlusCircle, Users } from "lucide-react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import onboardingHero from "@/assets/onboarding-hero.jpg";
 
-export default function WelcomePage() {
-  const navigate = useNavigate();
+interface WelcomePageProps {
+  onComplete: () => void;
+}
 
-  const handleCreate = () => {
-    localStorage.setItem("lovelist-onboarded", "true");
-    navigate("/");
-  };
-
-  const handleJoin = () => {
-    localStorage.setItem("lovelist-onboarded", "true");
-    navigate("/");
-  };
-
+export default function WelcomePage({ onComplete }: WelcomePageProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto">
       {/* Top section */}
@@ -72,7 +63,7 @@ export default function WelcomePage() {
       >
         {/* Create Our Space button */}
         <button
-          onClick={handleCreate}
+          onClick={onComplete}
           className="w-full h-14 rounded-2xl bg-card text-foreground font-semibold text-base flex items-center justify-center gap-2.5 shadow-soft mb-4"
         >
           <PlusCircle size={20} />
@@ -81,7 +72,7 @@ export default function WelcomePage() {
 
         {/* Join My Partner */}
         <button
-          onClick={handleJoin}
+          onClick={onComplete}
           className="w-full flex items-center justify-center gap-2 text-sm font-medium text-muted mb-8"
         >
           <Users size={16} />
