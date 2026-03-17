@@ -24,6 +24,7 @@ export type Database = {
           event_date: string
           event_time: string | null
           id: string
+          image_url: string | null
           is_completed: boolean
           partner_pair: string
           priority: string
@@ -42,6 +43,7 @@ export type Database = {
           event_date?: string
           event_time?: string | null
           id?: string
+          image_url?: string | null
           is_completed?: boolean
           partner_pair: string
           priority?: string
@@ -60,6 +62,7 @@ export type Database = {
           event_date?: string
           event_time?: string | null
           id?: string
+          image_url?: string | null
           is_completed?: boolean
           partner_pair?: string
           priority?: string
@@ -104,6 +107,7 @@ export type Database = {
           created_at: string
           due_date: string | null
           id: string
+          image_url: string | null
           is_completed: boolean
           partner_pair: string
           recurrence: string | null
@@ -116,6 +120,7 @@ export type Database = {
           created_at?: string
           due_date?: string | null
           id?: string
+          image_url?: string | null
           is_completed?: boolean
           partner_pair: string
           recurrence?: string | null
@@ -128,6 +133,7 @@ export type Database = {
           created_at?: string
           due_date?: string | null
           id?: string
+          image_url?: string | null
           is_completed?: boolean
           partner_pair?: string
           recurrence?: string | null
@@ -143,6 +149,7 @@ export type Database = {
           created_at: string
           due_date: string | null
           id: string
+          image_url: string | null
           is_checked: boolean
           is_flagged: boolean
           list_type: string
@@ -158,6 +165,7 @@ export type Database = {
           created_at?: string
           due_date?: string | null
           id?: string
+          image_url?: string | null
           is_checked?: boolean
           is_flagged?: boolean
           list_type?: string
@@ -173,6 +181,7 @@ export type Database = {
           created_at?: string
           due_date?: string | null
           id?: string
+          image_url?: string | null
           is_checked?: boolean
           is_flagged?: boolean
           list_type?: string
