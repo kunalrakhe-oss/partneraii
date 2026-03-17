@@ -367,6 +367,24 @@ export default function ProfilePage() {
               type="tel"
             />
           </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Gender</label>
+            <div className="flex gap-2">
+              {["Male", "Female", "Non-binary", "Other"].map(g => (
+                <button key={g} onClick={() => setEditGender(g.toLowerCase())}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-medium border transition-all ${editGender === g.toLowerCase() ? "bg-primary text-primary-foreground border-primary" : "bg-muted border-border text-foreground"}`}>
+                  {g}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Birthday</label>
+            <input
+              type="date" value={editBirthday} onChange={e => setEditBirthday(e.target.value)}
+              className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
           <button
             onClick={savePersonalInfo} disabled={saving || !editName.trim()}
             className="w-full love-gradient text-primary-foreground font-semibold py-3 rounded-xl mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
