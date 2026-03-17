@@ -83,6 +83,8 @@ export default function AddEventModal({
     setFormAssigned(event.assigned_to);
     setFormPriority(event.priority);
     setFormDate(event.event_date);
+    setFormReminder(event.reminder || "none");
+    setFormCountdown(event.countdown_type || "none");
   };
 
   // Use a ref-like pattern: reset when open changes
