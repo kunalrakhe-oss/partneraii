@@ -1,11 +1,11 @@
-import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy } from "lucide-react";
+import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import AddEventModal from "@/components/AddEventModal";
 import { format, formatDistanceToNowStrict, isPast, isToday, isTomorrow, parseISO } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 
@@ -39,6 +39,11 @@ export default function HomePage() {
   const [totalEvents, setTotalEvents] = useState(0);
   const [totalMemories, setTotalMemories] = useState(0);
   const [completedChores, setCompletedChores] = useState(0);
+  const [pendingChores, setPendingChores] = useState(0);
+
+  // AI Insight
+  const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [insightLoading, setInsightLoading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -68,7 +73,7 @@ export default function HomePage() {
     supabase.from("calendar_events").select("id, title, event_time").eq("partner_pair", partnerPair).eq("event_date", today).eq("is_completed", false)
       .then(({ data }) => { if (data) setTodayEvents(data); });
 
-    // Next upcoming event (today or future, not completed)
+    // Next upcoming event
     supabase.from("calendar_events")
       .select("id, title, event_date, event_time, category, countdown_type")
       .eq("partner_pair", partnerPair)
@@ -82,7 +87,7 @@ export default function HomePage() {
 
     // Chores
     supabase.from("chores").select("id, title, is_completed, recurrence").eq("partner_pair", partnerPair).eq("is_completed", false).limit(3)
-      .then(({ data }) => { if (data) setUrgentChores(data); });
+      .then(({ data }) => { if (data) { setUrgentChores(data); setPendingChores(data.length); } });
 
     // Grocery count
     supabase.from("grocery_items").select("id", { count: "exact", head: true }).eq("partner_pair", partnerPair).eq("is_checked", false)
@@ -92,18 +97,56 @@ export default function HomePage() {
     supabase.from("chat_messages").select("id", { count: "exact", head: true }).eq("partner_pair", partnerPair)
       .then(({ count }) => { setMessageCount(count ?? 0); });
 
-    // Analytics: total events
+    // Analytics
     supabase.from("calendar_events").select("id", { count: "exact", head: true }).eq("partner_pair", partnerPair)
       .then(({ count }) => { setTotalEvents(count ?? 0); });
 
-    // Analytics: total memories
     supabase.from("memories").select("id", { count: "exact", head: true }).eq("partner_pair", partnerPair)
       .then(({ count }) => { setTotalMemories(count ?? 0); });
 
-    // Analytics: completed chores
     supabase.from("chores").select("id", { count: "exact", head: true }).eq("partner_pair", partnerPair).eq("is_completed", true)
       .then(({ count }) => { setCompletedChores(count ?? 0); });
   }, [partnerPair, user, today]);
+
+  // Fetch AI insight
+  const fetchInsight = useCallback(async () => {
+    if (insightLoading) return;
+    setInsightLoading(true);
+    try {
+      const hour = new Date().getHours();
+      const timeOfDay = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+
+      const { data, error } = await supabase.functions.invoke("daily-insight", {
+        body: {
+          stats: {
+            daysTogether,
+            pendingChores,
+            completedChores,
+            groceryItems: uncheckedGroceries,
+            todayEvents: todayEvents.length,
+            totalMemories,
+            messageCount,
+            partnerMood: partnerMood?.mood || null,
+            timeOfDay,
+          },
+        },
+      });
+      if (error) throw error;
+      if (data?.insight) setAiInsight(data.insight);
+    } catch (e) {
+      console.error("Insight error:", e);
+      setAiInsight("Keep building your love story together! 💕");
+    } finally {
+      setInsightLoading(false);
+    }
+  }, [daysTogether, pendingChores, completedChores, uncheckedGroceries, todayEvents.length, totalMemories, messageCount, partnerMood]);
+
+  // Auto-fetch insight once data is loaded
+  useEffect(() => {
+    if (partnerPair && !aiInsight && !insightLoading && daysTogether > 0) {
+      fetchInsight();
+    }
+  }, [partnerPair, daysTogether, fetchInsight, aiInsight, insightLoading]);
 
   const greeting = (() => {
     const hour = new Date().getHours();
@@ -226,6 +269,9 @@ export default function HomePage() {
                   <p className="text-sm font-bold text-foreground">
                     {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : "—"}
                   </p>
+                  {partnerMood?.note && (
+                    <p className="text-xs text-foreground/50 mt-0.5">"{partnerMood.note}"</p>
+                  )}
                 </div>
               </div>
               <button onClick={() => navigate("/mood")} className="w-12 h-12 rounded-btn bg-secondary/20 flex items-center justify-center">
@@ -315,16 +361,32 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          {/* AI Insight */}
+          {/* AI Insight — Powered by Lovable AI */}
           <motion.div variants={item} className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3">
             <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
               <Sparkles size={16} className="text-foreground" />
             </div>
-            <div>
-              <p className="text-xs font-bold text-foreground mb-0.5">LoveList AI Insight</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                You've completed {completedChores} chores together. Keep up the great teamwork! 💪
-              </p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-0.5">
+                <p className="text-xs font-bold text-foreground">LoveList AI Insight</p>
+                <button
+                  onClick={fetchInsight}
+                  disabled={insightLoading}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <RefreshCw size={12} className={insightLoading ? "animate-spin" : ""} />
+                </button>
+              </div>
+              {insightLoading && !aiInsight ? (
+                <div className="flex items-center gap-2 py-1">
+                  <Loader2 size={12} className="animate-spin text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Generating insight…</span>
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {aiInsight || "Loading your personalized insight…"}
+                </p>
+              )}
             </div>
           </motion.div>
 
