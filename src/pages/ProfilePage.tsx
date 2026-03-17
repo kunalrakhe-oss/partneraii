@@ -183,6 +183,27 @@ export default function ProfilePage() {
     await signOut();
   };
 
+  const [removingPartner, setRemovingPartner] = useState(false);
+  const handleRemovePartner = async () => {
+    if (!partnerId) return;
+    setRemovingPartner(true);
+    const { data, error } = await supabase.rpc("remove_partner", { partner_profile_id: partnerId });
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      const result = data as any;
+      if (result?.success) {
+        toast({ title: "Partner removed" });
+        setPartnerName(null);
+        setPartnerId(null);
+        setActiveSheet(null);
+      } else {
+        toast({ title: "Failed", description: result?.error || "Unknown error", variant: "destructive" });
+      }
+    }
+    setRemovingPartner(false);
+  };
+
   const handleSettingTap = (label: string) => {
     switch (label) {
       case "Personal Information":
