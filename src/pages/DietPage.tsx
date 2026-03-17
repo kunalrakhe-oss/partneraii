@@ -412,17 +412,17 @@ export default function DietPage() {
 
   // ─── Actions ───────────────────────────────────────────────────────────────
 
-  const addItem = async (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string }) => {
+  const addItem = async (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string; recurrence: string; recurrence_day: number | null }) => {
     if (!user || !partnerPair || saving) return;
     setSaving(true);
     const { data: row, error } = await supabase.from("diet_logs").insert({
       user_id: user.id, partner_pair: partnerPair, meal_type: data.category,
       description: data.description, notes: data.notes || null, assigned_to: data.assigned_to,
       calories: data.calories, log_date: data.log_date, event_time: data.event_time || null,
+      recurrence: data.recurrence, recurrence_day: data.recurrence_day,
     }).select().single();
     if (!error && row) {
-      if (row.log_date === today) setItems(prev => [...prev, row as DietItem]);
-      // Sync to calendar
+      setItems(prev => [...prev, row as DietItem]);
       await supabase.from("calendar_events").insert({
         title: `🥗 ${data.description}`,
         description: `Diet: ${CATEGORIES.find(c => c.key === data.category)?.label || data.category}${data.notes ? ` — ${data.notes}` : ""}`,
@@ -431,7 +431,7 @@ export default function DietPage() {
         event_time: data.event_time || null,
         assigned_to: data.assigned_to,
         priority: "low",
-        recurrence: "once",
+        recurrence: data.recurrence,
         user_id: user.id,
         partner_pair: partnerPair,
       });
@@ -441,7 +441,7 @@ export default function DietPage() {
     setSaving(false);
   };
 
-  const updateItem = async (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string }) => {
+  const updateItem = async (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string; recurrence: string; recurrence_day: number | null }) => {
     if (!editingItem || saving) return;
     setSaving(true);
     const { error } = await supabase.from("diet_logs").update({
