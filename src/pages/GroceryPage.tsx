@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Sparkles, Check, Trash2, ShoppingCart, ClipboardList, Gift, Plane, Heart } from "lucide-react";
+import { Plus, Sparkles, Check, Trash2, ShoppingCart, ClipboardList, Gift, Plane, Heart, ChevronUp, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { categorizeGroceryItem } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,6 +66,7 @@ export default function GroceryPage() {
       .from("grocery_items")
       .select("*")
       .eq("partner_pair", partnerPair)
+      .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true });
     if (data) setAllItems(data);
     setLoading(false);
@@ -95,12 +96,15 @@ export default function GroceryPage() {
   const addItem = async () => {
     if (!input.trim() || !userId || !partnerPair) return;
     const category = activeList === "grocery" ? categorizeGroceryItem(input.trim()) : "other";
+    // New items get sort_order higher than current max
+    const maxOrder = items.length > 0 ? Math.max(...items.map(i => (i as any).sort_order ?? 0)) : 0;
     const { error } = await supabase.from("grocery_items").insert({
       name: input.trim(),
       category,
       user_id: userId,
       partner_pair: partnerPair,
       list_type: activeList,
+      sort_order: maxOrder + 1,
     } as any);
     if (error) {
       toast({ title: "Error adding item", description: error.message, variant: "destructive" });
@@ -112,6 +116,32 @@ export default function GroceryPage() {
 
   const toggleItem = async (id: string, currentChecked: boolean) => {
     await supabase.from("grocery_items").update({ is_checked: !currentChecked }).eq("id", id);
+    fetchItems();
+  };
+
+  const moveItem = async (id: string, direction: "up" | "down") => {
+    const unchecked = items.filter(i => !i.is_checked);
+    const idx = unchecked.findIndex(i => i.id === id);
+    if (idx < 0) return;
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= unchecked.length) return;
+
+    const current = unchecked[idx];
+    const swap = unchecked[swapIdx];
+    const currentOrder = (current as any).sort_order ?? 0;
+    const swapOrder = (swap as any).sort_order ?? 0;
+
+    // Optimistic update
+    setAllItems(prev => prev.map(i => {
+      if (i.id === current.id) return { ...i, sort_order: swapOrder } as any;
+      if (i.id === swap.id) return { ...i, sort_order: currentOrder } as any;
+      return i;
+    }));
+
+    await Promise.all([
+      supabase.from("grocery_items").update({ sort_order: swapOrder } as any).eq("id", current.id),
+      supabase.from("grocery_items").update({ sort_order: currentOrder } as any).eq("id", swap.id),
+    ]);
     fetchItems();
   };
 
@@ -145,7 +175,7 @@ export default function GroceryPage() {
       (grouped[display] = grouped[display] || []).push(item);
     });
     Object.keys(grouped).forEach(key => {
-      grouped[key].sort((a, b) => Number(a.is_checked) - Number(b.is_checked));
+      grouped[key].sort((a, b) => Number(a.is_checked) - Number(b.is_checked) || ((a as any).sort_order ?? 0) - ((b as any).sort_order ?? 0));
     });
   }
 
@@ -160,8 +190,10 @@ export default function GroceryPage() {
   }
 
   const sortedItems = activeList !== "grocery"
-    ? [...items].sort((a, b) => Number(a.is_checked) - Number(b.is_checked))
+    ? [...items].sort((a, b) => Number(a.is_checked) - Number(b.is_checked) || ((a as any).sort_order ?? 0) - ((b as any).sort_order ?? 0))
     : [];
+
+  const uncheckedItems = activeList !== "grocery" ? sortedItems.filter(i => !i.is_checked) : [];
 
   return (
     <PageTransition>
@@ -222,27 +254,44 @@ export default function GroceryPage() {
           </div>
         ) : activeList === "grocery" ? (
           <div className="space-y-5">
-            {Object.entries(grouped).map(([displayCat, catItems]) => (
-              <div key={displayCat}>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className={`w-1 h-4 rounded-full ${CATEGORY_COLOR[displayCat] || "bg-muted-foreground"}`} />
-                  <h3 className="text-xs font-bold text-muted-foreground tracking-wider">{displayCat}</h3>
+            {Object.entries(grouped).map(([displayCat, catItems]) => {
+              const uncheckedCat = catItems.filter(i => !i.is_checked);
+              return (
+                <div key={displayCat}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-1 h-4 rounded-full ${CATEGORY_COLOR[displayCat] || "bg-muted-foreground"}`} />
+                    <h3 className="text-xs font-bold text-muted-foreground tracking-wider">{displayCat}</h3>
+                  </div>
+                  <div className="space-y-2">
+                    <AnimatePresence>
+                      {catItems.map(item => (
+                        <ItemRow
+                          key={item.id}
+                          item={item}
+                          onToggle={toggleItem}
+                          onMove={moveItem}
+                          isFirst={uncheckedCat[0]?.id === item.id}
+                          isLast={uncheckedCat[uncheckedCat.length - 1]?.id === item.id}
+                        />
+                      ))}
+                    </AnimatePresence>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <AnimatePresence>
-                    {catItems.map(item => (
-                      <ItemRow key={item.id} item={item} onToggle={toggleItem} />
-                    ))}
-                  </AnimatePresence>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="space-y-2">
             <AnimatePresence>
               {sortedItems.map(item => (
-                <ItemRow key={item.id} item={item} onToggle={toggleItem} />
+                <ItemRow
+                  key={item.id}
+                  item={item}
+                  onToggle={toggleItem}
+                  onMove={moveItem}
+                  isFirst={uncheckedItems[0]?.id === item.id}
+                  isLast={uncheckedItems[uncheckedItems.length - 1]?.id === item.id}
+                />
               ))}
             </AnimatePresence>
           </div>
@@ -285,7 +334,19 @@ export default function GroceryPage() {
   );
 }
 
-function ItemRow({ item, onToggle }: { item: GroceryRow; onToggle: (id: string, checked: boolean) => void }) {
+function ItemRow({
+  item,
+  onToggle,
+  onMove,
+  isFirst,
+  isLast,
+}: {
+  item: GroceryRow;
+  onToggle: (id: string, checked: boolean) => void;
+  onMove: (id: string, direction: "up" | "down") => void;
+  isFirst: boolean;
+  isLast: boolean;
+}) {
   return (
     <motion.div
       layout
@@ -305,6 +366,28 @@ function ItemRow({ item, onToggle }: { item: GroceryRow; onToggle: (id: string, 
       <span className={`flex-1 text-sm font-medium ${item.is_checked ? "line-through text-muted-foreground" : "text-foreground"}`}>
         {item.name}
       </span>
+      {!item.is_checked && (
+        <div className="flex flex-col gap-0.5 shrink-0">
+          <button
+            onClick={() => onMove(item.id, "up")}
+            disabled={isFirst}
+            className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${
+              isFirst ? "text-muted-foreground/30" : "text-muted-foreground hover:bg-muted active:bg-primary/10"
+            }`}
+          >
+            <ChevronUp size={14} />
+          </button>
+          <button
+            onClick={() => onMove(item.id, "down")}
+            disabled={isLast}
+            className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${
+              isLast ? "text-muted-foreground/30" : "text-muted-foreground hover:bg-muted active:bg-primary/10"
+            }`}
+          >
+            <ChevronDown size={14} />
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 }
