@@ -420,100 +420,197 @@ export default function CalendarPage() {
   );
 }
 
-/* ─────────────── DAY VIEW (Apple-style time grid) ─────────────── */
+/* ─────────────── DAY VIEW (MS Calendar-style: parked strip + timeline) ─────────────── */
 
-function DayView({ date, events, onAddEvent, onEditEvent, onToggle }: {
+function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleItem }: {
   date: Date;
   events: CalendarEvent[];
   onAddEvent: (time?: string) => void;
   onEditEvent: (e: CalendarEvent) => void;
   onToggle: (e: CalendarEvent) => void;
+  onScheduleItem?: (event: CalendarEvent, time: string) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
   const nowHour = new Date().getHours();
+  const [draggingEvent, setDraggingEvent] = useState<CalendarEvent | null>(null);
+  const [dropHour, setDropHour] = useState<number | null>(null);
+  const [parkedExpanded, setParkedExpanded] = useState(false);
 
   useEffect(() => {
     if (scrollRef.current) {
-      // Scroll to current hour - 2
       const target = Math.max(0, nowHour - 2) * 60;
       scrollRef.current.scrollTop = target;
     }
   }, []);
 
-  // All-day events (no time)
-  const allDayEvents = events.filter((e) => !e.event_time);
+  const parkedEvents = events.filter((e) => !e.event_time);
   const timedEvents = events.filter((e) => e.event_time);
+  const visibleParked = parkedExpanded ? parkedEvents : parkedEvents.slice(0, 3);
+
+  const handleDragStart = (evt: CalendarEvent) => (e: React.DragEvent) => {
+    setDraggingEvent(evt);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", evt.id);
+  };
+
+  const handleDragOver = (hour: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDropHour(hour);
+  };
+
+  const handleDrop = (hour: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    setDropHour(null);
+    if (draggingEvent && onScheduleItem) {
+      onScheduleItem(draggingEvent, `${hour.toString().padStart(2, "0")}:00`);
+    }
+    setDraggingEvent(null);
+  };
+
+  const handleDragEnd = () => { setDraggingEvent(null); setDropHour(null); };
+
+  // Touch-based drag for mobile
+  const touchDragRef = useRef<CalendarEvent | null>(null);
+  const handleTouchStart = (evt: CalendarEvent) => () => {
+    touchDragRef.current = evt;
+    setDraggingEvent(evt);
+  };
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchDragRef.current || !gridRef.current || !scrollRef.current) return;
+    const touch = e.touches[0];
+    const gridRect = gridRef.current.getBoundingClientRect();
+    const relativeY = touch.clientY - gridRect.top + scrollRef.current.scrollTop;
+    const hour = Math.max(0, Math.min(23, Math.floor(relativeY / 60)));
+    setDropHour(hour);
+  };
+  const handleTouchEnd = () => {
+    if (touchDragRef.current && dropHour !== null && onScheduleItem) {
+      onScheduleItem(touchDragRef.current, `${dropHour.toString().padStart(2, "0")}:00`);
+    }
+    touchDragRef.current = null;
+    setDraggingEvent(null);
+    setDropHour(null);
+  };
 
   return (
-    <div ref={scrollRef} className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 200px)" }}>
-      {/* All-day events */}
-      {allDayEvents.length > 0 && (
-        <div className="px-5 py-2 border-b border-border">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">All Day</p>
-          {allDayEvents.map((evt) => (
-            <button key={evt.id} onClick={() => onEditEvent(evt)}
-              className={`w-full text-left px-3 py-1.5 rounded-lg mb-1 text-xs font-medium ${CATEGORY_COLORS[evt.category] || "bg-primary/50"} text-primary-foreground ${evt.is_completed ? "opacity-50 line-through" : ""}`}>
-              {evt.title}
-            </button>
-          ))}
+    <div className="flex flex-col" style={{ maxHeight: "calc(100vh - 200px)" }}>
+      {/* ── Parked items strip (Microsoft Calendar style) ── */}
+      {parkedEvents.length > 0 && (
+        <div className="border-b border-border bg-muted/30 px-4 py-2 shrink-0">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-400 inline-block" />
+              Parked · {parkedEvents.length}
+            </p>
+            {parkedEvents.length > 3 && (
+              <button onClick={() => setParkedExpanded(!parkedExpanded)} className="text-[10px] text-primary font-semibold">
+                {parkedExpanded ? "Show less" : `+${parkedEvents.length - 3} more`}
+              </button>
+            )}
+          </div>
+          <p className="text-[9px] text-muted-foreground/60 mb-1.5">Drag to timeline to schedule</p>
+          <div className="flex flex-wrap gap-1.5">
+            {visibleParked.map((evt) => (
+              <div
+                key={evt.id}
+                draggable
+                onDragStart={handleDragStart(evt)}
+                onDragEnd={handleDragEnd}
+                onTouchStart={handleTouchStart(evt)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onClick={() => onEditEvent(evt)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium cursor-grab active:cursor-grabbing border border-border/50 shadow-sm transition-all ${
+                  draggingEvent?.id === evt.id ? "opacity-50 scale-95" : "bg-card hover:shadow-md"
+                } ${evt.is_completed ? "opacity-40 line-through" : ""}`}
+              >
+                <div className={`w-2 h-2 rounded-full shrink-0 ${
+                  evt.category === "chore" ? "bg-orange-400" :
+                  evt.category === "grocery-due" ? "bg-emerald-400" :
+                  evt.category === "birthday" ? "bg-pink-400" :
+                  evt.category === "reminder" ? "bg-blue-400" :
+                  "bg-primary"
+                }`} />
+                <span className="truncate max-w-[120px]">{evt.title}</span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onToggle(evt); }}
+                  className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ml-0.5 ${
+                    evt.is_completed ? "bg-success border-success" : "border-border"
+                  }`}
+                >
+                  {evt.is_completed && <Check size={8} className="text-white" />}
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Time grid */}
-      <div className="relative">
-        {/* Current time indicator */}
-        {isToday(date) && (
-          <div
-            className="absolute left-0 right-0 z-10 flex items-center pointer-events-none"
-            style={{ top: `${(nowHour * 60 + new Date().getMinutes()) * (60 / 60)}px` }}
-          >
-            <div className="w-2 h-2 rounded-full bg-destructive ml-[54px]" />
-            <div className="flex-1 h-[1.5px] bg-destructive" />
-          </div>
-        )}
-
-        {HOURS.map((hour) => {
-          const hourEvents = timedEvents.filter((e) => {
-            const m = timeToMinutes(e.event_time);
-            return m >= hour * 60 && m < (hour + 1) * 60;
-          });
-
-          return (
+      {/* ── Time grid ── */}
+      <div ref={scrollRef} className="overflow-y-auto flex-1">
+        <div ref={gridRef} className="relative">
+          {isToday(date) && (
             <div
-              key={hour}
-              className="flex border-b border-border/50 min-h-[60px] cursor-pointer hover:bg-muted/30 transition-colors"
-              onClick={() => onAddEvent(`${hour.toString().padStart(2, "0")}:00`)}
+              className="absolute left-0 right-0 z-10 flex items-center pointer-events-none"
+              style={{ top: `${(nowHour * 60 + new Date().getMinutes())}px` }}
             >
-              {/* Time label */}
-              <div className="w-14 shrink-0 pr-2 pt-0.5 text-right">
-                <span className="text-[10px] text-muted-foreground font-medium">{formatHour(hour)}</span>
-              </div>
-
-              {/* Events */}
-              <div className="flex-1 relative border-l border-border/50 pl-2 py-0.5">
-                {hourEvents.map((evt) => (
-                  <button
-                    key={evt.id}
-                    onClick={(e) => { e.stopPropagation(); onEditEvent(evt); }}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-lg mb-0.5 text-xs font-medium border-l-[3px] ${
-                      evt.is_completed ? "opacity-50" : ""
-                    }`}
-                    style={{
-                      backgroundColor: `hsl(var(--${evt.category === "date-night" ? "secondary" : evt.category === "groceries" ? "success" : "primary"}) / 0.15)`,
-                      borderLeftColor: `hsl(var(--${evt.category === "date-night" ? "secondary" : evt.category === "groceries" ? "success" : "primary"}))`,
-                    }}
-                  >
-                    <span className={`text-foreground ${evt.is_completed ? "line-through" : ""}`}>{evt.title}</span>
-                    {countdownBadge(evt) && (
-                      <span className="ml-1 text-[8px] font-bold bg-primary-foreground/20 px-1.5 py-0.5 rounded-full">{countdownBadge(evt)}</span>
-                    )}
-                    <span className="text-muted-foreground ml-1">{evt.event_time}</span>
-                  </button>
-                ))}
-              </div>
+              <div className="w-2 h-2 rounded-full bg-destructive ml-[54px]" />
+              <div className="flex-1 h-[1.5px] bg-destructive" />
             </div>
-          );
-        })}
+          )}
+
+          {HOURS.map((hour) => {
+            const hourEvents = timedEvents.filter((e) => {
+              const m = timeToMinutes(e.event_time);
+              return m >= hour * 60 && m < (hour + 1) * 60;
+            });
+            const isDropTarget = dropHour === hour;
+
+            return (
+              <div
+                key={hour}
+                className={`flex border-b border-border/50 min-h-[60px] cursor-pointer transition-colors ${
+                  isDropTarget ? "bg-primary/15 ring-1 ring-primary/30 ring-inset" : "hover:bg-muted/30"
+                }`}
+                onClick={() => onAddEvent(`${hour.toString().padStart(2, "0")}:00`)}
+                onDragOver={handleDragOver(hour)}
+                onDrop={handleDrop(hour)}
+              >
+                <div className="w-14 shrink-0 pr-2 pt-0.5 text-right">
+                  <span className="text-[10px] text-muted-foreground font-medium">{formatHour(hour)}</span>
+                </div>
+                <div className="flex-1 relative border-l border-border/50 pl-2 py-0.5">
+                  {isDropTarget && draggingEvent && (
+                    <div className="w-full text-left px-2.5 py-1.5 rounded-lg mb-0.5 text-xs font-medium border-2 border-dashed border-primary/40 bg-primary/5 text-primary">
+                      Schedule here · {formatHour(hour)}
+                    </div>
+                  )}
+                  {hourEvents.map((evt) => (
+                    <button
+                      key={evt.id}
+                      onClick={(e) => { e.stopPropagation(); onEditEvent(evt); }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-lg mb-0.5 text-xs font-medium border-l-[3px] ${
+                        evt.is_completed ? "opacity-50" : ""
+                      }`}
+                      style={{
+                        backgroundColor: `hsl(var(--${evt.category === "date-night" ? "secondary" : evt.category === "groceries" ? "success" : evt.category === "chore" ? "warning" : "primary"}) / 0.15)`,
+                        borderLeftColor: `hsl(var(--${evt.category === "date-night" ? "secondary" : evt.category === "groceries" ? "success" : evt.category === "chore" ? "warning" : "primary"}))`,
+                      }}
+                    >
+                      <span className={`text-foreground ${evt.is_completed ? "line-through" : ""}`}>{evt.title}</span>
+                      {countdownBadge(evt) && (
+                        <span className="ml-1 text-[8px] font-bold bg-primary-foreground/20 px-1.5 py-0.5 rounded-full">{countdownBadge(evt)}</span>
+                      )}
+                      <span className="text-muted-foreground ml-1">{evt.event_time}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
