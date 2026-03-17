@@ -867,7 +867,9 @@ function DayView({ date, events, onAddEvent, onEditEvent, onToggle, onScheduleIt
   const dropHour = dropMinutes !== null ? Math.floor(dropMinutes / 60) : null;
 
   return (
-    <div className="flex flex-col" style={{ maxHeight: "calc(100vh - 200px)" }}>
+    <div className="flex flex-col">
+      {/* ── Time grid section ── */}
+      <div style={{ maxHeight: "calc(100vh - 200px)" }} className="flex flex-col">
       {/* ── Parked items strip ── */}
       {parkedEvents.length > 0 && (
         <div className="border-b border-border bg-muted/30 px-4 py-2 shrink-0">
