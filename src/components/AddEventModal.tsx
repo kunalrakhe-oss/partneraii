@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Trash2, Bell, Timer } from "lucide-react";
+import { X, Trash2, Bell, Timer, CalendarDays, Cake } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
