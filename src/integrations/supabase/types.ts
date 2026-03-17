@@ -156,32 +156,41 @@ export type Database = {
       }
       diet_logs: {
         Row: {
+          assigned_to: string
           calories: number | null
           created_at: string
           description: string
           id: string
+          is_completed: boolean
           log_date: string
           meal_type: string
+          notes: string | null
           partner_pair: string
           user_id: string
         }
         Insert: {
+          assigned_to?: string
           calories?: number | null
           created_at?: string
           description: string
           id?: string
+          is_completed?: boolean
           log_date?: string
           meal_type?: string
+          notes?: string | null
           partner_pair: string
           user_id: string
         }
         Update: {
+          assigned_to?: string
           calories?: number | null
           created_at?: string
           description?: string
           id?: string
+          is_completed?: boolean
           log_date?: string
           meal_type?: string
+          notes?: string | null
           partner_pair?: string
           user_id?: string
         }
