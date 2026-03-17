@@ -130,6 +130,8 @@ export default function AddEventModal({
           event_time: formTime || null,
           assigned_to: formAssigned,
           priority: formPriority,
+          reminder: formReminder,
+          countdown_type: formCountdown,
           recurrence: "once",
           user_id: user.id,
           partner_pair: partnerPair,
