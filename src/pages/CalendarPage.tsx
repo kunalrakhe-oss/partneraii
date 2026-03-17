@@ -17,6 +17,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useDemo } from "@/contexts/DemoContext";
+import { DEMO_CALENDAR_EVENTS } from "@/lib/demoData";
 
 const CATEGORIES = ["date-night", "groceries", "cleaning", "bills", "travel", "family", "chore", "reminder", "birthday", "grocery-due"] as const;
 const CATEGORY_ICONS: Record<string, any> = {
