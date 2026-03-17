@@ -105,7 +105,7 @@ export default function MoodPage() {
         <div className="flex justify-center gap-3 mb-6 flex-wrap">
           {MOODS.map(mood => (
             <motion.button key={mood.key} whileTap={{ scale: 0.9 }} onClick={() => logMood(mood.key)}
-              className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all min-w-[60px] ${todayLog?.mood === mood.key ? "bg-[hsl(100,20%,72%)] shadow-soft ring-2 ring-[hsl(100,20%,60%)]" : "hover:bg-muted"}`}>
+              className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all min-w-[60px] ${todayLog?.mood === mood.key ? "bg-primary/25 shadow-soft ring-2 ring-primary/40" : "hover:bg-muted"}`}>
               <span className="text-3xl">{mood.emoji}</span>
               <span className="text-[10px] font-medium text-muted-foreground">{mood.label}</span>
             </motion.button>
