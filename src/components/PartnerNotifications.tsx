@@ -65,6 +65,7 @@ export default function PartnerNotifications() {
           const log = payload.new as { user_id: string; mood: string };
           if (log.user_id !== user.id) {
             const label = MOOD_LABELS[log.mood] || log.mood;
+            notifyPartnerAction();
             toast(`Partner is feeling ${label}`, {
               description: "Tap to check in on them ❤️",
               icon: <Heart size={16} className="text-primary" />,
