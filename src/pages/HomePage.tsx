@@ -18,7 +18,7 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
-type NextEvent = { id: string; title: string; event_date: string; event_time: string | null; category: string };
+type NextEvent = { id: string; title: string; event_date: string; event_time: string | null; category: string; countdown_type?: string };
 
 export default function HomePage() {
   const navigate = useNavigate();
