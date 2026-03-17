@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { toast } from "sonner";
+import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 
 const CATEGORIES = ["date-night", "groceries", "cleaning", "bills", "travel", "family"] as const;
 const CATEGORY_LABEL: Record<string, string> = {
@@ -62,6 +63,8 @@ export default function AddEventModal({
   const [formReminder, setFormReminder] = useState("none");
   const [formCountdown, setFormCountdown] = useState("none");
   const [formType, setFormType] = useState<"event" | "reminder" | "countdown" | "birthday">("event");
+  const [formFile, setFormFile] = useState<File | null>(null);
+  const [formFilePreview, setFormFilePreview] = useState("");
 
   // Reset form when modal opens
   const resetForAdd = () => {
@@ -75,6 +78,8 @@ export default function AddEventModal({
     setFormReminder("none");
     setFormCountdown("none");
     setFormType("event");
+    setFormFile(null);
+    setFormFilePreview("");
   };
 
   const resetForEdit = (event: CalendarEventData) => {
@@ -106,6 +111,12 @@ export default function AddEventModal({
     e.preventDefault();
     if (!user || !partnerPair || !formTitle.trim()) return;
 
+    let imageUrl: string | null = null;
+    if (formFile) {
+      imageUrl = await uploadAttachment(formFile, user.id);
+      if (!imageUrl) { toast.error("Upload failed"); return; }
+    }
+
     if (editingEvent) {
       const { data, error } = await supabase
         .from("calendar_events")
@@ -119,7 +130,8 @@ export default function AddEventModal({
           event_date: formDate,
           reminder: formReminder,
           countdown_type: formCountdown,
-        })
+          ...(imageUrl ? { image_url: imageUrl } : {}),
+        } as any)
         .eq("id", editingEvent.id)
         .select()
         .single();
@@ -142,7 +154,8 @@ export default function AddEventModal({
           recurrence: "once",
           user_id: user.id,
           partner_pair: partnerPair,
-        })
+          image_url: imageUrl,
+        } as any)
         .select()
         .single();
       if (error) { toast.error("Failed to add event"); return; }
@@ -335,6 +348,16 @@ export default function AddEventModal({
                       </div>
                     </div>
                   )}
+                  {/* Photo attachment */}
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-muted-foreground">Photo (optional)</label>
+                    <MediaPicker
+                      imageUrl={null}
+                      preview={formFilePreview}
+                      onFileSelect={(file, url) => { setFormFile(file); setFormFilePreview(url); }}
+                      onClear={() => { setFormFile(null); setFormFilePreview(""); }}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="shrink-0 border-t border-border bg-card px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">

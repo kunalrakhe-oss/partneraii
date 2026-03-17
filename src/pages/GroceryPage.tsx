@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Sparkles, Check, Trash2, ShoppingCart, ClipboardList, Gift, Plane, Heart, ChevronUp, ChevronDown, X, CalendarIcon, Clock, Flag, AlertTriangle, FileText, ChevronRight } from "lucide-react";
+import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -400,15 +401,23 @@ function EditSheet({
   const [showDate, setShowDate] = useState(!!((item as any).due_date));
   const [isFlagged, setIsFlagged] = useState((item as any).is_flagged || false);
   const [priority, setPriority] = useState((item as any).priority || "none");
+  const [imgFile, setImgFile] = useState<File | null>(null);
+  const [imgPreview, setImgPreview] = useState("");
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) return;
+    let imageUrl = (item as any).image_url || null;
+    if (imgFile) {
+      const uploaded = await uploadAttachment(imgFile, item.user_id);
+      if (uploaded) imageUrl = uploaded;
+    }
     onSave(item.id, {
       name: name.trim(),
       notes: notes.trim() || null,
       due_date: showDate && dueDate ? format(dueDate, "yyyy-MM-dd") : null,
       is_flagged: isFlagged,
       priority,
+      image_url: imageUrl,
     });
   };
 
@@ -549,6 +558,17 @@ function EditSheet({
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Photo */}
+          <div>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">Photo</p>
+            <MediaPicker
+              imageUrl={(item as any).image_url || null}
+              preview={imgPreview}
+              onFileSelect={(file, url) => { setImgFile(file); setImgPreview(url); }}
+              onClear={() => { setImgFile(null); setImgPreview(""); }}
+            />
           </div>
 
           {/* Actions */}

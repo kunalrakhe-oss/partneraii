@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, forwardRef } from "react";
 import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users } from "lucide-react";
+import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -151,6 +152,9 @@ export default function ChoresPage() {
   const [newAssign, setNewAssign] = useState("");
   const [newDueDate, setNewDueDate] = useState<Date | undefined>(undefined);
   const [hasDueDate, setHasDueDate] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(true);
+  const [newFile, setNewFile] = useState<File | null>(null);
+  const [newFilePreview, setNewFilePreview] = useState("");
 
   const resetForm = () => {
     setNewTitle("");
@@ -158,6 +162,9 @@ export default function ChoresPage() {
     setNewAssign("");
     setNewDueDate(undefined);
     setHasDueDate(false);
+    setShowCalendar(true);
+    setNewFile(null);
+    setNewFilePreview("");
   };
 
   const addChore = async () => {
@@ -170,6 +177,16 @@ export default function ChoresPage() {
     if (newAssign === "me") assignedTo = userId;
     else if (newAssign === "partner" && partnerProfile) assignedTo = partnerProfile.user_id;
 
+    let imageUrl: string | null = null;
+    if (newFile && userId) {
+      imageUrl = await uploadAttachment(newFile, userId);
+      if (!imageUrl) {
+        toast({ title: "Upload failed", variant: "destructive" });
+        setSubmitting(false);
+        return;
+      }
+    }
+
     const { error } = await supabase.from("chores").insert({
       title,
       recurrence: newFrequency || null,
@@ -177,7 +194,8 @@ export default function ChoresPage() {
       user_id: userId,
       partner_pair: partnerPair,
       due_date: hasDueDate && newDueDate ? format(newDueDate, "yyyy-MM-dd") : null,
-    });
+      image_url: imageUrl,
+    } as any);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
@@ -572,12 +590,13 @@ export default function ChoresPage() {
                         checked={hasDueDate}
                         onCheckedChange={(checked) => {
                           setHasDueDate(checked);
+                          setShowCalendar(true);
                           if (checked && !newDueDate) setNewDueDate(new Date());
                         }}
                       />
                     </div>
 
-                    {/* Due Date picker — inline calendar */}
+                    {/* Due Date picker — inline calendar, collapses after selection */}
                     <AnimatePresence>
                       {hasDueDate && (
                         <motion.div
@@ -587,17 +606,39 @@ export default function ChoresPage() {
                           transition={{ duration: 0.2 }}
                           className="overflow-hidden"
                         >
-                          <div className="px-2 py-2 flex flex-col items-center">
-                            <p className="text-xs text-primary font-medium mb-1">
-                              {newDueDate ? format(newDueDate, "EEE, MMM d, yyyy") : "Select date"}
-                            </p>
-                            <Calendar
-                              mode="single"
-                              selected={newDueDate}
-                              onSelect={setNewDueDate}
-                              className="p-2 pointer-events-auto"
-                            />
+                          <div className="px-4 py-2">
+                            <button
+                              type="button"
+                              onClick={() => setShowCalendar(!showCalendar)}
+                              className="w-full flex items-center justify-between py-1.5 text-sm"
+                            >
+                              <span className="text-primary font-medium">
+                                {newDueDate ? format(newDueDate, "EEE, MMM d, yyyy") : "Select date"}
+                              </span>
+                              <span className="text-xs text-muted-foreground">{showCalendar ? "Done" : "Change"}</span>
+                            </button>
                           </div>
+                          <AnimatePresence>
+                            {showCalendar && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="overflow-hidden flex justify-center"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  selected={newDueDate}
+                                  onSelect={(date) => {
+                                    setNewDueDate(date);
+                                    setShowCalendar(false);
+                                  }}
+                                  className="p-2 pointer-events-auto"
+                                />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -644,6 +685,17 @@ export default function ChoresPage() {
                         )}
                       </select>
                     </div>
+                  </div>
+
+                  {/* Photo attachment */}
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden p-4">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">Photo (optional)</p>
+                    <MediaPicker
+                      imageUrl={null}
+                      preview={newFilePreview}
+                      onFileSelect={(file, url) => { setNewFile(file); setNewFilePreview(url); }}
+                      onClear={() => { setNewFile(null); setNewFilePreview(""); }}
+                    />
                   </div>
 
                   {/* Add button (secondary, for users who scroll) */}
