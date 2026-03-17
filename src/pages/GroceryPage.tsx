@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Sparkles, Check, Trash2, ShoppingCart, ClipboardList, Gift, Plane, Heart, ChevronUp, ChevronDown, X, CalendarIcon, Clock, Flag, AlertTriangle, FileText, ChevronRight } from "lucide-react";
+import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
