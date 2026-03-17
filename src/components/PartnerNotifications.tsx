@@ -147,6 +147,7 @@ export default function PartnerNotifications() {
           const item = payload.new as { user_id: string; name: string; is_checked: boolean };
           const old = payload.old as { is_checked: boolean };
           if (item.user_id !== user.id && item.is_checked && !old.is_checked && locationRef.current !== "/lists") {
+            notifyPartnerAction();
             toast("Item checked off ✓", {
               description: item.name,
               icon: <ShoppingCart size={16} className="text-primary" />,
