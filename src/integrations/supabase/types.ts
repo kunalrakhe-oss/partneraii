@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           assigned_to: string
           category: string
+          countdown_type: string | null
           created_at: string
           description: string | null
           event_date: string
@@ -27,6 +28,7 @@ export type Database = {
           partner_pair: string
           priority: string
           recurrence: string
+          reminder: string | null
           title: string
           updated_at: string
           user_id: string
@@ -34,6 +36,7 @@ export type Database = {
         Insert: {
           assigned_to?: string
           category?: string
+          countdown_type?: string | null
           created_at?: string
           description?: string | null
           event_date?: string
@@ -43,6 +46,7 @@ export type Database = {
           partner_pair: string
           priority?: string
           recurrence?: string
+          reminder?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -50,6 +54,7 @@ export type Database = {
         Update: {
           assigned_to?: string
           category?: string
+          countdown_type?: string | null
           created_at?: string
           description?: string | null
           event_date?: string
@@ -59,6 +64,7 @@ export type Database = {
           partner_pair?: string
           priority?: string
           recurrence?: string
+          reminder?: string | null
           title?: string
           updated_at?: string
           user_id?: string
