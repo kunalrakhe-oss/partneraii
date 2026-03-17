@@ -92,6 +92,10 @@ export default function ProfilePage() {
   // Personal info edit state
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
+  const [editGender, setEditGender] = useState("");
+  const [editBirthday, setEditBirthday] = useState("");
+  const [gender, setGender] = useState("");
+  const [birthday, setBirthday] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
