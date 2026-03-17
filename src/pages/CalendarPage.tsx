@@ -432,7 +432,7 @@ export default function CalendarPage() {
     if (!user || !partnerPair || !formTitle.trim()) return;
 
     if (editingEvent) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("calendar_events")
         .update({
           title: formTitle.trim(),
@@ -443,14 +443,11 @@ export default function CalendarPage() {
           priority: formPriority,
           event_date: formDate,
         })
-        .eq("id", editingEvent.id)
-        .select()
-        .single();
+        .eq("id", editingEvent.id);
       if (error) { toast.error("Failed to update event"); return; }
-      setEvents((prev) => prev.map((ev) => (ev.id === editingEvent.id ? data : ev)));
       toast.success("Event updated ✨");
     } else {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("calendar_events")
         .insert({
           title: formTitle.trim(),
@@ -463,14 +460,12 @@ export default function CalendarPage() {
           recurrence: "once",
           user_id: user.id,
           partner_pair: partnerPair,
-        })
-        .select()
-        .single();
+        });
       if (error) { toast.error("Failed to add event"); return; }
-      setEvents((prev) => [...prev, data]);
       toast.success("Event added 🎉");
     }
     setShowAdd(false);
+    await refreshEvents();
   };
 
   const deleteEvent = async (id: string) => {
