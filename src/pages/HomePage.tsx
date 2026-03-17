@@ -213,7 +213,7 @@ export default function HomePage() {
 
           {/* AI Insight */}
           <motion.div variants={item} className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3">
-            <div className="w-9 h-9 rounded-full bg-[hsl(100,20%,72%)] flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
               <Sparkles size={16} className="text-foreground" />
             </div>
             <div>
