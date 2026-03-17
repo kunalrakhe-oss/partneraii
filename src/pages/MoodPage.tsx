@@ -27,7 +27,22 @@ const MOODS = [
   { key: "confused", emoji: "😕", label: "Confused" },
 ] as const;
 
-const MOOD_EMOJI_MAP: Record<string, string> = Object.fromEntries(MOODS.map(m => [m.key, m.emoji]));
+const MOOD_GROUPS = [
+  {
+    label: "Positive",
+    moods: MOODS.filter(m => ["happy", "excited", "neutral", "calm", "grateful", "hopeful", "silly"].includes(m.key)),
+  },
+  {
+    label: "Tough",
+    moods: MOODS.filter(m => ["tired", "sad", "stressed", "anxious", "lonely", "confused"].includes(m.key)),
+  },
+  {
+    label: "Intense",
+    moods: MOODS.filter(m => ["angry", "furious"].includes(m.key)),
+  },
+];
+
+
 
 interface MoodLog {
   id: string;
