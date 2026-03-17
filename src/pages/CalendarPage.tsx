@@ -17,18 +17,21 @@ import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
-const CATEGORIES = ["date-night", "groceries", "cleaning", "bills", "travel", "family"] as const;
+const CATEGORIES = ["date-night", "groceries", "cleaning", "bills", "travel", "family", "chore", "reminder", "birthday", "grocery-due"] as const;
 const CATEGORY_ICONS: Record<string, any> = {
   "date-night": Coffee, groceries: ShoppingCart, cleaning: Tv,
   travel: Cake, family: Users, bills: Tag,
+  chore: Tv, reminder: Clock, birthday: Cake, "grocery-due": ShoppingCart,
 };
 const CATEGORY_COLORS: Record<string, string> = {
   "date-night": "bg-secondary/70", groceries: "bg-success/70", cleaning: "bg-accent",
   travel: "bg-warning/70", family: "bg-primary/70", bills: "bg-muted-foreground/50",
+  chore: "bg-orange-400/70", reminder: "bg-blue-400/70", birthday: "bg-pink-400/70", "grocery-due": "bg-emerald-400/70",
 };
 const CATEGORY_LABEL: Record<string, string> = {
   "date-night": "Romance", groceries: "Household", cleaning: "Cleaning",
   bills: "Bills", travel: "Travel", family: "Family",
+  chore: "Chore", reminder: "Reminder", birthday: "Birthday", "grocery-due": "Shopping",
 };
 
 type ViewMode = "day" | "multiday" | "month" | "list";
@@ -48,6 +51,8 @@ interface CalendarEvent {
   partner_pair: string;
   reminder?: string;
   countdown_type?: string;
+  _source?: "chore" | "grocery"; // undefined = calendar_events
+  _sourceId?: string;
 }
 
 function countdownBadge(event: CalendarEvent): string | null {
@@ -105,13 +110,53 @@ export default function CalendarPage() {
 
   useEffect(() => {
     if (!partnerPair) return;
-    supabase
-      .from("calendar_events")
-      .select("*")
-      .eq("partner_pair", partnerPair)
-      .then(({ data }) => {
-        if (data) setEvents(data);
-      });
+
+    // Fetch calendar events, chores with due dates, and grocery items with due dates in parallel
+    Promise.all([
+      supabase.from("calendar_events").select("*").eq("partner_pair", partnerPair),
+      supabase.from("chores").select("*").eq("partner_pair", partnerPair).not("due_date", "is", null),
+      supabase.from("grocery_items").select("*").eq("partner_pair", partnerPair).not("due_date", "is", null),
+    ]).then(([eventsRes, choresRes, groceryRes]) => {
+      const calEvents: CalendarEvent[] = eventsRes.data || [];
+
+      // Convert chores to calendar events
+      const choreEvents: CalendarEvent[] = (choresRes.data || []).map((chore: any) => ({
+        id: `chore-${chore.id}`,
+        title: `🧹 ${chore.title}`,
+        description: chore.recurrence ? `Repeats ${chore.recurrence}` : null,
+        category: "chore",
+        event_date: chore.due_date,
+        event_time: null,
+        assigned_to: chore.assigned_to ? "assigned" : "both",
+        priority: "medium",
+        recurrence: chore.recurrence || "once",
+        is_completed: chore.is_completed,
+        user_id: chore.user_id,
+        partner_pair: chore.partner_pair,
+        _source: "chore",
+        _sourceId: chore.id,
+      }));
+
+      // Convert grocery items to calendar events
+      const groceryEvents: CalendarEvent[] = (groceryRes.data || []).map((item: any) => ({
+        id: `grocery-${item.id}`,
+        title: `🛒 ${item.name}`,
+        description: item.notes || null,
+        category: "grocery-due",
+        event_date: item.due_date,
+        event_time: null,
+        assigned_to: "both",
+        priority: item.priority || "none",
+        recurrence: "once",
+        is_completed: item.is_checked,
+        user_id: item.user_id,
+        partner_pair: item.partner_pair,
+        _source: "grocery",
+        _sourceId: item.id,
+      }));
+
+      setEvents([...calEvents, ...choreEvents, ...groceryEvents]);
+    });
   }, [partnerPair]);
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
@@ -147,6 +192,11 @@ export default function CalendarPage() {
   };
 
   const openEditForm = (event: CalendarEvent) => {
+    // Chore/grocery items are view-only on calendar — just toggle completion
+    if (event._source === "chore" || event._source === "grocery") {
+      toast.info(`${event._source === "chore" ? "Chore" : "Grocery item"} — tap ✓ to toggle completion`);
+      return;
+    }
     setEditingEvent(event);
     setFormTitle(event.title);
     setFormDesc(event.description || "");
@@ -212,6 +262,16 @@ export default function CalendarPage() {
   };
 
   const toggleComplete = async (event: CalendarEvent) => {
+    if (event._source === "chore") {
+      await supabase.from("chores").update({ is_completed: !event.is_completed }).eq("id", event._sourceId!);
+      setEvents((prev) => prev.map((ev) => (ev.id === event.id ? { ...ev, is_completed: !ev.is_completed } : ev)));
+      return;
+    }
+    if (event._source === "grocery") {
+      await supabase.from("grocery_items").update({ is_checked: !event.is_completed }).eq("id", event._sourceId!);
+      setEvents((prev) => prev.map((ev) => (ev.id === event.id ? { ...ev, is_completed: !ev.is_completed } : ev)));
+      return;
+    }
     const { data, error } = await supabase
       .from("calendar_events")
       .update({ is_completed: !event.is_completed })
@@ -605,12 +665,16 @@ function MonthView({ currentDate, selectedDate, events, onSelectDate, onEditEven
               {/* Event dots */}
               {dayEvts.length > 0 && (
                 <div className="flex gap-0.5 mt-0.5">
-                  {dayEvts.slice(0, 3).map((evt, i) => (
+                  {dayEvts.slice(0, 4).map((evt, i) => (
                     <div
                       key={i}
                       className={`w-1 h-1 rounded-full ${
                         evt.category === "date-night" ? "bg-secondary" :
                         evt.category === "groceries" ? "bg-success" :
+                        evt.category === "chore" ? "bg-orange-400" :
+                        evt.category === "grocery-due" ? "bg-emerald-400" :
+                        evt.category === "birthday" ? "bg-pink-400" :
+                        evt.category === "reminder" ? "bg-blue-400" :
                         "bg-primary"
                       }`}
                     />
@@ -628,7 +692,7 @@ function MonthView({ currentDate, selectedDate, events, onSelectDate, onEditEven
           <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
             {isToday(selectedDate) ? "Today" : format(selectedDate, "EEE, MMM d")}
           </h3>
-          <span className="text-[10px] text-muted-foreground">{selectedEvents.length} events</span>
+          <span className="text-[10px] text-muted-foreground">{selectedEvents.length} item{selectedEvents.length !== 1 ? "s" : ""}</span>
         </div>
 
         {selectedEvents.length === 0 ? (
