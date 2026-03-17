@@ -192,6 +192,11 @@ export default function CalendarPage() {
   };
 
   const openEditForm = (event: CalendarEvent) => {
+    // Chore/grocery items are view-only on calendar — just toggle completion
+    if (event._source === "chore" || event._source === "grocery") {
+      toast.info(`${event._source === "chore" ? "Chore" : "Grocery item"} — tap ✓ to toggle completion`);
+      return;
+    }
     setEditingEvent(event);
     setFormTitle(event.title);
     setFormDesc(event.description || "");
