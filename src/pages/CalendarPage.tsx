@@ -343,6 +343,7 @@ export default function CalendarPage() {
     setEvents((prev) => prev.map((ev) => (ev.id === event.id ? data : ev)));
     toast.success(`Moved to ${time} ⏰`);
   };
+  if (ppLoading) {
     return (
       <PageTransition>
         <div className="flex items-center justify-center h-64">
@@ -350,6 +351,7 @@ export default function CalendarPage() {
         </div>
       </PageTransition>
     );
+  }
 
   const viewIcons: { mode: ViewMode; icon: any; label: string }[] = [
     { mode: "day", icon: Calendar, label: "Day" },
