@@ -215,6 +215,9 @@ export default function ProfilePage() {
       case "Couple Connection":
         navigate("/connect");
         break;
+      case "Remove Partner":
+        setActiveSheet("remove-partner");
+        break;
       case "Theme & Appearance":
         setActiveSheet("theme");
         break;
