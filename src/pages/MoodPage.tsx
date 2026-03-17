@@ -93,6 +93,7 @@ export default function MoodPage() {
   const [reactionMessage, setReactionMessage] = useState("");
   const [moodReaction, setMoodReaction] = useState("");
   const [sendingReaction, setSendingReaction] = useState(false);
+  const [partnerName, setPartnerName] = useState("Partner");
 
   // Swipe-down dismiss
   const dragY = useMotionValue(0);
