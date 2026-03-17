@@ -114,6 +114,7 @@ export default function PartnerNotifications() {
           const chore = payload.new as { user_id: string; title: string; is_completed: boolean };
           const old = payload.old as { is_completed: boolean };
           if (chore.user_id !== user.id && chore.is_completed && !old.is_completed) {
+            notifyPartnerAction();
             toast("Chore completed ✅", {
               description: chore.title,
               icon: <ClipboardList size={16} className="text-primary" />,
