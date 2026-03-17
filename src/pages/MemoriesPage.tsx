@@ -31,6 +31,7 @@ export default function MemoriesPage() {
   const navigate = useNavigate();
   const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
   const { toast } = useToast();
+  const { isDemoMode } = useDemo();
   const [memories, setMemories] = useState<MemoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
