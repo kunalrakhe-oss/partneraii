@@ -176,7 +176,10 @@ export default function CalendarPage() {
         _sourceId: item.id,
       }));
 
-      setEvents([...calEvents, ...choreEvents, ...groceryEvents]);
+      // Expand recurring events into virtual instances for a 90-day window
+      const baseEvents = [...calEvents, ...choreEvents, ...groceryEvents];
+      const expanded = expandRecurringEvents(baseEvents);
+      setEvents(expanded);
     });
   }, [partnerPair]);
 
