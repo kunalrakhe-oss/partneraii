@@ -1,11 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   format, addDays, subDays, startOfWeek, startOfMonth, endOfMonth,
   eachDayOfInterval, isSameDay, isToday, isSameMonth, addMonths, subMonths,
+  isBefore, startOfDay, parseISO,
 } from "date-fns";
 import {
   Plus, X, Check, Coffee, ShoppingCart, Tv, Cake, CalendarPlus,
-  ChevronLeft, ChevronRight, Clock, Tag, Users, Flag, Trash2,
+  ChevronLeft, ChevronRight, Clock, Tag, Users, Trash2,
+  List, CalendarDays, Calendar, LayoutGrid,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
@@ -19,16 +21,16 @@ const CATEGORY_ICONS: Record<string, any> = {
   "date-night": Coffee, groceries: ShoppingCart, cleaning: Tv,
   travel: Cake, family: Users, bills: Tag,
 };
-const CATEGORY_ICON_BG: Record<string, string> = {
-  "date-night": "bg-secondary/20", groceries: "bg-success/20", cleaning: "bg-accent/30",
-  travel: "bg-warning/20", family: "bg-primary/20", bills: "bg-muted",
+const CATEGORY_COLORS: Record<string, string> = {
+  "date-night": "bg-secondary/70", groceries: "bg-success/70", cleaning: "bg-accent",
+  travel: "bg-warning/70", family: "bg-primary/70", bills: "bg-muted-foreground/50",
 };
 const CATEGORY_LABEL: Record<string, string> = {
   "date-night": "Romance", groceries: "Household", cleaning: "Cleaning",
   bills: "Bills", travel: "Travel", family: "Family",
 };
 
-type ViewMode = "day" | "week" | "month";
+type ViewMode = "day" | "multiday" | "month" | "list";
 
 interface CalendarEvent {
   id: string;
@@ -45,6 +47,21 @@ interface CalendarEvent {
   partner_pair: string;
 }
 
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+
+function timeToMinutes(time: string | null): number {
+  if (!time) return -1;
+  const [h, m] = time.split(":").map(Number);
+  return h * 60 + (m || 0);
+}
+
+function formatHour(h: number): string {
+  if (h === 0) return "12 AM";
+  if (h < 12) return `${h} AM`;
+  if (h === 12) return "12 PM";
+  return `${h - 12} PM`;
+}
+
 export default function CalendarPage() {
   const { user } = useAuth();
   const { partnerPair, loading: ppLoading } = usePartnerPair();
@@ -52,7 +69,7 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showAdd, setShowAdd] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("week");
+  const [viewMode, setViewMode] = useState<ViewMode>("day");
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
 
   // Form state
@@ -75,58 +92,18 @@ export default function CalendarPage() {
       });
   }, [partnerPair]);
 
-  // Date helpers
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
-
-  const getVisibleEvents = () => {
-    if (viewMode === "day") {
-      return events.filter((e) => e.event_date === selectedDateStr);
-    }
-    if (viewMode === "week") {
-      const ws = startOfWeek(currentDate, { weekStartsOn: 1 });
-      const we = addDays(ws, 6);
-      return events.filter((e) => {
-        const d = new Date(e.event_date);
-        return d >= ws && d <= we;
-      });
-    }
-    // month
-    const ms = startOfMonth(currentDate);
-    const me = endOfMonth(currentDate);
-    return events.filter((e) => {
-      const d = new Date(e.event_date);
-      return d >= ms && d <= me;
-    });
-  };
-
   const dayEvents = events.filter((e) => e.event_date === selectedDateStr);
-  const visibleEvents = getVisibleEvents();
-
-  // Week strip
-  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekDays = eachDayOfInterval({ start: weekStart, end: addDays(weekStart, 6) });
-
-  // Month grid
-  const monthStart = startOfMonth(currentDate);
-  const monthEnd = endOfMonth(currentDate);
-  const monthGridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
-  const monthGridEnd = addDays(startOfWeek(addDays(monthEnd, 6), { weekStartsOn: 1 }), -1);
-  const monthDays = eachDayOfInterval({ start: monthGridStart, end: monthGridEnd > monthEnd ? monthGridEnd : addDays(monthEnd, 6 - monthEnd.getDay()) });
-  // Ensure we get full weeks
-  const fullMonthDays = eachDayOfInterval({
-    start: monthGridStart,
-    end: addDays(monthGridStart, Math.ceil((monthEnd.getTime() - monthGridStart.getTime()) / 86400000 / 7) * 7 - 1),
-  });
 
   const navigatePrev = () => {
-    if (viewMode === "day") setCurrentDate((d) => subDays(d, 1));
-    else if (viewMode === "week") setCurrentDate((d) => subDays(d, 7));
+    if (viewMode === "day") { setCurrentDate((d) => subDays(d, 1)); setSelectedDate((d) => subDays(d, 1)); }
+    else if (viewMode === "multiday") { setCurrentDate((d) => subDays(d, 3)); setSelectedDate((d) => subDays(d, 3)); }
     else setCurrentDate((d) => subMonths(d, 1));
   };
 
   const navigateNext = () => {
-    if (viewMode === "day") setCurrentDate((d) => addDays(d, 1));
-    else if (viewMode === "week") setCurrentDate((d) => addDays(d, 7));
+    if (viewMode === "day") { setCurrentDate((d) => addDays(d, 1)); setSelectedDate((d) => addDays(d, 1)); }
+    else if (viewMode === "multiday") { setCurrentDate((d) => addDays(d, 3)); setSelectedDate((d) => addDays(d, 3)); }
     else setCurrentDate((d) => addMonths(d, 1));
   };
 
@@ -135,11 +112,11 @@ export default function CalendarPage() {
     setSelectedDate(new Date());
   };
 
-  const openAddForm = (date?: Date) => {
+  const openAddForm = (date?: Date, time?: string) => {
     setEditingEvent(null);
     setFormTitle("");
     setFormDesc("");
-    setFormTime("");
+    setFormTime(time || "");
     setFormCategory("date-night");
     setFormAssigned("both");
     setFormPriority("medium");
@@ -178,10 +155,7 @@ export default function CalendarPage() {
         .eq("id", editingEvent.id)
         .select()
         .single();
-      if (error) {
-        toast.error("Failed to update event");
-        return;
-      }
+      if (error) { toast.error("Failed to update event"); return; }
       setEvents((prev) => prev.map((ev) => (ev.id === editingEvent.id ? data : ev)));
       toast.success("Event updated ✨");
     } else {
@@ -201,10 +175,7 @@ export default function CalendarPage() {
         })
         .select()
         .single();
-      if (error) {
-        toast.error("Failed to add event");
-        return;
-      }
+      if (error) { toast.error("Failed to add event"); return; }
       setEvents((prev) => [...prev, data]);
       toast.success("Event added 🎉");
     }
@@ -213,10 +184,7 @@ export default function CalendarPage() {
 
   const deleteEvent = async (id: string) => {
     const { error } = await supabase.from("calendar_events").delete().eq("id", id);
-    if (error) {
-      toast.error("Failed to delete");
-      return;
-    }
+    if (error) { toast.error("Failed to delete"); return; }
     setEvents((prev) => prev.filter((e) => e.id !== id));
     toast.success("Event removed");
   };
@@ -241,258 +209,122 @@ export default function CalendarPage() {
       </PageTransition>
     );
 
+  const viewIcons: { mode: ViewMode; icon: any; label: string }[] = [
+    { mode: "day", icon: Calendar, label: "Day" },
+    { mode: "multiday", icon: CalendarDays, label: "3 Day" },
+    { mode: "month", icon: LayoutGrid, label: "Month" },
+    { mode: "list", icon: List, label: "List" },
+  ];
+
   return (
     <PageTransition>
-      <div className="px-5 pt-10 pb-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-xl font-bold text-foreground">
-              {format(currentDate, "MMMM yyyy")}
-            </h1>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <span>♥</span> Our Love Timeline
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={goToToday}
-              className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1.5 rounded-btn"
-            >
-              Today
+      <div className="flex flex-col h-full">
+        {/* Sticky header */}
+        <div className="px-5 pt-10 pb-3 bg-background">
+          {/* Title row */}
+          <div className="flex items-center justify-between mb-3">
+            <button onClick={goToToday} className="text-left">
+              <h1 className="text-xl font-bold text-foreground">
+                {viewMode === "day" || viewMode === "multiday"
+                  ? format(selectedDate, "MMMM d, yyyy")
+                  : format(currentDate, "MMMM yyyy")}
+              </h1>
+              <p className="text-[10px] text-primary font-semibold uppercase tracking-wider">
+                {isToday(selectedDate) ? "Today" : format(selectedDate, "EEEE")}
+              </p>
             </button>
-            <div className="flex gap-1">
-              <button
-                onClick={navigatePrev}
-                className="w-8 h-8 rounded-full bg-card shadow-card flex items-center justify-center"
-              >
+            <div className="flex items-center gap-1.5">
+              <button onClick={navigatePrev} className="w-8 h-8 rounded-full bg-card shadow-soft flex items-center justify-center">
                 <ChevronLeft size={16} className="text-foreground" />
               </button>
-              <button
-                onClick={navigateNext}
-                className="w-8 h-8 rounded-full bg-card shadow-card flex items-center justify-center"
-              >
+              <button onClick={navigateNext} className="w-8 h-8 rounded-full bg-card shadow-soft flex items-center justify-center">
                 <ChevronRight size={16} className="text-foreground" />
               </button>
             </div>
           </div>
+
+          {/* View mode segmented control — Apple style */}
+          <div className="flex bg-muted rounded-xl p-0.5">
+            {viewIcons.map(({ mode, icon: Icon, label }) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[10px] text-xs font-semibold transition-all ${
+                  viewMode === mode
+                    ? "bg-card shadow-soft text-foreground"
+                    : "text-muted-foreground"
+                }`}
+              >
+                <Icon size={13} />
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* View mode tabs */}
-        <div className="flex gap-2 mb-5">
-          {(["day", "week", "month"] as ViewMode[]).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => setViewMode(mode)}
-              className={`px-4 py-1.5 rounded-btn text-xs font-medium transition-colors flex items-center gap-1.5 ${
-                viewMode === mode
-                  ? "love-gradient text-primary-foreground"
-                  : "bg-card shadow-card text-muted-foreground"
-              }`}
-            >
-              {viewMode === mode && <Check size={12} />}
-              {mode.charAt(0).toUpperCase() + mode.slice(1)}
-            </button>
-          ))}
+        {/* Content area */}
+        <div className="flex-1 overflow-y-auto">
+          {viewMode === "day" && (
+            <DayView
+              date={selectedDate}
+              events={dayEvents}
+              onAddEvent={(time) => openAddForm(selectedDate, time)}
+              onEditEvent={openEditForm}
+              onToggle={toggleComplete}
+            />
+          )}
+
+          {viewMode === "multiday" && (
+            <MultiDayView
+              startDate={selectedDate}
+              events={events}
+              onSelectDate={(d) => { setSelectedDate(d); setViewMode("day"); }}
+              onAddEvent={(d, t) => openAddForm(d, t)}
+              onEditEvent={openEditForm}
+              onToggle={toggleComplete}
+            />
+          )}
+
+          {viewMode === "month" && (
+            <MonthView
+              currentDate={currentDate}
+              selectedDate={selectedDate}
+              events={events}
+              onSelectDate={(d) => setSelectedDate(d)}
+              onEditEvent={openEditForm}
+              onToggle={toggleComplete}
+              onAddEvent={() => openAddForm()}
+            />
+          )}
+
+          {viewMode === "list" && (
+            <ListView
+              events={events}
+              onEditEvent={openEditForm}
+              onToggle={toggleComplete}
+              onAddEvent={() => openAddForm()}
+            />
+          )}
         </div>
-
-        {/* Month grid view */}
-        {viewMode === "month" && (
-          <div className="mb-5">
-            <div className="grid grid-cols-7 gap-1 mb-2">
-              {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
-                <div key={d} className="text-center text-[10px] font-semibold text-muted-foreground py-1">
-                  {d}
-                </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 gap-1">
-              {fullMonthDays.map((day) => {
-                const dateStr = format(day, "yyyy-MM-dd");
-                const hasEvt = events.some((e) => e.event_date === dateStr);
-                const isSelected = isSameDay(day, selectedDate);
-                const inMonth = isSameMonth(day, currentDate);
-                return (
-                  <button
-                    key={day.toISOString()}
-                    onClick={() => setSelectedDate(day)}
-                    className={`relative flex flex-col items-center py-1.5 rounded-xl text-xs transition-all ${
-                      isSelected
-                        ? "bg-primary text-primary-foreground font-bold"
-                        : isToday(day)
-                        ? "bg-primary/15 text-foreground font-semibold"
-                        : inMonth
-                        ? "text-foreground"
-                        : "text-muted-foreground/40"
-                    }`}
-                  >
-                    {format(day, "d")}
-                    {hasEvt && !isSelected && (
-                      <div className="absolute bottom-0.5 w-1 h-1 rounded-full bg-secondary" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Week strip view */}
-        {viewMode === "week" && (
-          <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
-            {weekDays.map((day) => {
-              const isSelected = isSameDay(day, selectedDate);
-              const dateStr = format(day, "yyyy-MM-dd");
-              const hasEvt = events.some((e) => e.event_date === dateStr);
-              return (
-                <button
-                  key={day.toISOString()}
-                  onClick={() => setSelectedDate(day)}
-                  className={`flex flex-col items-center min-w-[48px] py-2.5 px-2 rounded-2xl transition-all ${
-                    isSelected
-                      ? "love-gradient shadow-soft text-primary-foreground"
-                      : isToday(day)
-                      ? "bg-card shadow-card"
-                      : ""
-                  }`}
-                >
-                  <span
-                    className={`text-[10px] font-medium mb-1 ${
-                      isSelected ? "text-primary-foreground/80" : "text-muted-foreground"
-                    }`}
-                  >
-                    {format(day, "EEE")}
-                  </span>
-                  <span
-                    className={`text-base font-bold ${
-                      isSelected ? "text-primary-foreground" : "text-foreground"
-                    }`}
-                  >
-                    {format(day, "d")}
-                  </span>
-                  {hasEvt && !isSelected && (
-                    <div className="w-1 h-1 rounded-full bg-secondary mt-1" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Day view - scrollable horizontal date strip with past + future */}
-        {viewMode === "day" && (
-          <DayStrip
-            selectedDate={selectedDate}
-            currentDate={currentDate}
-            events={events}
-            onSelect={(day) => {
-              setSelectedDate(day);
-              setCurrentDate(day);
-            }}
-          />
-        )}
-
-        {/* Selected date events */}
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-bold text-foreground">
-            {format(selectedDate, "EEEE, MMM d")}
-          </h2>
-          <span className="text-xs text-muted-foreground">
-            {dayEvents.length} event{dayEvents.length !== 1 ? "s" : ""}
-          </span>
-        </div>
-
-        {dayEvents.length === 0 ? (
-          <div className="bg-card rounded-card p-6 shadow-card text-center border border-border">
-            <CalendarPlus size={28} className="text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm font-semibold text-foreground mb-1">No events planned</p>
-            <p className="text-xs text-muted-foreground mb-3">
-              Add a date, errand, or reminder for this day.
-            </p>
-            <button
-              onClick={() => openAddForm()}
-              className="px-5 py-2 rounded-btn love-gradient text-primary-foreground text-xs font-semibold inline-flex items-center gap-1.5"
-            >
-              <Plus size={14} /> Add Event
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-2.5">
-            {dayEvents
-              .sort((a, b) => (a.event_time || "").localeCompare(b.event_time || ""))
-              .map((event) => {
-                const IconComp = CATEGORY_ICONS[event.category] || Coffee;
-                const iconBg = CATEGORY_ICON_BG[event.category] || "bg-muted";
-                return (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    icon={IconComp}
-                    iconBg={iconBg}
-                    badge={CATEGORY_LABEL[event.category] || event.category}
-                    onToggle={() => toggleComplete(event)}
-                    onEdit={() => openEditForm(event)}
-                    onDelete={() => deleteEvent(event.id)}
-                  />
-                );
-              })}
-          </div>
-        )}
-
-        {/* Upcoming events (week/month views) */}
-        {viewMode !== "day" && visibleEvents.length > 0 && (
-          <div className="mt-5">
-            <h3 className="text-sm font-bold text-foreground mb-3">
-              All {viewMode === "week" ? "This Week" : "This Month"} ({visibleEvents.length})
-            </h3>
-            <div className="space-y-2">
-              {visibleEvents
-                .sort((a, b) => a.event_date.localeCompare(b.event_date) || (a.event_time || "").localeCompare(b.event_time || ""))
-                .map((event) => {
-                  const IconComp = CATEGORY_ICONS[event.category] || Coffee;
-                  const iconBg = CATEGORY_ICON_BG[event.category] || "bg-muted";
-                  return (
-                    <EventCard
-                      key={event.id}
-                      event={event}
-                      icon={IconComp}
-                      iconBg={iconBg}
-                      badge={CATEGORY_LABEL[event.category] || event.category}
-                      showDate
-                      onToggle={() => toggleComplete(event)}
-                      onEdit={() => openEditForm(event)}
-                      onDelete={() => deleteEvent(event.id)}
-                    />
-                  );
-                })}
-            </div>
-          </div>
-        )}
 
         {/* FAB */}
-        <div className="flex justify-end mt-5">
-          <button
-            onClick={() => openAddForm()}
-            className="love-gradient text-primary-foreground px-5 py-3 rounded-btn flex items-center gap-2 shadow-elevated text-sm font-semibold"
-          >
-            <Plus size={16} /> New Event
-          </button>
-        </div>
+        <button
+          onClick={() => openAddForm()}
+          className="fixed bottom-20 right-5 max-w-lg love-gradient text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-elevated z-40"
+        >
+          <Plus size={22} />
+        </button>
 
         {/* Add/Edit Event Modal */}
         <AnimatePresence>
           {showAdd && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 bg-foreground/30 z-50 flex items-end justify-center"
               onClick={() => setShowAdd(false)}
             >
               <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
+                initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 28, stiffness: 300 }}
                 onClick={(e) => e.stopPropagation()}
                 className="bg-card w-full max-w-lg rounded-t-3xl p-5 shadow-elevated max-h-[85vh] overflow-y-auto"
@@ -501,86 +333,51 @@ export default function CalendarPage() {
                   <h3 className="text-lg font-bold text-foreground">
                     {editingEvent ? "Edit Event" : "New Event"}
                   </h3>
-                  <button
-                    onClick={() => setShowAdd(false)}
-                    className="w-8 h-8 rounded-full bg-muted flex items-center justify-center"
-                  >
+                  <button onClick={() => setShowAdd(false)} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                     <X size={16} className="text-muted-foreground" />
                   </button>
                 </div>
-
                 <form onSubmit={handleSubmit} className="space-y-3">
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground mb-1 block">Title</label>
-                    <input
-                      value={formTitle}
-                      onChange={(e) => setFormTitle(e.target.value)}
-                      required
-                      placeholder="Event title"
-                      className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    />
+                    <input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} required placeholder="Event title"
+                      className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30" />
                   </div>
-
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground mb-1 block">Description</label>
-                    <input
-                      value={formDesc}
-                      onChange={(e) => setFormDesc(e.target.value)}
-                      placeholder="Optional description"
-                      className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    />
+                    <input value={formDesc} onChange={(e) => setFormDesc(e.target.value)} placeholder="Optional"
+                      className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30" />
                   </div>
-
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-xs font-semibold text-muted-foreground mb-1 block">Date</label>
-                      <input
-                        type="date"
-                        value={formDate}
-                        onChange={(e) => setFormDate(e.target.value)}
-                        required
-                        className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
-                      />
+                      <input type="date" value={formDate} onChange={(e) => setFormDate(e.target.value)} required
+                        className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30" />
                     </div>
                     <div>
                       <label className="text-xs font-semibold text-muted-foreground mb-1 block">Time</label>
-                      <input
-                        type="time"
-                        value={formTime}
-                        onChange={(e) => setFormTime(e.target.value)}
-                        className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
-                      />
+                      <input type="time" value={formTime} onChange={(e) => setFormTime(e.target.value)}
+                        className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30" />
                     </div>
                   </div>
-
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground mb-1 block">Category</label>
                     <div className="flex flex-wrap gap-2">
                       {CATEGORIES.map((c) => (
-                        <button
-                          key={c}
-                          type="button"
-                          onClick={() => setFormCategory(c)}
+                        <button key={c} type="button" onClick={() => setFormCategory(c)}
                           className={`px-3 py-1.5 rounded-btn text-xs font-medium transition-colors ${
-                            formCategory === c
-                              ? "love-gradient text-primary-foreground"
-                              : "bg-muted text-muted-foreground"
-                          }`}
-                        >
+                            formCategory === c ? "love-gradient text-primary-foreground" : "bg-muted text-muted-foreground"
+                          }`}>
                           {CATEGORY_LABEL[c]}
                         </button>
                       ))}
                     </div>
                   </div>
-
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-semibold text-muted-foreground mb-1 block">Assign To</label>
-                      <select
-                        value={formAssigned}
-                        onChange={(e) => setFormAssigned(e.target.value)}
-                        className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
-                      >
+                      <label className="text-xs font-semibold text-muted-foreground mb-1 block">Assign</label>
+                      <select value={formAssigned} onChange={(e) => setFormAssigned(e.target.value)}
+                        className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30">
                         <option value="both">Both</option>
                         <option value="me">Me</option>
                         <option value="partner">Partner</option>
@@ -588,34 +385,20 @@ export default function CalendarPage() {
                     </div>
                     <div>
                       <label className="text-xs font-semibold text-muted-foreground mb-1 block">Priority</label>
-                      <select
-                        value={formPriority}
-                        onChange={(e) => setFormPriority(e.target.value)}
-                        className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
-                      >
+                      <select value={formPriority} onChange={(e) => setFormPriority(e.target.value)}
+                        className="w-full h-11 px-4 rounded-xl bg-muted text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-primary/30">
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
                         <option value="high">High</option>
                       </select>
                     </div>
                   </div>
-
-                  <button
-                    type="submit"
-                    className="w-full h-12 rounded-btn love-gradient text-primary-foreground font-semibold text-sm shadow-soft mt-2"
-                  >
+                  <button type="submit" className="w-full h-12 rounded-btn love-gradient text-primary-foreground font-semibold text-sm shadow-soft mt-2">
                     {editingEvent ? "Save Changes" : "Add Event"}
                   </button>
-
                   {editingEvent && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        deleteEvent(editingEvent.id);
-                        setShowAdd(false);
-                      }}
-                      className="w-full h-11 rounded-btn bg-destructive/10 text-destructive font-semibold text-sm flex items-center justify-center gap-2"
-                    >
+                    <button type="button" onClick={() => { deleteEvent(editingEvent.id); setShowAdd(false); }}
+                      className="w-full h-11 rounded-btn bg-destructive/10 text-destructive font-semibold text-sm flex items-center justify-center gap-2">
                       <Trash2 size={14} /> Delete Event
                     </button>
                   )}
@@ -629,181 +412,416 @@ export default function CalendarPage() {
   );
 }
 
-function DayStrip({
-  selectedDate,
-  currentDate,
-  events,
-  onSelect,
-}: {
-  selectedDate: Date;
-  currentDate: Date;
+/* ─────────────── DAY VIEW (Apple-style time grid) ─────────────── */
+
+function DayView({ date, events, onAddEvent, onEditEvent, onToggle }: {
+  date: Date;
   events: CalendarEvent[];
-  onSelect: (day: Date) => void;
+  onAddEvent: (time?: string) => void;
+  onEditEvent: (e: CalendarEvent) => void;
+  onToggle: (e: CalendarEvent) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const todayRef = useRef<HTMLButtonElement>(null);
-
-  // Show 14 days before and 14 days after current date
-  const days = eachDayOfInterval({
-    start: subDays(currentDate, 14),
-    end: addDays(currentDate, 14),
-  });
+  const nowHour = new Date().getHours();
 
   useEffect(() => {
-    // Scroll to today/selected on mount
-    if (todayRef.current && scrollRef.current) {
-      const container = scrollRef.current;
-      const el = todayRef.current;
-      container.scrollLeft = el.offsetLeft - container.offsetWidth / 2 + el.offsetWidth / 2;
+    if (scrollRef.current) {
+      // Scroll to current hour - 2
+      const target = Math.max(0, nowHour - 2) * 60;
+      scrollRef.current.scrollTop = target;
     }
-  }, [currentDate]);
+  }, []);
+
+  // All-day events (no time)
+  const allDayEvents = events.filter((e) => !e.event_time);
+  const timedEvents = events.filter((e) => e.event_time);
 
   return (
-    <div ref={scrollRef} className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-5 px-5 scrollbar-hide">
-      {days.map((day) => {
-        const isSelected = isSameDay(day, selectedDate);
-        const dateStr = format(day, "yyyy-MM-dd");
-        const hasEvt = events.some((e) => e.event_date === dateStr);
-        const isPast = day < new Date(new Date().setHours(0, 0, 0, 0)) && !isToday(day);
+    <div ref={scrollRef} className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 200px)" }}>
+      {/* All-day events */}
+      {allDayEvents.length > 0 && (
+        <div className="px-5 py-2 border-b border-border">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">All Day</p>
+          {allDayEvents.map((evt) => (
+            <button key={evt.id} onClick={() => onEditEvent(evt)}
+              className={`w-full text-left px-3 py-1.5 rounded-lg mb-1 text-xs font-medium ${CATEGORY_COLORS[evt.category] || "bg-primary/50"} text-primary-foreground ${evt.is_completed ? "opacity-50 line-through" : ""}`}>
+              {evt.title}
+            </button>
+          ))}
+        </div>
+      )}
 
-        return (
-          <button
-            key={day.toISOString()}
-            ref={isSameDay(day, currentDate) ? todayRef : undefined}
-            onClick={() => onSelect(day)}
-            className={`flex flex-col items-center min-w-[48px] py-2.5 px-2 rounded-2xl transition-all shrink-0 ${
-              isSelected
-                ? "love-gradient shadow-soft text-primary-foreground"
-                : isToday(day)
-                ? "bg-primary/15 shadow-card"
-                : isPast
-                ? "opacity-60"
-                : ""
-            }`}
+      {/* Time grid */}
+      <div className="relative">
+        {/* Current time indicator */}
+        {isToday(date) && (
+          <div
+            className="absolute left-0 right-0 z-10 flex items-center pointer-events-none"
+            style={{ top: `${(nowHour * 60 + new Date().getMinutes()) * (60 / 60)}px` }}
           >
-            <span
-              className={`text-[10px] font-medium mb-1 ${
-                isSelected ? "text-primary-foreground/80" : "text-muted-foreground"
-              }`}
+            <div className="w-2 h-2 rounded-full bg-destructive ml-[54px]" />
+            <div className="flex-1 h-[1.5px] bg-destructive" />
+          </div>
+        )}
+
+        {HOURS.map((hour) => {
+          const hourEvents = timedEvents.filter((e) => {
+            const m = timeToMinutes(e.event_time);
+            return m >= hour * 60 && m < (hour + 1) * 60;
+          });
+
+          return (
+            <div
+              key={hour}
+              className="flex border-b border-border/50 min-h-[60px] cursor-pointer hover:bg-muted/30 transition-colors"
+              onClick={() => onAddEvent(`${hour.toString().padStart(2, "0")}:00`)}
             >
-              {format(day, "EEE")}
-            </span>
-            <span
-              className={`text-base font-bold ${
-                isSelected ? "text-primary-foreground" : "text-foreground"
-              }`}
-            >
-              {format(day, "d")}
-            </span>
-            <span
-              className={`text-[8px] mt-0.5 ${
-                isSelected ? "text-primary-foreground/70" : "text-muted-foreground"
-              }`}
-            >
-              {format(day, "MMM")}
-            </span>
-            {hasEvt && !isSelected && (
-              <div className="w-1 h-1 rounded-full bg-secondary mt-0.5" />
-            )}
-          </button>
-        );
-      })}
+              {/* Time label */}
+              <div className="w-14 shrink-0 pr-2 pt-0.5 text-right">
+                <span className="text-[10px] text-muted-foreground font-medium">{formatHour(hour)}</span>
+              </div>
+
+              {/* Events */}
+              <div className="flex-1 relative border-l border-border/50 pl-2 py-0.5">
+                {hourEvents.map((evt) => (
+                  <button
+                    key={evt.id}
+                    onClick={(e) => { e.stopPropagation(); onEditEvent(evt); }}
+                    className={`w-full text-left px-2.5 py-1.5 rounded-lg mb-0.5 text-xs font-medium border-l-[3px] ${
+                      evt.is_completed ? "opacity-50" : ""
+                    }`}
+                    style={{
+                      backgroundColor: `hsl(var(--${evt.category === "date-night" ? "secondary" : evt.category === "groceries" ? "success" : "primary"}) / 0.15)`,
+                      borderLeftColor: `hsl(var(--${evt.category === "date-night" ? "secondary" : evt.category === "groceries" ? "success" : "primary"}))`,
+                    }}
+                  >
+                    <span className={`text-foreground ${evt.is_completed ? "line-through" : ""}`}>{evt.title}</span>
+                    <span className="text-muted-foreground ml-1">{evt.event_time}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-function EventCard({
-  event,
-  icon: Icon,
-  iconBg,
-  badge,
-  showDate,
-  onToggle,
-  onEdit,
-  onDelete,
-}: {
-  event: CalendarEvent;
-  icon: any;
-  iconBg: string;
-  badge: string;
-  showDate?: boolean;
-  onToggle: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
+/* ─────────────── MULTI-DAY VIEW (3-day Apple style) ─────────────── */
+
+function MultiDayView({ startDate, events, onSelectDate, onAddEvent, onEditEvent, onToggle }: {
+  startDate: Date;
+  events: CalendarEvent[];
+  onSelectDate: (d: Date) => void;
+  onAddEvent: (d: Date, t?: string) => void;
+  onEditEvent: (e: CalendarEvent) => void;
+  onToggle: (e: CalendarEvent) => void;
 }) {
-  const priorityColors: Record<string, string> = {
-    high: "bg-destructive/15 text-destructive",
-    medium: "bg-warning/15 text-warning",
-    low: "bg-primary/15 text-primary",
-  };
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const days = [startDate, addDays(startDate, 1), addDays(startDate, 2)];
+  const nowHour = new Date().getHours();
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = Math.max(0, nowHour - 2) * 60;
+    }
+  }, []);
 
   return (
-    <motion.div
-      layout
-      className={`bg-card rounded-card px-4 py-3.5 shadow-card flex items-center gap-3 border border-border transition-opacity ${
-        event.is_completed ? "opacity-60" : ""
-      }`}
-    >
-      {/* Complete toggle */}
-      <button
-        onClick={onToggle}
-        className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
-          event.is_completed ? "bg-success border-success" : "border-border"
-        }`}
-      >
-        {event.is_completed && <Check size={14} className="text-success-foreground" />}
-      </button>
-
-      {/* Icon */}
-      <div
-        className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}
-      >
-        <Icon size={18} className="text-foreground" />
+    <div>
+      {/* Day headers */}
+      <div className="flex border-b border-border sticky top-0 bg-background z-10">
+        <div className="w-12 shrink-0" />
+        {days.map((day) => (
+          <button
+            key={day.toISOString()}
+            onClick={() => onSelectDate(day)}
+            className={`flex-1 text-center py-2 ${isToday(day) ? "bg-primary/10" : ""}`}
+          >
+            <p className="text-[10px] text-muted-foreground font-medium">{format(day, "EEE")}</p>
+            <p className={`text-base font-bold ${isToday(day) ? "text-primary" : "text-foreground"}`}>
+              {format(day, "d")}
+            </p>
+          </button>
+        ))}
       </div>
 
-      {/* Info */}
-      <button onClick={onEdit} className="flex-1 min-w-0 text-left">
-        <p
-          className={`text-sm font-semibold ${
-            event.is_completed ? "line-through text-muted-foreground" : "text-foreground"
-          }`}
-        >
-          {event.title}
-        </p>
-        <div className="flex items-center gap-2 mt-0.5">
-          {event.event_time && (
-            <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-              <Clock size={9} /> {event.event_time}
-            </span>
-          )}
-          {showDate && (
-            <span className="text-[10px] text-muted-foreground">
-              {format(new Date(event.event_date), "MMM d")}
-            </span>
-          )}
-          {event.assigned_to !== "both" && (
-            <span className="text-[10px] text-muted-foreground capitalize">
-              • {event.assigned_to}
-            </span>
-          )}
-        </div>
-      </button>
+      {/* Time grid */}
+      <div ref={scrollRef} className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 250px)" }}>
+        {HOURS.map((hour) => (
+          <div key={hour} className="flex min-h-[52px] border-b border-border/30">
+            {/* Time label */}
+            <div className="w-12 shrink-0 pr-1 pt-0.5 text-right">
+              <span className="text-[9px] text-muted-foreground">{formatHour(hour)}</span>
+            </div>
 
-      {/* Badges */}
-      <div className="flex flex-col items-end gap-1 shrink-0">
-        <span className="text-[9px] px-2 py-0.5 rounded-btn bg-muted text-muted-foreground font-medium">
-          {badge}
-        </span>
-        {event.priority !== "medium" && (
-          <span
-            className={`text-[9px] px-2 py-0.5 rounded-btn font-medium ${
-              priorityColors[event.priority] || ""
-            }`}
-          >
-            {event.priority}
-          </span>
+            {/* Columns for each day */}
+            {days.map((day) => {
+              const dateStr = format(day, "yyyy-MM-dd");
+              const hourEvents = events.filter((e) => {
+                if (e.event_date !== dateStr) return false;
+                const m = timeToMinutes(e.event_time);
+                return m >= hour * 60 && m < (hour + 1) * 60;
+              });
+
+              return (
+                <div
+                  key={day.toISOString()}
+                  className={`flex-1 border-l border-border/30 px-0.5 py-0.5 cursor-pointer hover:bg-muted/20 transition-colors ${
+                    isToday(day) ? "bg-primary/[0.03]" : ""
+                  }`}
+                  onClick={() => onAddEvent(day, `${hour.toString().padStart(2, "0")}:00`)}
+                >
+                  {hourEvents.map((evt) => (
+                    <button
+                      key={evt.id}
+                      onClick={(e) => { e.stopPropagation(); onEditEvent(evt); }}
+                      className={`w-full text-left px-1 py-0.5 rounded text-[9px] font-medium leading-tight truncate ${
+                        CATEGORY_COLORS[evt.category] || "bg-primary/50"
+                      } text-primary-foreground ${evt.is_completed ? "opacity-50" : ""}`}
+                    >
+                      {evt.title}
+                    </button>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────── MONTH VIEW (Apple-style grid + event list) ─────────────── */
+
+function MonthView({ currentDate, selectedDate, events, onSelectDate, onEditEvent, onToggle, onAddEvent }: {
+  currentDate: Date;
+  selectedDate: Date;
+  events: CalendarEvent[];
+  onSelectDate: (d: Date) => void;
+  onEditEvent: (e: CalendarEvent) => void;
+  onToggle: (e: CalendarEvent) => void;
+  onAddEvent: () => void;
+}) {
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const totalDays = Math.ceil((monthEnd.getTime() - gridStart.getTime()) / 86400000 / 7) * 7;
+  const allDays = eachDayOfInterval({ start: gridStart, end: addDays(gridStart, totalDays - 1) });
+
+  const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+  const selectedEvents = events
+    .filter((e) => e.event_date === selectedDateStr)
+    .sort((a, b) => (a.event_time || "").localeCompare(b.event_time || ""));
+
+  return (
+    <div className="px-5">
+      {/* Weekday headers */}
+      <div className="grid grid-cols-7 mb-1">
+        {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+          <div key={i} className="text-center text-[10px] font-semibold text-muted-foreground py-2">{d}</div>
+        ))}
+      </div>
+
+      {/* Date grid */}
+      <div className="grid grid-cols-7 gap-y-0.5">
+        {allDays.map((day) => {
+          const dateStr = format(day, "yyyy-MM-dd");
+          const dayEvts = events.filter((e) => e.event_date === dateStr);
+          const isSelected = isSameDay(day, selectedDate);
+          const inMonth = isSameMonth(day, currentDate);
+          const today = isToday(day);
+
+          return (
+            <button
+              key={day.toISOString()}
+              onClick={() => onSelectDate(day)}
+              className="flex flex-col items-center py-1 relative"
+            >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
+                isSelected
+                  ? "bg-primary text-primary-foreground"
+                  : today
+                  ? "bg-primary/15 text-primary font-bold"
+                  : inMonth
+                  ? "text-foreground"
+                  : "text-muted-foreground/30"
+              }`}>
+                {format(day, "d")}
+              </div>
+              {/* Event dots */}
+              {dayEvts.length > 0 && (
+                <div className="flex gap-0.5 mt-0.5">
+                  {dayEvts.slice(0, 3).map((evt, i) => (
+                    <div
+                      key={i}
+                      className={`w-1 h-1 rounded-full ${
+                        evt.category === "date-night" ? "bg-secondary" :
+                        evt.category === "groceries" ? "bg-success" :
+                        "bg-primary"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Selected day events */}
+      <div className="mt-4 mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">
+            {isToday(selectedDate) ? "Today" : format(selectedDate, "EEE, MMM d")}
+          </h3>
+          <span className="text-[10px] text-muted-foreground">{selectedEvents.length} events</span>
+        </div>
+
+        {selectedEvents.length === 0 ? (
+          <div className="text-center py-6">
+            <p className="text-xs text-muted-foreground mb-2">No events</p>
+            <button onClick={onAddEvent} className="text-xs text-primary font-semibold">+ Add Event</button>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {selectedEvents.map((evt) => (
+              <button
+                key={evt.id}
+                onClick={() => onEditEvent(evt)}
+                className={`w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-card shadow-soft border border-border ${evt.is_completed ? "opacity-50" : ""}`}
+              >
+                <div className={`w-1 self-stretch rounded-full ${CATEGORY_COLORS[evt.category] || "bg-primary/50"}`} />
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-semibold text-foreground ${evt.is_completed ? "line-through" : ""}`}>
+                    {evt.title}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {evt.event_time || "All day"} • {CATEGORY_LABEL[evt.category] || evt.category}
+                  </p>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onToggle(evt); }}
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                    evt.is_completed ? "bg-success border-success" : "border-border"
+                  }`}
+                >
+                  {evt.is_completed && <Check size={10} className="text-success-foreground" />}
+                </button>
+              </button>
+            ))}
+          </div>
         )}
       </div>
-    </motion.div>
+    </div>
+  );
+}
+
+/* ─────────────── LIST VIEW (Upcoming chronological) ─────────────── */
+
+function ListView({ events, onEditEvent, onToggle, onAddEvent }: {
+  events: CalendarEvent[];
+  onEditEvent: (e: CalendarEvent) => void;
+  onToggle: (e: CalendarEvent) => void;
+  onAddEvent: () => void;
+}) {
+  const today = startOfDay(new Date());
+
+  // Group by date, sorted, show past 7 days + future
+  const grouped = useMemo(() => {
+    const sorted = [...events].sort(
+      (a, b) => a.event_date.localeCompare(b.event_date) || (a.event_time || "").localeCompare(b.event_time || "")
+    );
+
+    const minDate = format(subDays(today, 7), "yyyy-MM-dd");
+    const filtered = sorted.filter((e) => e.event_date >= minDate);
+
+    const groups: { date: string; events: CalendarEvent[] }[] = [];
+    for (const evt of filtered) {
+      const last = groups[groups.length - 1];
+      if (last && last.date === evt.event_date) {
+        last.events.push(evt);
+      } else {
+        groups.push({ date: evt.event_date, events: [evt] });
+      }
+    }
+    return groups;
+  }, [events]);
+
+  if (grouped.length === 0) {
+    return (
+      <div className="px-5 py-12 text-center">
+        <CalendarPlus size={32} className="text-muted-foreground mx-auto mb-3" />
+        <p className="text-sm font-semibold text-foreground mb-1">No upcoming events</p>
+        <p className="text-xs text-muted-foreground mb-4">Plan something together!</p>
+        <button onClick={onAddEvent} className="px-5 py-2.5 rounded-btn love-gradient text-primary-foreground text-xs font-semibold inline-flex items-center gap-1.5">
+          <Plus size={14} /> Add Event
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-5 pb-6">
+      {grouped.map(({ date, events: dayEvts }) => {
+        const d = parseISO(date);
+        const isPast = isBefore(d, today);
+        const todaySection = isToday(d);
+
+        return (
+          <div key={date} className={`${isPast && !todaySection ? "opacity-50" : ""}`}>
+            {/* Date header — sticky Apple style */}
+            <div className="sticky top-0 bg-background/95 backdrop-blur-sm z-10 flex items-center gap-3 py-2.5">
+              <div className={`w-10 h-10 rounded-full flex flex-col items-center justify-center ${
+                todaySection ? "bg-primary text-primary-foreground" : "bg-muted"
+              }`}>
+                <span className="text-[9px] font-bold leading-none uppercase">
+                  {format(d, "EEE")}
+                </span>
+                <span className="text-sm font-bold leading-none">{format(d, "d")}</span>
+              </div>
+              <div>
+                <p className={`text-sm font-bold ${todaySection ? "text-primary" : "text-foreground"}`}>
+                  {todaySection ? "Today" : format(d, "EEEE")}
+                </p>
+                <p className="text-[10px] text-muted-foreground">{format(d, "MMMM yyyy")}</p>
+              </div>
+            </div>
+
+            {/* Events */}
+            <div className="ml-5 pl-7 border-l-2 border-border space-y-1.5 pb-3">
+              {dayEvts.map((evt) => (
+                <button
+                  key={evt.id}
+                  onClick={() => onEditEvent(evt)}
+                  className={`w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-card shadow-soft border border-border ${evt.is_completed ? "opacity-50" : ""}`}
+                >
+                  <div className={`w-1 self-stretch rounded-full ${CATEGORY_COLORS[evt.category] || "bg-primary/50"}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-semibold text-foreground ${evt.is_completed ? "line-through" : ""}`}>
+                      {evt.title}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {evt.event_time || "All day"} • {CATEGORY_LABEL[evt.category] || evt.category}
+                      {evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
+                    </p>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onToggle(evt); }}
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                      evt.is_completed ? "bg-success border-success" : "border-border"
+                    }`}
+                  >
+                    {evt.is_completed && <Check size={10} className="text-success-foreground" />}
+                  </button>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
