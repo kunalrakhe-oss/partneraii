@@ -126,6 +126,25 @@ export default function HomePage() {
     return format(d, "MMM d");
   };
 
+  const getCountdownBadge = (event: NextEvent): string | null => {
+    if (!event.countdown_type || event.countdown_type === "none") return null;
+    const now = new Date(); now.setHours(0,0,0,0);
+    const eventDay = parseISO(event.event_date); eventDay.setHours(0,0,0,0);
+    const diff = Math.round((eventDay.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    if (event.countdown_type === "days-until") {
+      if (diff === 0) return "🎉 Today!";
+      if (diff === 1) return "Tomorrow!";
+      if (diff > 0) return `${diff} days to go`;
+      return `${Math.abs(diff)}d ago`;
+    }
+    if (event.countdown_type === "days-since") {
+      if (diff === 0) return "🎉 Today!";
+      if (diff < 0) return `${Math.abs(diff)} days since`;
+      return `In ${diff}d`;
+    }
+    return null;
+  };
+
   return (
     <PageTransition>
       <div className="px-5 pt-10 pb-6">
