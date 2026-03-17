@@ -131,6 +131,13 @@ export default function MoodPage() {
         const name = data?.display_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "there";
         setDisplayName(name.split(" ")[0]);
       });
+    // Fetch partner name
+    supabase.from("profiles").select("display_name, user_id").then(({ data }) => {
+      if (data) {
+        const partner = data.find(p => p.user_id !== user.id);
+        if (partner?.display_name) setPartnerName(partner.display_name.split(" ")[0]);
+      }
+    });
   }, [user]);
 
   const logMood = async (mood: string) => {
