@@ -275,6 +275,7 @@ export default function GroceryPage() {
                           item={item}
                           onToggle={toggleItem}
                           onMove={moveItem}
+                          onRename={renameItem}
                           isFirst={uncheckedCat[0]?.id === item.id}
                           isLast={uncheckedCat[uncheckedCat.length - 1]?.id === item.id}
                         />
