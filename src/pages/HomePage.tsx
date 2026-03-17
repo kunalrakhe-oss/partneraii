@@ -1,12 +1,12 @@
 import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useLocalStorage, MOOD_EMOJIS, type MoodLog, type CalendarEvent, type Chore, type GroceryItem, type ChatMessage } from "@/lib/store";
 import PageTransition from "@/components/PageTransition";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { usePartnerPair } from "@/hooks/usePartnerPair";
 
 const container = {
   hidden: { opacity: 0 },
@@ -20,25 +20,46 @@ const item = {
 export default function HomePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { partnerPair } = usePartnerPair();
   const [displayName, setDisplayName] = useState("");
+  const [partnerMood, setPartnerMood] = useState<{ mood: string; note: string | null } | null>(null);
+  const [todayEvents, setTodayEvents] = useState<{ id: string; title: string; event_time: string | null }[]>([]);
+  const [urgentChores, setUrgentChores] = useState<{ id: string; title: string; is_completed: boolean; recurrence: string | null }[]>([]);
+  const [uncheckedGroceries, setUncheckedGroceries] = useState(0);
+  const [messageCount, setMessageCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
-    // Try profile first, fall back to user metadata
-    supabase
-      .from("profiles")
-      .select("display_name")
-      .eq("user_id", user.id)
-      .maybeSingle()
+    supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle()
       .then(({ data }) => {
         const profileName = data?.display_name;
         const metaName = user.user_metadata?.full_name || user.user_metadata?.display_name || user.user_metadata?.name;
         const emailName = user.email?.split("@")[0];
-        // Prefer metadata full_name if profile name looks like an email prefix
         const name = (profileName && profileName.includes(" ")) ? profileName : (metaName || profileName || emailName || "there");
         setDisplayName(name);
       });
   }, [user]);
+
+  const today = format(new Date(), "yyyy-MM-dd");
+
+  useEffect(() => {
+    if (!partnerPair || !user) return;
+    // Fetch partner mood
+    supabase.from("mood_logs").select("mood, note").eq("partner_pair", partnerPair).eq("log_date", today).neq("user_id", user.id).maybeSingle()
+      .then(({ data }) => { if (data) setPartnerMood(data); });
+    // Fetch today's events
+    supabase.from("calendar_events").select("id, title, event_time").eq("partner_pair", partnerPair).eq("event_date", today).eq("is_completed", false)
+      .then(({ data }) => { if (data) setTodayEvents(data); });
+    // Fetch chores
+    supabase.from("chores").select("id, title, is_completed, recurrence").eq("partner_pair", partnerPair).eq("is_completed", false).limit(3)
+      .then(({ data }) => { if (data) setUrgentChores(data); });
+    // Fetch grocery count
+    supabase.from("grocery_items").select("id", { count: "exact", head: true }).eq("partner_pair", partnerPair).eq("is_checked", false)
+      .then(({ count }) => { setUncheckedGroceries(count ?? 0); });
+    // Fetch message count
+    supabase.from("chat_messages").select("id", { count: "exact", head: true }).eq("partner_pair", partnerPair)
+      .then(({ count }) => { setMessageCount(count ?? 0); });
+  }, [partnerPair, user, today]);
 
   const greeting = (() => {
     const hour = new Date().getHours();
@@ -46,20 +67,12 @@ export default function HomePage() {
     if (hour < 17) return "Good afternoon";
     return "Good evening";
   })();
-  const [moods] = useLocalStorage<MoodLog[]>("lovelist-moods", []);
-  const [events] = useLocalStorage<CalendarEvent[]>("lovelist-events", []);
-  const [chores, setChores] = useLocalStorage<Chore[]>("lovelist-chores", []);
-  const [groceries] = useLocalStorage<GroceryItem[]>("lovelist-groceries", []);
-  const [messages] = useLocalStorage<ChatMessage[]>("lovelist-chat", []);
 
-  const today = new Date().toISOString().split("T")[0];
-  const partnerMood = moods.find(m => m.date === today && m.user === "partner");
-  const todayEvents = events.filter(e => e.date === today && !e.completed);
-  const urgentChores = chores.filter(c => !c.completed).slice(0, 3);
-  const uncheckedGroceries = groceries.filter(g => !g.checked).length;
-
-  const toggleChore = (id: string) => {
-    setChores(chores.map(c => c.id === id ? { ...c, completed: !c.completed, lastCompleted: new Date().toISOString() } : c));
+  const toggleChore = async (id: string) => {
+    const chore = urgentChores.find(c => c.id === id);
+    if (!chore) return;
+    await supabase.from("chores").update({ is_completed: !chore.is_completed }).eq("id", id);
+    setUrgentChores(prev => prev.map(c => c.id === id ? { ...c, is_completed: !c.is_completed } : c));
   };
 
   return (
@@ -126,7 +139,7 @@ export default function HomePage() {
                   <div key={event.id} className="flex items-center gap-3">
                     <div className="w-0.5 h-8 bg-foreground/30 rounded-full" />
                     <div>
-                      <p className="text-[10px] text-foreground/60">{event.time || "All day"}</p>
+                      <p className="text-[10px] text-foreground/60">{event.event_time || "All day"}</p>
                       <p className="text-sm font-semibold text-foreground">{event.title}</p>
                     </div>
                   </div>
@@ -149,7 +162,7 @@ export default function HomePage() {
                 <MessageSquare size={18} className="text-primary" />
               </div>
               <p className="text-sm font-bold text-foreground">Chat</p>
-              <p className="text-xs text-muted-foreground">{messages.length} msgs</p>
+              <p className="text-xs text-muted-foreground">{messageCount} msgs</p>
             </Link>
             <Link to="/memories" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
               <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
@@ -177,19 +190,14 @@ export default function HomePage() {
                     <button
                       onClick={() => toggleChore(chore.id)}
                       className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
-                        chore.completed ? "bg-success border-success" : "border-border"
+                        chore.is_completed ? "bg-success border-success" : "border-border"
                       }`}
                     >
-                      {chore.completed && <Check size={14} className="text-success-foreground" />}
+                      {chore.is_completed && <Check size={14} className="text-success-foreground" />}
                     </button>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium ${chore.completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{chore.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{chore.frequency === "daily" ? "Due now" : chore.frequency}</p>
-                    </div>
-                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
-                      <span className="text-[10px] font-bold text-muted-foreground">
-                        {chore.assignedTo === "partner1" ? "S" : chore.assignedTo === "partner2" ? "J" : "R"}
-                      </span>
+                      <p className={`text-sm font-medium ${chore.is_completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{chore.title}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{chore.recurrence === "daily" ? "Due now" : chore.recurrence || "Once"}</p>
                     </div>
                   </div>
                 ))
