@@ -26,6 +26,8 @@ interface DietItem {
   is_completed: boolean;
   log_date: string;
   event_time: string | null;
+  recurrence: string;
+  recurrence_day: number | null;
   created_at: string;
 }
 
