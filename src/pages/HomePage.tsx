@@ -228,7 +228,7 @@ export default function HomePage() {
           <motion.div variants={item} className="flex justify-end">
             <button
               onClick={() => navigate("/calendar")}
-              className="bg-foreground text-background px-5 py-3 rounded-full flex items-center gap-2 shadow-elevated text-sm font-semibold"
+              className="love-gradient text-primary-foreground px-5 py-3 rounded-btn flex items-center gap-2 shadow-elevated text-sm font-semibold"
             >
               <Plus size={16} />
               New Event
