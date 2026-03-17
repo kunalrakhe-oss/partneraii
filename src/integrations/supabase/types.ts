@@ -411,6 +411,48 @@ export type Database = {
           },
         ]
       }
+      relationship_details: {
+        Row: {
+          anniversary_date: string | null
+          created_at: string
+          id: string
+          love_language: string | null
+          partner_love_language: string | null
+          partner_pair: string
+          relationship_goal: string | null
+          relationship_status: string | null
+          shared_interests: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          anniversary_date?: string | null
+          created_at?: string
+          id?: string
+          love_language?: string | null
+          partner_love_language?: string | null
+          partner_pair: string
+          relationship_goal?: string | null
+          relationship_status?: string | null
+          shared_interests?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          anniversary_date?: string | null
+          created_at?: string
+          id?: string
+          love_language?: string | null
+          partner_love_language?: string | null
+          partner_pair?: string
+          relationship_goal?: string | null
+          relationship_status?: string | null
+          shared_interests?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
