@@ -53,6 +53,7 @@ export default function ChatPage() {
   const [partnerProfile, setPartnerProfile] = useState<ProfileInfo | null>(null);
   const [sending, setSending] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [activeTab, setActiveTab] = useState<ChatTab>("partner");
   const [selectedMsg, setSelectedMsg] = useState<ChatMsg | null>(null);
   const [replyTo, setReplyTo] = useState<ChatMsg | null>(null);
@@ -442,20 +443,65 @@ export default function ChatPage() {
           )}
         </AnimatePresence>
 
+        {/* Emoji Picker */}
+        <AnimatePresence>
+          {showEmojiPicker && (
+            <>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="fixed inset-0 z-40" onClick={() => setShowEmojiPicker(false)} />
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.15 }}
+                className="absolute bottom-20 right-5 z-50 bg-card rounded-2xl shadow-elevated border border-border p-3 w-[280px] max-h-[300px] overflow-y-auto"
+              >
+                <p className="text-[10px] font-semibold text-muted-foreground mb-2">Smileys & People</p>
+                <div className="grid grid-cols-8 gap-1 mb-2">
+                  {["😀","😂","🥰","😍","😘","😜","🤗","😎","🥺","😢","😤","🤯","🤔","🙄","😴","🤮","👍","👎","❤️","🔥","💯","🎉","✨","💔","🙏","👏","💪","🤝","👀","💕","🥳","😈"].map(e => (
+                    <button key={e} onClick={() => { setInput(prev => prev + e); setShowEmojiPicker(false); inputRef.current?.focus(); }}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-lg active:scale-110 transition-transform">
+                      {e}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] font-semibold text-muted-foreground mb-2">Animals & Nature</p>
+                <div className="grid grid-cols-8 gap-1 mb-2">
+                  {["🐶","🐱","🐻","🦋","🌸","🌺","🌈","⭐","🌙","☀️","🍀","🌻","🐝","🦊","🐰","🐥"].map(e => (
+                    <button key={e} onClick={() => { setInput(prev => prev + e); setShowEmojiPicker(false); inputRef.current?.focus(); }}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-lg active:scale-110 transition-transform">
+                      {e}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] font-semibold text-muted-foreground mb-2">Food & Activities</p>
+                <div className="grid grid-cols-8 gap-1">
+                  {["🍕","🍔","🍷","🎂","☕","🍿","🎬","🎵","🏖️","✈️","🎁","💐","🛍️","💍","🏠","🚗"].map(e => (
+                    <button key={e} onClick={() => { setInput(prev => prev + e); setShowEmojiPicker(false); inputRef.current?.focus(); }}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-muted text-lg active:scale-110 transition-transform">
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
         {/* Input */}
         <div className="px-5 py-3 bg-card border-t border-border relative">
-          <input ref={fileRef} type="file" accept="image/*" onChange={(e) => { handleImageUpload(e); setShowAttachMenu(false); }} className="hidden" />
+          <input ref={fileRef} type="file" accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" onChange={(e) => { handleImageUpload(e); setShowAttachMenu(false); }} className="hidden" />
           <div className="flex gap-2 items-center">
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={() => setShowAttachMenu(prev => !prev)}
+              onClick={() => { setShowAttachMenu(prev => !prev); setShowEmojiPicker(false); }}
               className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center shrink-0"
             >
               <motion.div animate={{ rotate: showAttachMenu ? 45 : 0 }} transition={{ duration: 0.15 }}>
                 <Plus size={18} className="text-primary" />
               </motion.div>
             </motion.button>
-            <div className="flex-1 bg-muted rounded-full flex items-center px-4 gap-2">
+            <div className="flex-1 bg-muted rounded-full flex items-center px-4 gap-2 relative">
               <input
                 ref={inputRef}
                 value={input}
@@ -464,6 +510,9 @@ export default function ChatPage() {
                 placeholder={replyTo ? "Write a reply..." : `Message ${partnerProfile?.display_name || "your partner"}...`}
                 className="flex-1 h-10 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
+              <button onClick={() => { setShowEmojiPicker(prev => !prev); setShowAttachMenu(false); }} className="shrink-0">
+                <Smile size={18} className="text-muted-foreground hover:text-primary transition-colors" />
+              </button>
             </div>
             <motion.button whileTap={{ scale: 0.95 }} onClick={() => sendMessage()}
               disabled={sending || !input.trim()}
