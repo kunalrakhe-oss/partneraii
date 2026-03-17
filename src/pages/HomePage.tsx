@@ -300,17 +300,16 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          {/* New Event FAB */}
-          <motion.div variants={item} className="flex justify-end">
-            <button
-              onClick={() => navigate("/calendar")}
-              className="love-gradient text-primary-foreground px-5 py-3 rounded-btn flex items-center gap-2 shadow-elevated text-sm font-semibold"
-            >
-              <Plus size={16} />
-              New Event
-            </button>
-          </motion.div>
         </motion.div>
+
+        {/* Floating New Event FAB */}
+        <button
+          onClick={() => navigate("/calendar")}
+          className="fixed bottom-20 right-5 max-w-lg love-gradient text-primary-foreground px-5 py-3 rounded-btn flex items-center gap-2 shadow-elevated text-sm font-semibold z-40"
+        >
+          <Plus size={16} />
+          New Event
+        </button>
       </div>
     </PageTransition>
   );
