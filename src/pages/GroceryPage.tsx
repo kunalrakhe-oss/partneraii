@@ -303,7 +303,7 @@ export default function GroceryPage() {
                   item={item}
                   onToggle={toggleItem}
                   onMove={moveItem}
-                  onRename={renameItem}
+                  onEdit={setEditingItem}
                   isFirst={uncheckedItems[0]?.id === item.id}
                   isLast={uncheckedItems[uncheckedItems.length - 1]?.id === item.id}
                 />
