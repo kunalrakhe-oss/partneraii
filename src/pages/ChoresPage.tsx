@@ -579,7 +579,7 @@ export default function ChoresPage() {
                       />
                     </div>
 
-                    {/* Due Date picker — expands when toggled */}
+                    {/* Due Date picker — inline calendar */}
                     <AnimatePresence>
                       {hasDueDate && (
                         <motion.div
@@ -589,26 +589,16 @@ export default function ChoresPage() {
                           transition={{ duration: 0.2 }}
                           className="overflow-hidden"
                         >
-                          <div className="px-4 py-2">
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <button className="w-full flex items-center justify-between py-2 text-sm">
-                                  <span className="text-primary font-medium">
-                                    {newDueDate ? format(newDueDate, "EEE, MMM d, yyyy") : "Select date"}
-                                  </span>
-                                  <ChevronRight size={16} className="text-muted-foreground" />
-                                </button>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="center" side="top">
-                                <Calendar
-                                  mode="single"
-                                  selected={newDueDate}
-                                  onSelect={setNewDueDate}
-                                  initialFocus
-                                  className={cn("p-3 pointer-events-auto")}
-                                />
-                              </PopoverContent>
-                            </Popover>
+                          <div className="px-2 py-2 flex flex-col items-center">
+                            <p className="text-xs text-primary font-medium mb-1">
+                              {newDueDate ? format(newDueDate, "EEE, MMM d, yyyy") : "Select date"}
+                            </p>
+                            <Calendar
+                              mode="single"
+                              selected={newDueDate}
+                              onSelect={setNewDueDate}
+                              className="p-2 pointer-events-auto"
+                            />
                           </div>
                         </motion.div>
                       )}
