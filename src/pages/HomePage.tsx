@@ -264,20 +264,26 @@ export default function HomePage() {
 
           {/* Partnership Analytics */}
           <motion.div variants={item}>
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Partnership Stats</p>
-            <div className="grid grid-cols-4 gap-2">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Partnership Stats</p>
+            <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "Days", value: daysTogether, icon: Heart, color: "bg-secondary/15 text-secondary", link: "/memories" },
-                { label: "Events", value: totalEvents, icon: CalendarDays, color: "bg-primary/15 text-primary", link: "/calendar" },
-                { label: "Memories", value: totalMemories, icon: Image, color: "bg-accent/20 text-accent-foreground", link: "/memories" },
-                { label: "Done", value: completedChores, icon: Trophy, color: "bg-success/15 text-success", link: "/chores" },
+                { label: "Days Together", value: daysTogether, icon: Heart, gradient: "from-secondary/20 to-secondary/5", iconBg: "bg-secondary/20", iconColor: "text-secondary", link: "/memories" },
+                { label: "Events", value: totalEvents, icon: CalendarDays, gradient: "from-primary/20 to-primary/5", iconBg: "bg-primary/20", iconColor: "text-primary", link: "/calendar" },
+                { label: "Memories", value: totalMemories, icon: Image, gradient: "from-accent/20 to-accent/5", iconBg: "bg-accent/20", iconColor: "text-accent-foreground", link: "/memories" },
+                { label: "Tasks Done", value: completedChores, icon: Trophy, gradient: "from-success/20 to-success/5", iconBg: "bg-success/20", iconColor: "text-success", link: "/chores" },
               ].map(stat => (
-                <button key={stat.label} onClick={() => navigate(stat.link)} className="bg-card rounded-2xl p-3 shadow-card flex flex-col items-center gap-1.5 hover:bg-muted transition-colors">
-                  <div className={`w-8 h-8 rounded-xl ${stat.color} flex items-center justify-center`}>
-                    <stat.icon size={14} />
+                <button
+                  key={stat.label}
+                  onClick={() => navigate(stat.link)}
+                  className={`bg-gradient-to-br ${stat.gradient} rounded-2xl p-4 flex items-center gap-3 border border-border/30 hover:scale-[1.02] transition-transform active:scale-[0.98]`}
+                >
+                  <div className={`w-10 h-10 rounded-xl ${stat.iconBg} flex items-center justify-center shrink-0`}>
+                    <stat.icon size={18} className={stat.iconColor} />
                   </div>
-                  <p className="text-base font-bold text-foreground leading-none">{stat.value}</p>
-                  <p className="text-[10px] text-muted-foreground">{stat.label}</p>
+                  <div className="text-left">
+                    <p className="text-lg font-bold text-foreground leading-none">{stat.value}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
+                  </div>
                 </button>
               ))}
             </div>
