@@ -440,7 +440,7 @@ function EditSheet({
           </div>
         </div>
 
-        <div className="px-5 pb-8 space-y-4">
+        <div className="px-5 pb-10 space-y-4 overflow-y-auto flex-1">
           {/* Name & Notes */}
           <div className="bg-muted/50 rounded-2xl p-4 space-y-3 border border-border">
             <input

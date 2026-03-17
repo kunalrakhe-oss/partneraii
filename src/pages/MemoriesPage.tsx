@@ -455,6 +455,7 @@ export default function MemoriesPage() {
                 >
                   {submitting ? <Loader2 size={18} className="animate-spin" /> : "Save Memory"}
                 </button>
+                </div>
               </motion.div>
             </motion.div>
           )}
