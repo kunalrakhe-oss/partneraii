@@ -331,17 +331,31 @@ export default function MemoriesPage() {
           {showAdd && (
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[60] flex items-end justify-center bg-foreground/30 pb-20 sm:pb-0"
+              className="fixed inset-0 z-[60] flex items-end justify-center bg-foreground/30"
               onClick={() => { setShowAdd(false); resetForm(); }}
             >
               <motion.div
                 initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                drag="y"
+                dragConstraints={{ top: 0 }}
+                dragElastic={0.2}
+                onDragEnd={(_e: any, info: any) => {
+                  if (info.offset.y > 100 || info.velocity.y > 500) { setShowAdd(false); resetForm(); }
+                }}
                 onClick={e => e.stopPropagation()}
-                className="bg-card w-full max-w-lg rounded-t-3xl shadow-elevated max-h-[85vh] flex flex-col"
+                className="bg-card w-full max-w-lg rounded-t-3xl shadow-elevated max-h-[72vh] flex flex-col"
               >
-                <div className="overflow-y-auto flex-1 p-5 pb-10">
-                <h3 className="text-lg font-bold text-foreground mb-4">New Memory</h3>
+                <div className="shrink-0 px-5 pt-4 pb-2">
+                  <div className="mx-auto mb-2 h-1.5 w-12 rounded-full bg-muted cursor-grab active:cursor-grabbing" />
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-foreground">New Memory</h3>
+                    <button onClick={() => { setShowAdd(false); resetForm(); }} className="flex h-8 w-8 items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors">
+                      <X size={16} className="text-muted-foreground" />
+                    </button>
+                  </div>
+                </div>
+                <div className="overflow-y-auto flex-1 p-5 pt-2 pb-10">
 
                 {/* Type selector */}
                 <div className="flex gap-2 mb-4">

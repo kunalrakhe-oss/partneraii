@@ -621,21 +621,27 @@ export default function ChoresPage() {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                drag="y"
+                dragConstraints={{ top: 0 }}
+                dragElastic={0.2}
+                onDragEnd={(_e: any, info: any) => {
+                  if (info.offset.y > 100 || info.velocity.y > 500) { setShowAdd(false); resetForm(); }
+                }}
                 onClick={e => e.stopPropagation()}
-                className="bg-background w-full max-w-lg rounded-t-3xl shadow-elevated max-h-[85vh] overflow-y-auto"
+                className="bg-background w-full max-w-lg rounded-t-3xl shadow-elevated max-h-[72vh] flex flex-col overflow-hidden"
               >
-                {/* Drag handle */}
-                <div className="flex justify-center pt-3 pb-1 sticky top-0 bg-background z-10">
-                  <div className="w-10 h-1 rounded-full bg-border" />
+                {/* Drag handle + close */}
+                <div className="shrink-0 flex flex-col items-center pt-3 pb-1 bg-background z-10">
+                  <div className="w-10 h-1 rounded-full bg-border cursor-grab active:cursor-grabbing" />
                 </div>
 
-                {/* Header with Cancel / Add */}
-                <div className="flex items-center justify-between px-5 py-3 sticky top-5 bg-background z-10">
+                {/* Header with X close / Add */}
+                <div className="shrink-0 flex items-center justify-between px-5 py-3 bg-background z-10">
                   <button
                     onClick={() => { setShowAdd(false); resetForm(); }}
-                    className="text-sm text-secondary font-medium"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-muted hover:bg-muted/80 transition-colors"
                   >
-                    Cancel
+                    <X size={16} className="text-muted-foreground" />
                   </button>
                   <h3 className="text-base font-bold text-foreground">New Chore</h3>
                   <button
@@ -647,7 +653,7 @@ export default function ChoresPage() {
                   </button>
                 </div>
 
-                <div className="px-5 pb-8 space-y-4">
+                <div className="overflow-y-auto flex-1 px-5 pb-8 space-y-4">
                   {/* Title input — full-width, prominent */}
                   <div className="bg-card rounded-2xl border border-border overflow-hidden">
                     <input
