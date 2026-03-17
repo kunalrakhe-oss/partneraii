@@ -445,7 +445,7 @@ export default function ChatPage() {
 
         {/* Input */}
         <div className="px-5 py-3 bg-card border-t border-border relative">
-          <input ref={fileRef} type="file" accept="image/*" onChange={(e) => { handleImageUpload(e); setShowAttachMenu(false); }} className="hidden" />
+          <input ref={fileRef} type="file" accept="image/*,video/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" onChange={(e) => { handleImageUpload(e); setShowAttachMenu(false); }} className="hidden" />
           <div className="flex gap-2 items-center">
             <motion.button
               whileTap={{ scale: 0.9 }}
