@@ -72,8 +72,7 @@ const SUGGESTIONS = [
   "🍽️ Meal planning help",
 ];
 
-export default function AIChatbot() {
-  const [open, setOpen] = useState(false);
+export default function AIChatbot({ embedded }: { embedded?: boolean }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -119,123 +118,88 @@ export default function AIChatbot() {
     }
   };
 
-  return (
-    <>
-      {/* FAB */}
-      <AnimatePresence>
-        {!open && (
-          <motion.button
-            initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
-            onClick={() => setOpen(true)}
-            className="fixed bottom-20 right-5 w-14 h-14 rounded-full love-gradient shadow-elevated z-50 flex items-center justify-center"
-          >
-            <MessageCircleHeart size={22} className="text-primary-foreground" />
-          </motion.button>
-        )}
-      </AnimatePresence>
-
-      {/* Chat panel */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.95 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-20 right-3 left-3 max-w-lg mx-auto z-50 bg-card rounded-3xl shadow-elevated border border-border flex flex-col overflow-hidden"
-            style={{ maxHeight: "70vh" }}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full love-gradient flex items-center justify-center">
-                  <MessageCircleHeart size={14} className="text-primary-foreground" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-foreground">LoveBot</p>
-                  <p className="text-[10px] text-muted-foreground">Your relationship assistant</p>
-                </div>
+  // Embedded mode renders inline (no FAB, no fixed positioning)
+  if (embedded) {
+    return (
+      <div className="flex flex-col flex-1 min-h-0">
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+          {messages.length === 0 && (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 rounded-full love-gradient mx-auto flex items-center justify-center mb-3">
+                <MessageCircleHeart size={28} className="text-primary-foreground" />
               </div>
-              <button onClick={() => setOpen(false)} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                <X size={14} className="text-muted-foreground" />
-              </button>
-            </div>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-[200px]">
-              {messages.length === 0 && (
-                <div className="text-center py-6">
-                  <p className="text-3xl mb-2">💕</p>
-                  <p className="text-sm font-bold text-foreground mb-1">Hi there!</p>
-                  <p className="text-xs text-muted-foreground mb-4">I'm LoveBot, your relationship assistant. How can I help?</p>
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {SUGGESTIONS.map(s => (
-                      <button
-                        key={s}
-                        onClick={() => send(s.replace(/^[^\s]+ /, ""))}
-                        className="text-[11px] px-3 py-1.5 rounded-full bg-primary/10 text-primary font-medium hover:bg-primary/20 transition-colors"
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {messages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm ${
-                    msg.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-br-md"
-                      : "bg-muted text-foreground rounded-bl-md"
-                  }`}>
-                    {msg.role === "assistant" ? (
-                      <div className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0.5 text-sm leading-relaxed">
-                        <ReactMarkdown>{msg.content}</ReactMarkdown>
-                      </div>
-                    ) : (
-                      <p className="leading-relaxed">{msg.content}</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              {loading && messages[messages.length - 1]?.role === "user" && (
-                <div className="flex justify-start">
-                  <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
-                    <div className="flex gap-1">
-                      <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "300ms" }} />
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={bottomRef} />
-            </div>
-
-            {/* Input */}
-            <div className="px-3 py-3 border-t border-border shrink-0">
-              <div className="flex gap-2">
-                <input
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && !e.shiftKey && send()}
-                  placeholder="Ask LoveBot anything..."
-                  className="flex-1 bg-muted rounded-xl px-3.5 h-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <button
-                  onClick={() => send()}
-                  disabled={!input.trim() || loading}
-                  className="h-10 w-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 shrink-0"
-                >
-                  {loading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                </button>
+              <p className="text-sm font-bold text-foreground mb-1">Hi there! 💕</p>
+              <p className="text-xs text-muted-foreground mb-4">I'm LoveBot, your relationship assistant. Ask me anything!</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {SUGGESTIONS.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => send(s.replace(/^[^\s]+ /, ""))}
+                    className="text-[11px] px-3 py-1.5 rounded-full bg-primary/10 text-primary font-medium hover:bg-primary/20 transition-colors"
+                  >
+                    {s}
+                  </button>
+                ))}
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
-  );
+          )}
+
+          {messages.map((msg, i) => (
+            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm ${
+                msg.role === "user"
+                  ? "bg-primary text-primary-foreground rounded-br-md"
+                  : "bg-muted text-foreground rounded-bl-md"
+              }`}>
+                {msg.role === "assistant" ? (
+                  <div className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0.5 text-sm leading-relaxed">
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="leading-relaxed">{msg.content}</p>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {loading && messages[messages.length - 1]?.role === "user" && (
+            <div className="flex justify-start">
+              <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+
+        {/* Input */}
+        <div className="px-4 py-3 border-t border-border shrink-0">
+          <div className="flex gap-2">
+            <input
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && !e.shiftKey && send()}
+              placeholder="Ask LoveBot anything..."
+              className="flex-1 bg-muted rounded-full px-4 h-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <button
+              onClick={() => send()}
+              disabled={!input.trim() || loading}
+              className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 shrink-0"
+            >
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Non-embedded: not rendered anymore (FAB removed)
+  return null;
 }
