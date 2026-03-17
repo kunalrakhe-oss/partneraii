@@ -33,6 +33,7 @@ interface ProfileInfo {
 export default function ChatPage() {
   const { user } = useAuth();
   const { partnerPair, loading: ppLoading, userId } = usePartnerPair();
+  const { isDemoMode } = useDemo();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
