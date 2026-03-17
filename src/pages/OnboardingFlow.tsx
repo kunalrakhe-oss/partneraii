@@ -54,13 +54,14 @@ export default function OnboardingFlow() {
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [showSuggestion, setShowSuggestion] = useState(false);
 
-  // Check if onboarding already completed
+  // Check if onboarding already completed — redirect once on mount only
   useEffect(() => {
     const done = localStorage.getItem("lovelist-onboarding-done");
     if (done === "true") {
       navigate("/", { replace: true });
     }
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const completeOnboarding = () => {
     localStorage.setItem("lovelist-onboarding-done", "true");
