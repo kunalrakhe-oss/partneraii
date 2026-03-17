@@ -8,7 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Monitor } from "lucide-react";
+import { Monitor, Volume2, Vibrate } from "lucide-react";
+import { getNotificationPrefs, setNotificationPrefs, playNotificationSound } from "@/lib/notificationSound";
 
 type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | null;
 

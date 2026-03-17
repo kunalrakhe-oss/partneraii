@@ -5,6 +5,7 @@ import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { MessageCircle, Heart, ClipboardList, ShoppingCart, CalendarDays, Camera } from "lucide-react";
+import { notifyPartnerAction } from "@/lib/notificationSound";
 
 const MOOD_LABELS: Record<string, string> = {
   happy: "Happy 😊",
