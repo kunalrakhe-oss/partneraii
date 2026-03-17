@@ -316,9 +316,49 @@ export default function ChoresPage() {
             <h1 className="text-2xl font-bold text-foreground font-heading">Chore Manager</h1>
             <p className="text-xs text-muted-foreground">Keeping our home cozy, together</p>
           </div>
-          <button className="w-10 h-10 rounded-full bg-card shadow-card flex items-center justify-center border border-border transition-transform active:scale-95">
-            <Settings size={16} className="text-muted-foreground" />
-          </button>
+          <div className="relative" ref={settingsRef}>
+            <button
+              onClick={() => setShowSettings(s => !s)}
+              className="w-10 h-10 rounded-full bg-card shadow-card flex items-center justify-center border border-border transition-transform active:scale-95"
+            >
+              <Settings size={16} className="text-muted-foreground" />
+            </button>
+            <AnimatePresence>
+              {showSettings && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-12 z-50 w-52 bg-card border border-border rounded-2xl shadow-elevated overflow-hidden"
+                >
+                  <button
+                    onClick={() => { setSortBy(s => s === "created" ? "due" : "created"); setShowSettings(false); }}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-accent/50 transition-colors"
+                  >
+                    <ArrowDownAZ size={15} className="text-primary" />
+                    <span className="text-sm text-foreground">Sort by {sortBy === "created" ? "Due Date" : "Created"}</span>
+                  </button>
+                  <div className="h-px bg-border/50" />
+                  <button
+                    onClick={clearCompleted}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-accent/50 transition-colors"
+                  >
+                    <CheckCheck size={15} className="text-success" />
+                    <span className="text-sm text-foreground">Clear Completed</span>
+                  </button>
+                  <div className="h-px bg-border/50" />
+                  <button
+                    onClick={deleteAllChores}
+                    className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-accent/50 transition-colors"
+                  >
+                    <Trash size={15} className="text-destructive" />
+                    <span className="text-sm text-destructive">Delete All</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Weekly Progress */}
