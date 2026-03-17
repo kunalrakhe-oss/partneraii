@@ -4,6 +4,9 @@ import { motion } from "framer-motion";
 import { useLocalStorage, MOOD_EMOJIS, type MoodLog, type CalendarEvent, type Chore, type GroceryItem, type ChatMessage } from "@/lib/store";
 import PageTransition from "@/components/PageTransition";
 import { format } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const container = {
   hidden: { opacity: 0 },
