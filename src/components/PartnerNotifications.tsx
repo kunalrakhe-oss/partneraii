@@ -5,6 +5,7 @@ import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { MessageCircle, Heart, ClipboardList, ShoppingCart, CalendarDays, Camera } from "lucide-react";
+import { notifyPartnerAction } from "@/lib/notificationSound";
 
 const MOOD_LABELS: Record<string, string> = {
   happy: "Happy 😊",
@@ -47,6 +48,7 @@ export default function PartnerNotifications() {
           const msg = payload.new as { user_id: string; message: string; type: string };
           if (msg.user_id !== user.id && locationRef.current !== "/chat") {
             const preview = msg.type === "image" ? "📷 Sent a photo" : msg.message.length > 60 ? msg.message.slice(0, 60) + "…" : msg.message;
+            notifyPartnerAction();
             toast("New message 💬", {
               description: preview,
               icon: <MessageCircle size={16} className="text-primary" />,
@@ -63,6 +65,7 @@ export default function PartnerNotifications() {
           const log = payload.new as { user_id: string; mood: string };
           if (log.user_id !== user.id) {
             const label = MOOD_LABELS[log.mood] || log.mood;
+            notifyPartnerAction();
             toast(`Partner is feeling ${label}`, {
               description: "Tap to check in on them ❤️",
               icon: <Heart size={16} className="text-primary" />,
@@ -79,6 +82,7 @@ export default function PartnerNotifications() {
           const log = payload.new as { user_id: string; mood: string };
           if (log.user_id !== user.id) {
             const label = MOOD_LABELS[log.mood] || log.mood;
+            notifyPartnerAction();
             toast(`Partner updated mood to ${label}`, {
               icon: <Heart size={16} className="text-primary" />,
               duration: 5000,
@@ -93,6 +97,7 @@ export default function PartnerNotifications() {
         (payload) => {
           const chore = payload.new as { user_id: string; title: string };
           if (chore.user_id !== user.id && locationRef.current !== "/chores") {
+            notifyPartnerAction();
             toast("New chore added 🧹", {
               description: chore.title,
               icon: <ClipboardList size={16} className="text-primary" />,
@@ -109,6 +114,7 @@ export default function PartnerNotifications() {
           const chore = payload.new as { user_id: string; title: string; is_completed: boolean };
           const old = payload.old as { is_completed: boolean };
           if (chore.user_id !== user.id && chore.is_completed && !old.is_completed) {
+            notifyPartnerAction();
             toast("Chore completed ✅", {
               description: chore.title,
               icon: <ClipboardList size={16} className="text-primary" />,
@@ -124,6 +130,7 @@ export default function PartnerNotifications() {
         (payload) => {
           const item = payload.new as { user_id: string; name: string };
           if (item.user_id !== user.id && locationRef.current !== "/lists") {
+            notifyPartnerAction();
             toast("Item added to list 🛒", {
               description: item.name,
               icon: <ShoppingCart size={16} className="text-primary" />,
@@ -140,6 +147,7 @@ export default function PartnerNotifications() {
           const item = payload.new as { user_id: string; name: string; is_checked: boolean };
           const old = payload.old as { is_checked: boolean };
           if (item.user_id !== user.id && item.is_checked && !old.is_checked && locationRef.current !== "/lists") {
+            notifyPartnerAction();
             toast("Item checked off ✓", {
               description: item.name,
               icon: <ShoppingCart size={16} className="text-primary" />,
@@ -155,6 +163,7 @@ export default function PartnerNotifications() {
         (payload) => {
           const evt = payload.new as { user_id: string; title: string };
           if (evt.user_id !== user.id && locationRef.current !== "/calendar") {
+            notifyPartnerAction();
             toast("New event added 📅", {
               description: evt.title,
               icon: <CalendarDays size={16} className="text-primary" />,
@@ -170,6 +179,7 @@ export default function PartnerNotifications() {
         (payload) => {
           const mem = payload.new as { user_id: string; title: string };
           if (mem.user_id !== user.id) {
+            notifyPartnerAction();
             toast("New memory added 📸", {
               description: mem.title,
               icon: <Camera size={16} className="text-primary" />,
@@ -185,6 +195,7 @@ export default function PartnerNotifications() {
         (payload) => {
           const reaction = payload.new as { user_id: string; emoji: string };
           if (reaction.user_id !== user.id && locationRef.current !== "/chat") {
+            notifyPartnerAction();
             toast(`Partner reacted ${reaction.emoji}`, {
               icon: <MessageCircle size={16} className="text-primary" />,
               duration: 3000,
