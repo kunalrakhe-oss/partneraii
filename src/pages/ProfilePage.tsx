@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Monitor } from "lucide-react";
 
-type SheetType = "personal" | "notifications" | "theme" | null;
+type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | null;
 
 function BottomSheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   return (
