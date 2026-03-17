@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import { format, subDays } from "date-fns";
-import { Heart, Sparkles, Lightbulb, Users, RefreshCw, Loader2 } from "lucide-react";
+import { Heart, Sparkles, Lightbulb, Users, RefreshCw, Loader2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const MOODS = [
   { key: "happy", emoji: "😊", label: "Happy" },
@@ -77,6 +78,7 @@ export default function MoodPage() {
   const { partnerPair, loading: ppLoading } = usePartnerPair();
   const [logs, setLogs] = useState<MoodLog[]>([]);
   const [note, setNote] = useState("");
+  const navigate = useNavigate();
   const [displayName, setDisplayName] = useState("there");
 
   const today = format(new Date(), "yyyy-MM-dd");
@@ -142,8 +144,8 @@ export default function MoodPage() {
             <h1 className="text-2xl font-bold text-foreground">How are you, {displayName}?</h1>
             <p className="text-sm text-muted-foreground">Share your vibe with your partner</p>
           </div>
-          <button className="w-10 h-10 rounded-btn bg-secondary/20 flex items-center justify-center">
-            <Heart size={18} className="text-secondary" fill="currentColor" />
+          <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+            <X size={18} className="text-muted-foreground" />
           </button>
         </div>
 
