@@ -789,7 +789,6 @@ function MultiDayView({ startDate, events, onSelectDate, onAddEvent, onEditEvent
   };
 
   const handleDragEnd = () => { setDraggingEvent(null); setDropMinutes(null); setDropDayIdx(null); };
-  }, []);
 
   return (
     <div>
@@ -810,48 +809,78 @@ function MultiDayView({ startDate, events, onSelectDate, onAddEvent, onEditEvent
         ))}
       </div>
 
-      {/* Time grid */}
+      {/* Time grid with drag support */}
       <div ref={scrollRef} className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 250px)" }}>
-        {HOURS.map((hour) => (
-          <div key={hour} className="flex min-h-[52px] border-b border-border/30">
-            {/* Time label */}
-            <div className="w-12 shrink-0 pr-1 pt-0.5 text-right">
-              <span className="text-[9px] text-muted-foreground">{formatHour(hour)}</span>
+        <div
+          ref={gridRef}
+          className="relative"
+          onDragOver={handleDragOverGrid}
+          onDrop={handleDropGrid}
+        >
+          {/* Drop indicator */}
+          {dropMinutes !== null && draggingEvent && dropDayIdx !== null && (
+            <div
+              className="absolute z-20 flex items-center pointer-events-none"
+              style={{
+                top: `${dropMinutes}px`,
+                left: `calc(48px + ${dropDayIdx} * ((100% - 48px) / 3))`,
+                width: `calc((100% - 48px) / 3)`,
+              }}
+            >
+              <div className="w-2 h-2 rounded-full bg-primary" />
+              <div className="flex-1 h-[2px] bg-primary" />
+              <span className="text-[8px] font-bold text-primary bg-background/90 px-1 rounded">
+                {minutesToTime(dropMinutes)}
+              </span>
             </div>
+          )}
 
-            {/* Columns for each day */}
-            {days.map((day) => {
-              const dateStr = format(day, "yyyy-MM-dd");
-              const hourEvents = events.filter((e) => {
-                if (e.event_date !== dateStr) return false;
-                const m = timeToMinutes(e.event_time);
-                return m >= hour * 60 && m < (hour + 1) * 60;
-              });
+          {HOURS.map((hour) => (
+            <div key={hour} className="flex min-h-[52px] border-b border-border/30" style={{ minHeight: `${SLOT_HEIGHT}px` }}>
+              <div className="w-12 shrink-0 pr-1 pt-0.5 text-right">
+                <span className="text-[9px] text-muted-foreground">{formatHour(hour)}</span>
+              </div>
 
-              return (
-                <div
-                  key={day.toISOString()}
-                  className={`flex-1 border-l border-border/30 px-0.5 py-0.5 cursor-pointer hover:bg-muted/20 transition-colors ${
-                    isToday(day) ? "bg-primary/[0.03]" : ""
-                  }`}
-                  onClick={() => onAddEvent(day, `${hour.toString().padStart(2, "0")}:00`)}
-                >
-                  {hourEvents.map((evt) => (
-                    <button
-                      key={evt.id}
-                      onClick={(e) => { e.stopPropagation(); onEditEvent(evt); }}
-                      className={`w-full text-left px-1 py-0.5 rounded text-[9px] font-medium leading-tight truncate ${
-                        CATEGORY_COLORS[evt.category] || "bg-primary/50"
-                      } text-primary-foreground ${evt.is_completed ? "opacity-50" : ""}`}
-                    >
-                      {evt.title}
-                    </button>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
-        ))}
+              {days.map((day, dayIdx) => {
+                const dateStr = format(day, "yyyy-MM-dd");
+                const hourEvents = events.filter((e) => {
+                  if (e.event_date !== dateStr) return false;
+                  const m = timeToMinutes(e.event_time);
+                  return m >= hour * 60 && m < (hour + 1) * 60;
+                });
+
+                return (
+                  <div
+                    key={day.toISOString()}
+                    className={`flex-1 border-l border-border/30 px-0.5 py-0.5 cursor-pointer hover:bg-muted/20 transition-colors ${
+                      isToday(day) ? "bg-primary/[0.03]" : ""
+                    } ${dropDayIdx === dayIdx && Math.floor((dropMinutes || 0) / 60) === hour && draggingEvent ? "bg-primary/10" : ""}`}
+                    onClick={() => onAddEvent(day, `${hour.toString().padStart(2, "0")}:00`)}
+                  >
+                    {hourEvents.map((evt) => (
+                      <div
+                        key={evt.id}
+                        draggable
+                        onDragStart={handleDragStart(evt)}
+                        onDragEnd={handleDragEnd}
+                        className={`cursor-grab active:cursor-grabbing ${draggingEvent?.id === evt.id ? "opacity-40" : ""}`}
+                      >
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onEditEvent(evt); }}
+                          className={`w-full text-left px-1 py-0.5 rounded text-[9px] font-medium leading-tight truncate ${
+                            CATEGORY_COLORS[evt.category] || "bg-primary/50"
+                          } text-primary-foreground ${evt.is_completed ? "opacity-50" : ""}`}
+                        >
+                          {evt.title}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
