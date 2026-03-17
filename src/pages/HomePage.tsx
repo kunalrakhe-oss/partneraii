@@ -31,6 +31,7 @@ export default function HomePage() {
   const { isDemoMode } = useDemo();
   const [firstName, setFirstName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [partnerProfile, setPartnerProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
   const [partnerMood, setPartnerMood] = useState<{ mood: string; note: string | null } | null>(null);
   const [myMood, setMyMood] = useState<{ mood: string; note: string | null } | null>(null);
   const [todayEvents, setTodayEvents] = useState<{ id: string; title: string; event_time: string | null }[]>([]);
