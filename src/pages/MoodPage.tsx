@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import { format, subDays } from "date-fns";
-import { Heart, Sparkles, Lightbulb, Users } from "lucide-react";
+import { Heart, Sparkles, Lightbulb, Users, RefreshCw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
