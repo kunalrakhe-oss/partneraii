@@ -28,6 +28,7 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { partnerPair } = usePartnerPair();
+  const { isDemoMode } = useDemo();
   const [firstName, setFirstName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [partnerMood, setPartnerMood] = useState<{ mood: string; note: string | null } | null>(null);
