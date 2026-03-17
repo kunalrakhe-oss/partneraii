@@ -291,8 +291,11 @@ export default function ProfilePage() {
       case "Notifications":
         setActiveSheet("notifications");
         break;
+      case "Partner Profile":
+        navigate("/couple");
+        break;
       case "Couple Connection":
-        navigate("/connect");
+        navigate("/couple");
         break;
       case "Remove Partner":
         setActiveSheet("remove-partner");
@@ -311,7 +314,7 @@ export default function ProfilePage() {
       items: [
         { icon: User, label: "Personal Information", sub: "Name, Phone" },
         { icon: Bell, label: "Notifications", sub: "Reminders & Alerts" },
-        { icon: Heart, label: "Couple Connection", sub: partnerName ? `Connected to ${partnerName}` : "Invite your partner" },
+        { icon: Heart, label: "Partner Profile", sub: partnerName ? `Connected to ${partnerName}` : "Invite your partner" },
         ...(partnerId ? [{ icon: UserMinus, label: "Remove Partner", sub: `Disconnect from ${partnerName || "partner"}` }] : []),
       ],
     },

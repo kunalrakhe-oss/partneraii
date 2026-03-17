@@ -16,6 +16,7 @@ import ChatPage from "@/pages/ChatPage";
 import ProfilePage from "@/pages/ProfilePage";
 import MemoriesPage from "@/pages/MemoriesPage";
 import PartnerConnectPage from "@/pages/PartnerConnectPage";
+import CoupleProfilePage from "@/pages/CoupleProfilePage";
 import AuthPage from "@/pages/AuthPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NotFound from "@/pages/NotFound";
@@ -73,6 +74,7 @@ function AppRoutes() {
       <Route path="/onboarding" element={<OnboardingFlow />} />
       <Route element={<AppLayout />}>
         <Route path="/connect" element={<PartnerConnectPage />} />
+        <Route path="/couple" element={<CoupleProfilePage />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/lists" element={<GroceryPage />} />
