@@ -32,6 +32,7 @@ export default function HomePage() {
   const [firstName, setFirstName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [partnerMood, setPartnerMood] = useState<{ mood: string; note: string | null } | null>(null);
+  const [myMood, setMyMood] = useState<{ mood: string; note: string | null } | null>(null);
   const [todayEvents, setTodayEvents] = useState<{ id: string; title: string; event_time: string | null }[]>([]);
   const [urgentChores, setUrgentChores] = useState<{ id: string; title: string; is_completed: boolean; recurrence: string | null }[]>([]);
   const [uncheckedGroceries, setUncheckedGroceries] = useState(0);
@@ -80,8 +81,15 @@ export default function HomePage() {
 
     // Partner mood
     const fetchPartnerMood = () => {
-      supabase.from("mood_logs").select("mood, note").eq("partner_pair", partnerPair).eq("log_date", today).neq("user_id", user.id).maybeSingle()
-        .then(({ data }) => { setPartnerMood(data || null); });
+      supabase.from("mood_logs").select("mood, note, user_id").eq("partner_pair", partnerPair).eq("log_date", today)
+        .then(({ data }) => {
+          if (data) {
+            const partner = data.find(l => l.user_id !== user.id);
+            const mine = data.find(l => l.user_id === user.id);
+            setPartnerMood(partner ? { mood: partner.mood, note: partner.note } : null);
+            setMyMood(mine ? { mood: mine.mood, note: mine.note } : null);
+          }
+        });
     };
     fetchPartnerMood();
 
@@ -362,20 +370,43 @@ export default function HomePage() {
             </div>
           </motion.div>
 
+          {/* Daily Mood Check */}
+          {!myMood && !isDemoMode && (
+            <motion.div variants={item}>
+              <button onClick={() => navigate("/mood")} className="w-full bg-gradient-to-r from-secondary/20 via-primary/10 to-secondary/20 rounded-2xl p-4 border border-secondary/30 text-left">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center shrink-0">
+                    <span className="text-2xl">🌤️</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-foreground">How are you feeling today?</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Tap to log your mood & connect with your partner</p>
+                  </div>
+                  <Heart size={16} className="text-secondary shrink-0" />
+                </div>
+              </button>
+            </motion.div>
+          )}
+
           {/* Partner's Mood */}
           <motion.div variants={item}>
             <p className="text-sm font-semibold text-foreground mb-2">Partner's Mood</p>
-            <button onClick={() => partnerMood && setShowMoodPopup(true)} className="w-full text-left">
+            <button onClick={() => partnerMood ? setShowMoodPopup(true) : navigate("/mood")} className="w-full text-left">
               <div className="flex items-center gap-3">
                 <div className="flex-1 bg-primary/20 rounded-2xl px-4 py-3 flex items-center gap-3">
-                  <span className="text-xl">✨</span>
+                  <span className="text-xl">
+                    {partnerMood ? ({ happy: "😊", excited: "🤩", neutral: "🥰", calm: "😌", grateful: "🙏", silly: "🤪", tired: "😵‍💫", sad: "😢", stressed: "😫", anxious: "😰", angry: "😠", furious: "🤬", lonely: "🥺", hopeful: "🌟", confused: "😕" }[partnerMood.mood] || "✨") : "✨"}
+                  </span>
                   <div>
                     <p className="text-xs text-foreground/70">Your partner is feeling</p>
                     <p className="text-sm font-bold text-foreground">
-                      {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : "—"}
+                      {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : "No mood yet today"}
                     </p>
                     {partnerMood?.note && (
                       <p className="text-xs text-foreground/50 mt-0.5">"{partnerMood.note}"</p>
+                    )}
+                    {!partnerMood && (
+                      <p className="text-xs text-muted-foreground mt-0.5">Nudge them to check in ❤️</p>
                     )}
                   </div>
                 </div>
