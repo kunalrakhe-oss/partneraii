@@ -413,6 +413,7 @@ export default function CalendarPage() {
               onAddEvent={(time) => openAddForm(selectedDate, time)}
               onEditEvent={openEditForm}
               onToggle={toggleComplete}
+              onScheduleItem={scheduleItem}
             />
           )}
 
