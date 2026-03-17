@@ -133,16 +133,7 @@ export default function GroceryPage() {
     );
   }
 
-  if (!partnerPair) {
-    return (
-      <PageTransition>
-        <div className="px-5 pt-10 pb-6 text-center">
-          <p className="text-4xl mb-3">🔗</p>
-          <p className="text-sm text-muted-foreground">Connect with your partner to start sharing grocery lists</p>
-        </div>
-      </PageTransition>
-    );
-  }
+  // partnerPair is always set now (solo mode uses 'solo:uid')
 
   return (
     <PageTransition>
