@@ -382,7 +382,28 @@ export default function GroceryPage() {
           ))}
         </div>
 
-        {items.length === 0 ? (
+        {/* Categorization Animation */}
+        <AnimatePresence>
+          {categorizingAnim && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden mb-4"
+            >
+              <div className="flex items-center justify-center gap-2 py-3 bg-primary/10 rounded-xl border border-primary/20">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                >
+                  <Sparkles size={14} className="text-primary" />
+                </motion.div>
+                <span className="text-xs font-semibold text-primary">✨ Organizing your list...</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
           <div className="text-center py-12">
             <p className="text-4xl mb-3">{config.emptyEmoji}</p>
             <p className="text-sm text-muted-foreground">{config.emptyText}</p>
