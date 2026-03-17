@@ -36,6 +36,8 @@ export default function HomePage() {
   const [showAddEvent, setShowAddEvent] = useState(false);
   const [showMoodPopup, setShowMoodPopup] = useState(false);
   const [moodReaction, setMoodReaction] = useState("");
+  const [showNotifications, setShowNotifications] = useState(false);
+  const unreadCount = useNotificationCount();
 
   // Analytics
   const [daysTogether, setDaysTogether] = useState(0);
