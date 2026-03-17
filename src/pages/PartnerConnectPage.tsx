@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Copy, QrCode, HelpCircle, Heart, ChevronRight, Loader2, CheckCircle } from "lucide-react";
+import { Copy, QrCode, HelpCircle, Heart, ChevronRight, ChevronLeft, Loader2, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
