@@ -31,13 +31,14 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle()
+    supabase.from("profiles").select("display_name, avatar_url").eq("user_id", user.id).maybeSingle()
       .then(({ data }) => {
         const profileName = data?.display_name;
         const metaName = user.user_metadata?.full_name || user.user_metadata?.display_name || user.user_metadata?.name;
         const emailName = user.email?.split("@")[0];
         const name = (profileName && profileName.includes(" ")) ? profileName : (metaName || profileName || emailName || "there");
         setDisplayName(name);
+        setAvatarUrl(data?.avatar_url || user.user_metadata?.avatar_url || null);
       });
   }, [user]);
 
