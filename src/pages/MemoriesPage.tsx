@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
 import { format, parseISO } from "date-fns";
 import type { Tables } from "@/integrations/supabase/types";
+import { useDemo } from "@/contexts/DemoContext";
+import { DEMO_MEMORIES } from "@/lib/demoData";
 
 type MemoryRow = Tables<"memories">;
 
