@@ -170,6 +170,7 @@ export default function ChatPage() {
 
   const isMe = (msg: ChatMsg) => msg.user_id === user?.id;
   const partnerInitial = partnerProfile?.display_name?.charAt(0).toUpperCase() || "P";
+  const partnerFirstName = partnerProfile?.display_name?.split(" ")[0] || "Partner";
 
   const getReactionsForMsg = (msgId: string) => {
     const msgReactions = reactions.filter(r => r.message_id === msgId);
