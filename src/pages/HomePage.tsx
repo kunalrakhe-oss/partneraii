@@ -532,7 +532,7 @@ export default function HomePage() {
                     Write a message instead
                   </button>
                   <button
-                    onClick={() => { setShowMoodPopup(false); setMoodReaction(""); navigate("/mood"); }}
+                    onClick={() => { setShowMoodPopup(false); setMoodReaction(""); setReactionMessage(""); navigate("/mood"); }}
                     className="flex-1 text-center text-xs text-muted-foreground font-medium py-2"
                   >
                     Log your mood too
