@@ -180,7 +180,7 @@ export default function MoodPage() {
     toast.success("Reaction sent! 💕");
   };
 
-  const moodToHeight: Record<string, number> = { happy: 95, excited: 90, neutral: 75, calm: 70, grateful: 80, silly: 85, tired: 50, sad: 35, angry: 25, anxious: 40 };
+  const moodToHeight: Record<string, number> = { happy: 95, excited: 90, neutral: 75, calm: 70, grateful: 80, silly: 85, tired: 50, sad: 35, stressed: 25, anxious: 40, angry: 20, furious: 15, lonely: 30, hopeful: 78, confused: 45 };
   const last7 = Array.from({ length: 7 }, (_, i) => {
     const date = format(subDays(new Date(), 6 - i), "yyyy-MM-dd");
     return {
