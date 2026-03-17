@@ -1272,10 +1272,10 @@ function ListView({ events, onEditEvent, onToggle, onAddEvent }: {
             {/* Events */}
             <div className="ml-5 pl-7 border-l-2 border-border space-y-1.5 pb-3">
               {dayEvts.map((evt) => (
-                <button
+                <div
                   key={evt.id}
                   onClick={() => onEditEvent(evt)}
-                  className={`w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-card shadow-soft border border-border ${evt.is_completed ? "opacity-50" : ""}`}
+                  className={`w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-card shadow-soft border border-border cursor-pointer ${evt.is_completed ? "opacity-50" : ""}`}
                 >
                   <div className={`w-1 self-stretch rounded-full ${CATEGORY_COLORS[evt.category] || "bg-primary/50"}`} />
                   <div className="flex-1 min-w-0">
@@ -1302,7 +1302,7 @@ function ListView({ events, onEditEvent, onToggle, onAddEvent }: {
                   >
                     {evt.is_completed && <Check size={10} className="text-success-foreground" />}
                   </button>
-                </button>
+                </div>
               ))}
             </div>
           </div>
