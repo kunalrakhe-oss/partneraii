@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import { format, subDays } from "date-fns";
-import { Heart, Sparkles, Lightbulb, Users } from "lucide-react";
+import { Heart, Sparkles, Lightbulb, Users, RefreshCw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,6 +24,52 @@ interface MoodLog {
   note: string | null;
   log_date: string;
   created_at: string;
+}
+
+function AiMoodTip({ myMood, partnerMood, weekHistory }: { myMood: string | null; partnerMood: string | null; weekHistory: string }) {
+  const [tip, setTip] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchTip = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("mood-tip", {
+        body: { myMood, partnerMood, weekHistory },
+      });
+      if (error) throw error;
+      if (data?.tip) setTip(data.tip);
+    } catch {
+      setTip("Check in with your partner's mood daily to stay connected! 💕");
+    } finally {
+      setLoading(false);
+    }
+  }, [myMood, partnerMood, weekHistory]);
+
+  useEffect(() => {
+    fetchTip();
+  }, []);
+
+  return (
+    <div className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3">
+      <Lightbulb size={16} className="text-primary shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between mb-0.5">
+          <span className="text-primary font-medium text-xs">AI Tip</span>
+          <button onClick={fetchTip} disabled={loading} className="text-muted-foreground hover:text-foreground transition-colors">
+            <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
+          </button>
+        </div>
+        {loading && !tip ? (
+          <div className="flex items-center gap-2 py-1">
+            <Loader2 size={12} className="animate-spin text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Generating tip…</span>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground leading-relaxed">{tip || "Loading…"}</p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function MoodPage() {
@@ -155,12 +201,11 @@ export default function MoodPage() {
           </div>
         </div>
 
-        <div className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3">
-          <Lightbulb size={16} className="text-primary shrink-0 mt-0.5" />
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            <span className="text-primary font-medium">Pro-tip:</span> Check in with your partner's mood daily to stay connected!
-          </p>
-        </div>
+        <AiMoodTip
+          myMood={todayLog?.mood || null}
+          partnerMood={partnerLog?.mood || null}
+          weekHistory={last7.map(d => d.me?.mood || "none").join(", ")}
+        />
       </div>
     </PageTransition>
   );

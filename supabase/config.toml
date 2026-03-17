@@ -1,1 +1,10 @@
 project_id = "akqqlowkrnfwfhvhegri"
+
+[functions.daily-insight]
+verify_jwt = false
+
+[functions.chore-steps]
+verify_jwt = false
+
+[functions.mood-tip]
+verify_jwt = false

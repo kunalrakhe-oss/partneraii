@@ -192,8 +192,8 @@ export default function MemoriesPage() {
         {/* Stats banner */}
         <div className="bg-[hsl(100,20%,72%)] rounded-2xl p-4 mt-5 mb-5 flex items-center gap-4">
           <div className="flex-1">
-            <p className="text-xs text-foreground/70">Together since</p>
-            <p className="text-base font-bold text-foreground">March 2023</p>
+            <p className="text-xs text-foreground/70">Total Memories</p>
+            <p className="text-base font-bold text-foreground">{memories.length} moments captured</p>
           </div>
           <div className="flex gap-4">
             <div className="text-center">
