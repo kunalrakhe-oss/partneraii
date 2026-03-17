@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
+import NotificationsPanel, { useNotificationCount } from "@/components/NotificationsPanel";
 
 const container = {
   hidden: { opacity: 0 },
