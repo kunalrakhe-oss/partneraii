@@ -517,6 +517,20 @@ export default function HomePage() {
               <p className="text-sm font-bold text-foreground">Memories</p>
               <p className="text-xs text-muted-foreground">Timeline</p>
             </Link>
+            <Link to="/workout" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+              <div className="w-10 h-10 rounded-xl bg-destructive/15 flex items-center justify-center">
+                <Dumbbell size={18} className="text-destructive" />
+              </div>
+              <p className="text-sm font-bold text-foreground">Workout</p>
+              <p className="text-xs text-muted-foreground">Stay fit</p>
+            </Link>
+            <Link to="/diet" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+              <div className="w-10 h-10 rounded-xl bg-secondary/15 flex items-center justify-center">
+                <Apple size={18} className="text-secondary" />
+              </div>
+              <p className="text-sm font-bold text-foreground">Diet</p>
+              <p className="text-xs text-muted-foreground">Eat well</p>
+            </Link>
           </motion.div>
 
           {/* Urgent Chores */}
