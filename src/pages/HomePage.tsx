@@ -39,6 +39,8 @@ export default function HomePage() {
   const [sendingReaction, setSendingReaction] = useState(false);
   const [reactionMessage, setReactionMessage] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showAddChore, setShowAddChore] = useState(false);
+  const [newChoreTitle, setNewChoreTitle] = useState("");
   const unreadCount = useNotificationCount();
 
   // Analytics
@@ -363,7 +365,12 @@ export default function HomePage() {
           <motion.div variants={item}>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-bold text-foreground">Urgent Chores</h2>
-              <Link to="/chores" className="text-sm text-muted-foreground font-medium">Manage</Link>
+              <div className="flex items-center gap-2">
+                <button onClick={() => setShowAddChore(true)} className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
+                  <Plus size={14} className="text-primary" />
+                </button>
+                <Link to="/chores" className="text-sm text-muted-foreground font-medium">Manage</Link>
+              </div>
             </div>
             <div className="space-y-2">
               {urgentChores.length === 0 ? (
@@ -388,6 +395,45 @@ export default function HomePage() {
                   </div>
                 ))
               )}
+              <AnimatePresence>
+                {showAddChore && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                    <div className="flex gap-2 mt-2">
+                      <input
+                        value={newChoreTitle}
+                        onChange={e => setNewChoreTitle(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && newChoreTitle.trim() && (async () => {
+                          if (!user || !partnerPair) return;
+                          const { data, error } = await supabase.from("chores").insert({
+                            title: newChoreTitle.trim(), user_id: user.id, partner_pair: partnerPair,
+                          }).select().single();
+                          if (!error && data) {
+                            setUrgentChores(prev => [...prev, { id: data.id, title: data.title, is_completed: false, recurrence: null }]);
+                            setNewChoreTitle(""); setShowAddChore(false);
+                          }
+                        })()}
+                        placeholder="Quick add chore..."
+                        autoFocus
+                        className="flex-1 h-10 bg-card rounded-xl px-3 text-sm text-foreground placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                      <button
+                        onClick={async () => {
+                          if (!newChoreTitle.trim() || !user || !partnerPair) return;
+                          const { data, error } = await supabase.from("chores").insert({
+                            title: newChoreTitle.trim(), user_id: user.id, partner_pair: partnerPair,
+                          }).select().single();
+                          if (!error && data) {
+                            setUrgentChores(prev => [...prev, { id: data.id, title: data.title, is_completed: false, recurrence: null }]);
+                            setNewChoreTitle(""); setShowAddChore(false);
+                          }
+                        }}
+                        disabled={!newChoreTitle.trim()}
+                        className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40"
+                      >Add</button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
 
@@ -422,13 +468,12 @@ export default function HomePage() {
 
         </motion.div>
 
-        {/* Floating New Event FAB */}
+        {/* Floating New Event FAB - icon only */}
         <button
           onClick={() => setShowAddEvent(true)}
-          className="fixed bottom-20 right-5 max-w-lg love-gradient text-primary-foreground px-5 py-3 rounded-btn flex items-center gap-2 shadow-elevated text-sm font-semibold z-40"
+          className="fixed bottom-20 right-5 max-w-lg love-gradient text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-elevated z-40"
         >
-          <Plus size={16} />
-          New Event
+          <Plus size={20} />
         </button>
 
         <AddEventModal

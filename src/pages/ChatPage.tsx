@@ -24,6 +24,8 @@ interface ProfileInfo {
   avatar_url: string | null;
 }
 
+type ChatFilter = "all" | "media" | "links" | "shared";
+
 export default function ChatPage() {
   const { user } = useAuth();
   const { partnerPair, loading: ppLoading, userId } = usePartnerPair();
@@ -35,6 +37,7 @@ export default function ChatPage() {
   const [partnerProfile, setPartnerProfile] = useState<ProfileInfo | null>(null);
   const [sending, setSending] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [chatFilter, setChatFilter] = useState<ChatFilter>("all");
 
   // Fetch partner profile
   useEffect(() => {
@@ -103,9 +106,18 @@ export default function ChatPage() {
   const isMe = (msg: ChatMsg) => msg.user_id === user?.id;
   const partnerInitial = partnerProfile?.display_name?.charAt(0).toUpperCase() || "P";
 
+  // Filter messages
+  const filteredMessages = messages.filter(msg => {
+    if (chatFilter === "all") return true;
+    if (chatFilter === "media") return msg.type === "image";
+    if (chatFilter === "links") return msg.type === "text" && /https?:\/\/\S+/.test(msg.message);
+    if (chatFilter === "shared") return msg.type === "text" && (msg.message.includes("Reacted to") || msg.message.includes("🧹") || msg.message.includes("🛒"));
+    return true;
+  });
+
   // Group messages by date
   const groupedMessages: { date: string; msgs: ChatMsg[] }[] = [];
-  messages.forEach(msg => {
+  filteredMessages.forEach(msg => {
     const dateKey = format(new Date(msg.created_at), "yyyy-MM-dd");
     const last = groupedMessages[groupedMessages.length - 1];
     if (last && last.date === dateKey) {
@@ -146,9 +158,24 @@ export default function ChatPage() {
           <button className="w-9 h-9 rounded-full flex items-center justify-center"><MoreVertical size={18} className="text-foreground" /></button>
         </div>
 
+        {/* Chat Filter Tabs */}
+        <div className="px-5 py-2 flex gap-2 overflow-x-auto border-b border-border/30">
+          {([
+            { key: "all" as ChatFilter, label: "All" },
+            { key: "media" as ChatFilter, label: "Media" },
+            { key: "links" as ChatFilter, label: "Links" },
+            { key: "shared" as ChatFilter, label: "Reactions" },
+          ]).map(tab => (
+            <button key={tab.key} onClick={() => setChatFilter(tab.key)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                chatFilter === tab.key ? "bg-foreground text-background" : "bg-muted text-muted-foreground"
+              }`}>{tab.label}</button>
+          ))}
+        </div>
+
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-          {messages.length === 0 && (
+          {filteredMessages.length === 0 && (
             <div className="text-center py-12">
               <p className="text-4xl mb-3">💬</p>
               <p className="text-sm font-semibold text-foreground mb-1">Start your conversation</p>
