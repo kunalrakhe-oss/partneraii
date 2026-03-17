@@ -230,6 +230,7 @@ export default function ProfilePage() {
         { icon: User, label: "Personal Information", sub: "Name, Phone" },
         { icon: Bell, label: "Notifications", sub: "Reminders & Alerts" },
         { icon: Heart, label: "Couple Connection", sub: partnerName ? `Connected to ${partnerName}` : "Invite your partner" },
+        ...(partnerId ? [{ icon: UserMinus, label: "Remove Partner", sub: `Disconnect from ${partnerName || "partner"}` }] : []),
       ],
     },
     {
