@@ -173,11 +173,18 @@ export default function ProfilePage() {
     try {
       const { error } = await supabase
         .from("profiles")
-        .update({ display_name: editName.trim(), phone: editPhone.trim() || null })
+        .update({
+          display_name: editName.trim(),
+          phone: editPhone.trim() || null,
+          gender: editGender.trim() || null,
+          birthday: editBirthday || null,
+        } as any)
         .eq("user_id", user.id);
       if (error) throw error;
       setDisplayName(editName.trim());
       setPhone(editPhone.trim());
+      setGender(editGender.trim());
+      setBirthday(editBirthday);
       setActiveSheet(null);
       toast({ title: "Profile updated! ✨" });
     } catch (err: any) {
