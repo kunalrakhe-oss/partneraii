@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   ArrowLeft, Plus, Check, Trash2, Edit3, X, ChevronDown, ChevronRight,
-  Sparkles, PartyPopper, Users, User, Heart, CalendarDays, Clock
+  Sparkles, PartyPopper, Users, User, Heart, CalendarDays, Clock, Repeat
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,6 +26,8 @@ interface DietItem {
   is_completed: boolean;
   log_date: string;
   event_time: string | null;
+  recurrence: string;
+  recurrence_day: number | null;
   created_at: string;
 }
 
@@ -45,6 +47,9 @@ const ASSIGN_OPTIONS = [
   { value: "partner", label: "Partner", icon: Heart },
   { value: "both", label: "Both", icon: Users },
 ];
+
+const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 // ─── Confetti Component ──────────────────────────────────────────────────────
 
@@ -90,7 +95,7 @@ function DietFormModal({
   editing: DietItem | null;
   category: string;
   defaultDate: string;
-  onSave: (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string }) => void;
+  onSave: (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string; recurrence: string; recurrence_day: number | null }) => void;
   onClose: () => void;
 }) {
   const [desc, setDesc] = useState(editing?.description || "");
@@ -100,6 +105,10 @@ function DietFormModal({
   const [assignedTo, setAssignedTo] = useState(editing?.assigned_to || "me");
   const [logDate, setLogDate] = useState(editing?.log_date || defaultDate);
   const [eventTime, setEventTime] = useState(editing?.event_time || "");
+  const [recurrence, setRecurrence] = useState(editing?.recurrence || "once");
+  const [recurrenceDay, setRecurrenceDay] = useState<number | null>(
+    editing?.recurrence_day ?? new Date(defaultDate + "T00:00:00").getDay()
+  );
 
   return (
     <>
@@ -142,7 +151,33 @@ function DietFormModal({
             </div>
           </div>
 
-          {/* Category */}
+          {/* Frequency */}
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 flex items-center gap-1">
+            <Repeat size={12} /> Frequency
+          </label>
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {(["once", "daily", "weekly"] as const).map(r => (
+              <button key={r} onClick={() => setRecurrence(r)}
+                className={`px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  recurrence === r ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
+                }`}>
+                {r === "once" ? "Once" : r === "daily" ? "🔁 Daily" : "🔁 Weekly"}
+              </button>
+            ))}
+          </div>
+          {recurrence === "weekly" && (
+            <div className="flex gap-1.5 mb-4">
+              {DAY_LABELS.map((label, idx) => (
+                <button key={idx} onClick={() => setRecurrenceDay(idx)}
+                  className={`flex-1 h-9 rounded-xl text-xs font-bold transition-all ${
+                    recurrenceDay === idx ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                  }`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Category</label>
           <div className="grid grid-cols-3 gap-2 mb-4">
             {CATEGORIES.map(c => (
@@ -186,7 +221,7 @@ function DietFormModal({
 
           <div className="flex gap-3">
             <button onClick={onClose} className="flex-1 h-11 rounded-2xl bg-muted text-foreground text-sm font-semibold">Cancel</button>
-            <button onClick={() => { if (desc.trim()) onSave({ description: desc.trim(), category: cat, notes: notes.trim() || "", assigned_to: assignedTo, calories: cal ? parseInt(cal) : null, log_date: logDate, event_time: eventTime }); }}
+            <button onClick={() => { if (desc.trim()) onSave({ description: desc.trim(), category: cat, notes: notes.trim() || "", assigned_to: assignedTo, calories: cal ? parseInt(cal) : null, log_date: logDate, event_time: eventTime, recurrence, recurrence_day: recurrence === "weekly" ? recurrenceDay : null }); }}
               disabled={!desc.trim()}
               className="flex-1 h-11 rounded-2xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40">
               {editing ? "Update" : "Add"}
@@ -285,6 +320,8 @@ function CategorySection({
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <span className="text-[10px] text-muted-foreground">{assignLabel}</span>
                         {item.event_time && <span className="text-[10px] text-muted-foreground">· 🕐 {item.event_time}</span>}
+                        {item.recurrence === "daily" && <span className="text-[10px] font-semibold text-primary">· 🔁 Daily</span>}
+                        {item.recurrence === "weekly" && <span className="text-[10px] font-semibold text-primary">· 🔁 Weekly · {DAY_NAMES[item.recurrence_day ?? 0]}</span>}
                         {item.notes && <span className="text-[10px] text-muted-foreground">· {item.notes}</span>}
                         {item.calories && <span className="text-[10px] text-muted-foreground">· {item.calories} cal</span>}
                       </div>
@@ -331,7 +368,9 @@ export default function DietPage() {
 
   useEffect(() => {
     if (!partnerPair) return;
-    supabase.from("diet_logs").select("*").eq("partner_pair", partnerPair).eq("log_date", today)
+    const dayOfWeek = new Date().getDay();
+    supabase.from("diet_logs").select("*").eq("partner_pair", partnerPair)
+      .or(`log_date.eq.${today},recurrence.eq.daily,and(recurrence.eq.weekly,recurrence_day.eq.${dayOfWeek})`)
       .order("created_at", { ascending: true })
       .then(({ data }) => { if (data) setItems(data as DietItem[]); });
   }, [partnerPair, today]);
@@ -373,17 +412,17 @@ export default function DietPage() {
 
   // ─── Actions ───────────────────────────────────────────────────────────────
 
-  const addItem = async (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string }) => {
+  const addItem = async (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string; recurrence: string; recurrence_day: number | null }) => {
     if (!user || !partnerPair || saving) return;
     setSaving(true);
     const { data: row, error } = await supabase.from("diet_logs").insert({
       user_id: user.id, partner_pair: partnerPair, meal_type: data.category,
       description: data.description, notes: data.notes || null, assigned_to: data.assigned_to,
       calories: data.calories, log_date: data.log_date, event_time: data.event_time || null,
+      recurrence: data.recurrence, recurrence_day: data.recurrence_day,
     }).select().single();
     if (!error && row) {
-      if (row.log_date === today) setItems(prev => [...prev, row as DietItem]);
-      // Sync to calendar
+      setItems(prev => [...prev, row as DietItem]);
       await supabase.from("calendar_events").insert({
         title: `🥗 ${data.description}`,
         description: `Diet: ${CATEGORIES.find(c => c.key === data.category)?.label || data.category}${data.notes ? ` — ${data.notes}` : ""}`,
@@ -392,7 +431,7 @@ export default function DietPage() {
         event_time: data.event_time || null,
         assigned_to: data.assigned_to,
         priority: "low",
-        recurrence: "once",
+        recurrence: data.recurrence,
         user_id: user.id,
         partner_pair: partnerPair,
       });
@@ -402,16 +441,16 @@ export default function DietPage() {
     setSaving(false);
   };
 
-  const updateItem = async (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string }) => {
+  const updateItem = async (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string; recurrence: string; recurrence_day: number | null }) => {
     if (!editingItem || saving) return;
     setSaving(true);
     const { error } = await supabase.from("diet_logs").update({
       meal_type: data.category, description: data.description, notes: data.notes || null,
       assigned_to: data.assigned_to, calories: data.calories, log_date: data.log_date,
-      event_time: data.event_time || null,
+      event_time: data.event_time || null, recurrence: data.recurrence, recurrence_day: data.recurrence_day,
     }).eq("id", editingItem.id);
     if (!error) {
-      setItems(prev => prev.map(i => i.id === editingItem.id ? { ...i, meal_type: data.category, description: data.description, notes: data.notes || null, assigned_to: data.assigned_to, calories: data.calories, log_date: data.log_date, event_time: data.event_time || null } : i));
+      setItems(prev => prev.map(i => i.id === editingItem.id ? { ...i, meal_type: data.category, description: data.description, notes: data.notes || null, assigned_to: data.assigned_to, calories: data.calories, log_date: data.log_date, event_time: data.event_time || null, recurrence: data.recurrence, recurrence_day: data.recurrence_day } : i));
       // Update matching calendar event
       await supabase.from("calendar_events")
         .update({
@@ -420,6 +459,7 @@ export default function DietPage() {
           event_date: data.log_date,
           event_time: data.event_time || null,
           assigned_to: data.assigned_to,
+          recurrence: data.recurrence,
         })
         .eq("category", "diet")
         .eq("event_date", editingItem.log_date)

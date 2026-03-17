@@ -167,6 +167,8 @@ export type Database = {
           meal_type: string
           notes: string | null
           partner_pair: string
+          recurrence: string
+          recurrence_day: number | null
           user_id: string
         }
         Insert: {
@@ -181,6 +183,8 @@ export type Database = {
           meal_type?: string
           notes?: string | null
           partner_pair: string
+          recurrence?: string
+          recurrence_day?: number | null
           user_id: string
         }
         Update: {
@@ -195,6 +199,8 @@ export type Database = {
           meal_type?: string
           notes?: string | null
           partner_pair?: string
+          recurrence?: string
+          recurrence_day?: number | null
           user_id?: string
         }
         Relationships: []
