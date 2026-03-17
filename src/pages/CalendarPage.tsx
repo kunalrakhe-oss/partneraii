@@ -382,6 +382,7 @@ export default function CalendarPage() {
           {/* Title row with inline view picker — Apple Calendar style */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
+              <ProfileButton />
               <button onClick={navigatePrev} className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
                 <ChevronLeft size={18} />
               </button>
@@ -428,7 +429,6 @@ export default function CalendarPage() {
                 )}
               </AnimatePresence>
             </div>
-            <ProfileButton />
           </div>
           {/* Subtitle */}
           <p className="text-[10px] text-primary font-semibold uppercase tracking-wider mt-0.5 ml-9">
