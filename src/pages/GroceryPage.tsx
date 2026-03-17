@@ -401,15 +401,23 @@ function EditSheet({
   const [showDate, setShowDate] = useState(!!((item as any).due_date));
   const [isFlagged, setIsFlagged] = useState((item as any).is_flagged || false);
   const [priority, setPriority] = useState((item as any).priority || "none");
+  const [imgFile, setImgFile] = useState<File | null>(null);
+  const [imgPreview, setImgPreview] = useState("");
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) return;
+    let imageUrl = (item as any).image_url || null;
+    if (imgFile) {
+      const uploaded = await uploadAttachment(imgFile, item.user_id);
+      if (uploaded) imageUrl = uploaded;
+    }
     onSave(item.id, {
       name: name.trim(),
       notes: notes.trim() || null,
       due_date: showDate && dueDate ? format(dueDate, "yyyy-MM-dd") : null,
       is_flagged: isFlagged,
       priority,
+      image_url: imageUrl,
     });
   };
 
