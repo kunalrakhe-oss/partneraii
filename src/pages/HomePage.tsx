@@ -39,6 +39,8 @@ export default function HomePage() {
   const [sendingReaction, setSendingReaction] = useState(false);
   const [reactionMessage, setReactionMessage] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showAddChore, setShowAddChore] = useState(false);
+  const [newChoreTitle, setNewChoreTitle] = useState("");
   const unreadCount = useNotificationCount();
 
   // Analytics
