@@ -58,6 +58,9 @@ const FOCUS_OPTIONS = [
   { label: "Core", emoji: "🎯", value: "core and abs" },
   { label: "Cardio", emoji: "🏃", value: "cardio and conditioning" },
   { label: "Yoga", emoji: "🧘", value: "yoga and flexibility" },
+  { label: "Kegel", emoji: "🫀", value: "kegel exercises for pelvic floor" },
+  { label: "Meditation", emoji: "🧠", value: "meditation and breathing" },
+  { label: "Walking", emoji: "🚶", value: "walking and light movement" },
 ];
 
 const MUSCLE_COLORS: Record<string, string> = {
