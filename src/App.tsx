@@ -55,6 +55,7 @@ function AppRoutes() {
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/connect" element={<PartnerConnectPage />} />
+        <Route path="/memories" element={<MemoriesPage />} />
       </Route>
       <Route path="/welcome" element={<Navigate to="/" replace />} />
       <Route path="*" element={<NotFound />} />
