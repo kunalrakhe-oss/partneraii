@@ -486,67 +486,34 @@ export default function CalendarPage() {
     await refreshEvents();
   };
 
-  // Schedule/reschedule an item to a specific time slot (15-min granularity)
   const scheduleItem = async (event: CalendarEvent, time: string, targetDate?: string) => {
     const newDate = targetDate || event.event_date;
-    if (event._source === "chore") {
+    if (event._source === "chore" || event._source === "grocery") {
       if (!user || !partnerPair) return;
-      const { data, error } = await supabase
-        .from("calendar_events")
-        .insert({
-          title: event.title,
-          description: event.description,
-          category: "chore",
-          event_date: newDate,
-          event_time: time,
-          assigned_to: event.assigned_to,
-          priority: event.priority,
-          recurrence: "once",
-          user_id: user.id,
-          partner_pair: partnerPair,
-        })
-        .select()
-        .single();
+      const { error } = await supabase.from("calendar_events").insert({
+        title: event.title,
+        description: event.description,
+        category: event._source === "chore" ? "chore" : "grocery-due",
+        event_date: newDate,
+        event_time: time,
+        assigned_to: event._source === "grocery" ? "both" : event.assigned_to,
+        priority: event.priority,
+        recurrence: "once",
+        user_id: user.id,
+        partner_pair: partnerPair,
+      });
       if (error) { toast.error("Failed to schedule"); return; }
-      setEvents((prev) => [...prev.filter((e) => e.id !== event.id), data]);
       toast.success(`Scheduled at ${time} ⏰`);
-      return;
-    }
-    if (event._source === "grocery") {
-      if (!user || !partnerPair) return;
-      const { data, error } = await supabase
-        .from("calendar_events")
-        .insert({
-          title: event.title,
-          description: event.description,
-          category: "grocery-due",
-          event_date: newDate,
-          event_time: time,
-          assigned_to: "both",
-          priority: event.priority,
-          recurrence: "once",
-          user_id: user.id,
-          partner_pair: partnerPair,
-        })
-        .select()
-        .single();
-      if (error) { toast.error("Failed to schedule"); return; }
-      setEvents((prev) => [...prev.filter((e) => e.id !== event.id), data]);
-      toast.success(`Scheduled at ${time} ⏰`);
+      await refreshEvents();
       return;
     }
     // Regular calendar event — update time (and optionally date)
     const updatePayload: any = { event_time: time };
     if (targetDate) updatePayload.event_date = targetDate;
-    const { data, error } = await supabase
-      .from("calendar_events")
-      .update(updatePayload)
-      .eq("id", event.id)
-      .select()
-      .single();
+    const { error } = await supabase.from("calendar_events").update(updatePayload).eq("id", event.id);
     if (error) { toast.error("Failed to reschedule"); return; }
-    setEvents((prev) => prev.map((ev) => (ev.id === event.id ? data : ev)));
     toast.success(`Moved to ${time} ⏰`);
+    await refreshEvents();
   };
   if (ppLoading) {
     return (
