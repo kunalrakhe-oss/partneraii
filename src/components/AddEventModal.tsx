@@ -348,6 +348,16 @@ export default function AddEventModal({
                       </div>
                     </div>
                   )}
+                  {/* Photo attachment */}
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-muted-foreground">Photo (optional)</label>
+                    <MediaPicker
+                      imageUrl={null}
+                      preview={formFilePreview}
+                      onFileSelect={(file, url) => { setFormFile(file); setFormFilePreview(url); }}
+                      onClear={() => { setFormFile(null); setFormFilePreview(""); }}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="shrink-0 border-t border-border bg-card px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
