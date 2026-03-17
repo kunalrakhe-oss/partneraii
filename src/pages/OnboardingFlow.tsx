@@ -44,7 +44,13 @@ export default function OnboardingFlow() {
   const { exitDemo } = useDemo();
   const { toast } = useToast();
 
-  const [step, setStep] = useState<Step>("entry");
+  const [step, setStep] = useState<Step>(() => {
+    // Resume at setup-names if user just authenticated via "real" path
+    if (user && localStorage.getItem("lovelist-demo-dismissed") === "true" && localStorage.getItem("lovelist-onboarding-done") !== "true") {
+      return "setup-names";
+    }
+    return "entry";
+  });
   const [slideIndex, setSlideIndex] = useState(0);
   const [yourName, setYourName] = useState("");
   const [partnerName, setPartnerName] = useState("");
@@ -309,6 +315,8 @@ export default function OnboardingFlow() {
             <div className="w-full space-y-3">
               <button
                 onClick={() => {
+                  // Exit demo mode since user chose the real path
+                  exitDemo();
                   if (user) {
                     setStep("setup-names");
                   } else {
