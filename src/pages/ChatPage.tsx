@@ -256,7 +256,7 @@ export default function ChatPage() {
             <div className="text-center py-12">
               <p className="text-4xl mb-3">💬</p>
               <p className="text-sm font-semibold text-foreground mb-1">Start your conversation</p>
-              <p className="text-xs text-muted-foreground">Messages are private between you and {partnerProfile?.display_name || "your partner"}</p>
+              <p className="text-xs text-muted-foreground">Messages are private between you and {partnerFirstName}</p>
             </div>
           )}
 
