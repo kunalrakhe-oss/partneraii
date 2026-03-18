@@ -25,6 +25,8 @@ import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NotFound from "@/pages/NotFound";
 import OnboardingFlow from "@/pages/OnboardingFlow";
 import InstallPrompt from "@/components/InstallPrompt";
+import FullscreenPrompt from "@/components/FullscreenPrompt";
+import FullscreenExitButton from "@/components/FullscreenExitButton";
 
 const queryClient = new QueryClient();
 
