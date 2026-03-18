@@ -347,13 +347,13 @@ export default function WorkoutPage() {
 
   // ─── Actions ───────────────────────────────────────────────────────────────
 
-  const generatePlan = async (focus: string) => {
+  const generatePlan = async (focus: string, level = "intermediate", duration = 45) => {
     setGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("fitbot-chat", {
         body: {
           type: "generate-plan",
-          context: { focus, level: "intermediate", duration: 45 },
+          context: { focus, level, duration, equipment: focus.includes("calisthenics") ? "No equipment — bodyweight only" : undefined },
           language: localStorage.getItem("lovelist-language") || "en",
         },
       });
