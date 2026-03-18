@@ -702,6 +702,27 @@ export default function ChoresPage() {
                             )}
                           </div>
 
+                          {/* Linked List Items */}
+                          {linkedItemsMap[chore.id] && linkedItemsMap[chore.id].length > 0 && (
+                            <div className="mx-4 mb-3 rounded-xl bg-muted/40 p-4">
+                              <p className="text-xs font-bold text-foreground flex items-center gap-1.5 mb-3">
+                                <Link2 size={13} className="text-primary" /> Linked List Items
+                              </p>
+                              <div className="space-y-2">
+                                {linkedItemsMap[chore.id].map(item => {
+                                  const typeInfo = LIST_TYPE_LABELS[item.list_type] || { label: item.list_type, emoji: "📦" };
+                                  return (
+                                    <div key={item.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-card/60">
+                                      <span className="text-sm">{typeInfo.emoji}</span>
+                                      <span className="text-xs text-foreground flex-1 truncate">{item.name}</span>
+                                      <span className="text-[10px] text-muted-foreground">{typeInfo.label}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
                           {/* Edit form */}
                           {editingId === chore.id && (
                             <div className="mx-4 mb-3 rounded-xl bg-muted/60 p-4 space-y-3">
