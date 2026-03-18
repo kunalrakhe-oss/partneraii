@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import ProfileButton from "@/components/ProfileButton";
-import { categorizeGroceryItem } from "@/lib/store";
+import { categorizeGroceryItem, categorizeListItem } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ import PageTransition from "@/components/PageTransition";
 import type { Tables } from "@/integrations/supabase/types";
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_GROCERY_ITEMS } from "@/lib/demoData";
+
 
 type GroceryRow = Tables<"grocery_items">;
 
@@ -37,27 +38,46 @@ const DEFAULT_LIST_CONFIG: Record<string, { placeholder: string; emptyEmoji: str
   date: { placeholder: "Add a date idea...", emptyEmoji: "💕", emptyText: "No date ideas yet", emptyHint: "Collect fun things to do together" },
 };
 
-const CATEGORY_DISPLAY: Record<string, string> = {
-  fruits: "PRODUCE",
-  vegetables: "PRODUCE",
-  dairy: "DAIRY & EGGS",
-  meat: "MEAT & SEAFOOD",
-  household: "HOUSEHOLD",
-  snacks: "SNACKS",
-  beverages: "BEVERAGES",
-  bakery: "BAKERY",
-  other: "OTHER",
+const CATEGORY_DISPLAY: Record<string, Record<string, string>> = {
+  grocery: {
+    fruits: "PRODUCE", vegetables: "PRODUCE", dairy: "DAIRY & EGGS", meat: "MEAT & SEAFOOD",
+    household: "HOUSEHOLD", snacks: "SNACKS", beverages: "BEVERAGES", bakery: "BAKERY", other: "OTHER",
+  },
+  todo: {
+    work: "WORK", home: "HOME", errands: "ERRANDS", health: "HEALTH & FITNESS", personal: "PERSONAL", general: "GENERAL",
+  },
+  gift: {
+    tech: "TECH & GADGETS", fashion: "FASHION & ACCESSORIES", experience: "EXPERIENCES",
+    home_decor: "HOME & DECOR", books_media: "BOOKS & MEDIA", other_gifts: "OTHER IDEAS",
+  },
+  travel: {
+    clothing: "CLOTHING", toiletries: "TOILETRIES", electronics: "ELECTRONICS",
+    documents: "DOCUMENTS", essentials: "ESSENTIALS", misc: "MISCELLANEOUS",
+  },
+  date: {
+    outdoor: "OUTDOOR", food_drink: "FOOD & DRINKS", entertainment: "ENTERTAINMENT",
+    adventure: "ADVENTURE", cozy: "COZY AT HOME", other_ideas: "OTHER IDEAS",
+  },
 };
 
 const CATEGORY_COLOR: Record<string, string> = {
-  PRODUCE: "bg-success",
-  "DAIRY & EGGS": "bg-primary",
-  "MEAT & SEAFOOD": "bg-accent",
-  HOUSEHOLD: "bg-warning",
-  SNACKS: "bg-secondary",
-  BEVERAGES: "bg-[hsl(210,60%,55%)]",
-  BAKERY: "bg-[hsl(24,80%,58%)]",
-  OTHER: "bg-muted-foreground",
+  // Grocery
+  PRODUCE: "bg-success", "DAIRY & EGGS": "bg-primary", "MEAT & SEAFOOD": "bg-accent",
+  HOUSEHOLD: "bg-warning", SNACKS: "bg-secondary", "BEVERAGES": "bg-[hsl(210,60%,55%)]",
+  "BAKERY": "bg-[hsl(24,80%,58%)]", OTHER: "bg-muted-foreground",
+  // To-Do
+  WORK: "bg-primary", HOME: "bg-warning", ERRANDS: "bg-[hsl(210,60%,55%)]",
+  "HEALTH & FITNESS": "bg-success", PERSONAL: "bg-secondary", GENERAL: "bg-muted-foreground",
+  // Gift
+  "TECH & GADGETS": "bg-primary", "FASHION & ACCESSORIES": "bg-secondary",
+  EXPERIENCES: "bg-success", "HOME & DECOR": "bg-warning", "BOOKS & MEDIA": "bg-[hsl(270,60%,55%)]",
+  "OTHER IDEAS": "bg-muted-foreground",
+  // Travel
+  CLOTHING: "bg-secondary", TOILETRIES: "bg-[hsl(24,80%,58%)]", ELECTRONICS: "bg-primary",
+  DOCUMENTS: "bg-warning", ESSENTIALS: "bg-success", MISCELLANEOUS: "bg-muted-foreground",
+  // Date
+  OUTDOOR: "bg-success", "FOOD & DRINKS": "bg-[hsl(24,80%,58%)]", ENTERTAINMENT: "bg-primary",
+  ADVENTURE: "bg-accent", "COZY AT HOME": "bg-secondary",
 };
 
 export default function GroceryPage() {
@@ -124,10 +144,11 @@ export default function GroceryPage() {
 
   const addItem = async () => {
     if (!input.trim() || !userId || !partnerPair) return;
-    const category = activeList === "grocery" ? categorizeGroceryItem(input.trim()) : "other";
+    const category = activeList === "grocery" ? categorizeGroceryItem(input.trim()) : categorizeListItem(input.trim(), activeList);
     
-    // Show categorization animation for grocery items
-    if (activeList === "grocery" && category !== "other") {
+    // Show categorization animation when item gets a specific category
+    const fallbacks = ["other", "general", "misc", "other_gifts", "other_ideas"];
+    if (!fallbacks.includes(category)) {
       setCategorizingAnim(true);
       setTimeout(() => setCategorizingAnim(false), 1200);
     }
@@ -214,17 +235,16 @@ export default function GroceryPage() {
 
   const uncheckedCount = items.filter(i => !i.is_checked).length;
 
-  // Group by display category (only for grocery)
+  // Group by display category for all list types
+  const catMap = CATEGORY_DISPLAY[activeList] || {};
   const grouped: Record<string, GroceryRow[]> = {};
-  if (activeList === "grocery") {
-    items.forEach(item => {
-      const display = CATEGORY_DISPLAY[item.category ?? "other"] || "OTHER";
-      (grouped[display] = grouped[display] || []).push(item);
-    });
-    Object.keys(grouped).forEach(key => {
-      grouped[key].sort((a, b) => Number(a.is_checked) - Number(b.is_checked) || ((a as any).sort_order ?? 0) - ((b as any).sort_order ?? 0));
-    });
-  }
+  items.forEach(item => {
+    const display = catMap[item.category ?? "other"] || catMap["other"] || catMap["general"] || catMap["misc"] || catMap["other_gifts"] || catMap["other_ideas"] || "OTHER";
+    (grouped[display] = grouped[display] || []).push(item);
+  });
+  Object.keys(grouped).forEach(key => {
+    grouped[key].sort((a, b) => Number(a.is_checked) - Number(b.is_checked) || ((a as any).sort_order ?? 0) - ((b as any).sort_order ?? 0));
+  });
 
   if (pairLoading || loading) {
     return (
@@ -236,11 +256,7 @@ export default function GroceryPage() {
     );
   }
 
-  const sortedItems = activeList !== "grocery"
-    ? [...items].sort((a, b) => Number(a.is_checked) - Number(b.is_checked) || ((a as any).sort_order ?? 0) - ((b as any).sort_order ?? 0))
-    : [];
-
-  const uncheckedItems = activeList !== "grocery" ? sortedItems.filter(i => !i.is_checked) : [];
+  const hasMultipleCategories = Object.keys(grouped).length > 1;
 
   return (
     <PageTransition>
@@ -254,11 +270,9 @@ export default function GroceryPage() {
               <p className="text-xs text-muted-foreground">{t("lists.sharedList")} • {uncheckedCount} {t("lists.itemsLeft")}</p>
             </div>
           </div>
-          {activeList === "grocery" && (
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card shadow-card text-xs font-medium text-muted-foreground border border-border">
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card shadow-card text-xs font-medium text-muted-foreground border border-border">
               <Sparkles size={12} /> AI Sorting
             </button>
-          )}
         </div>
 
         {/* List Tabs */}
@@ -412,7 +426,7 @@ export default function GroceryPage() {
             <p className="text-sm text-muted-foreground">{config.emptyText}</p>
             <p className="text-xs text-muted-foreground mt-1">{config.emptyHint}</p>
           </div>
-        ) : activeList === "grocery" ? (
+        ) : hasMultipleCategories ? (
           <div className="space-y-5">
             {Object.entries(grouped).map(([displayCat, catItems]) => {
               const uncheckedCat = catItems.filter(i => !i.is_checked);
@@ -444,17 +458,20 @@ export default function GroceryPage() {
         ) : (
           <div className="space-y-2">
             <AnimatePresence>
-              {sortedItems.map(item => (
-                <ItemRow
-                  key={item.id}
-                  item={item}
-                  onToggle={toggleItem}
-                  onMove={moveItem}
-                  onEdit={setEditingItem}
-                  isFirst={uncheckedItems[0]?.id === item.id}
-                  isLast={uncheckedItems[uncheckedItems.length - 1]?.id === item.id}
-                />
-              ))}
+              {Object.values(grouped).flat().map((item, _i, arr) => {
+                const unchecked = arr.filter(i => !i.is_checked);
+                return (
+                  <ItemRow
+                    key={item.id}
+                    item={item}
+                    onToggle={toggleItem}
+                    onMove={moveItem}
+                    onEdit={setEditingItem}
+                    isFirst={unchecked[0]?.id === item.id}
+                    isLast={unchecked[unchecked.length - 1]?.id === item.id}
+                  />
+                );
+              })}
             </AnimatePresence>
           </div>
         )}
