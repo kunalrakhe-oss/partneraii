@@ -5,6 +5,7 @@ import PartnerNotifications from "@/components/PartnerNotifications";
 import DemoBanner from "@/components/DemoBanner";
 import PostAuthInstallPrompt from "@/components/PostAuthInstallPrompt";
 import VoiceAssistant from "@/components/VoiceAssistant";
+import CompletedTasksCleanup from "@/components/CompletedTasksCleanup";
 
 const tabs = [
   { to: "/", icon: Home, label: "Home" },
