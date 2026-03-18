@@ -559,7 +559,7 @@ export default function HomePage() {
                             {myMood.note && <p className="text-xs text-muted-foreground mt-0.5 truncate">"{myMood.note}"</p>}
                           </div>
                           <button onClick={() => navigate("/mood")} className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1.5 rounded-full shrink-0">
-                            {t("common.change") || "Change"}
+                            {t("common.change")}
                           </button>
                         </div>
                       </div>
