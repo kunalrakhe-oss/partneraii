@@ -64,6 +64,7 @@ export default function GroceryPage() {
   const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
   const { toast } = useToast();
   const { isDemoMode } = useDemo();
+  const { t } = useLanguage();
   const [allItems, setAllItems] = useState<GroceryRow[]>([]);
   const [categorizingAnim, setCategorizingAnim] = useState(false);
   const [input, setInput] = useState("");
