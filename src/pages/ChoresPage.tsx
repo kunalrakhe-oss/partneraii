@@ -696,6 +696,12 @@ export default function ChoresPage() {
                         {isExpanded && (
                           <>
                             <button
+                              onClick={() => startEditing(chore)}
+                              className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
+                            >
+                              <Pencil size={14} className="text-primary" />
+                            </button>
+                            <button
                               onClick={() => deleteChore(chore.id)}
                               className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors"
                             >
