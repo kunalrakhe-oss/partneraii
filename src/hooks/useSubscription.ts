@@ -131,7 +131,7 @@ export function useSubscription(): SubscriptionState {
     } finally {
       setLoading(false);
     }
-  }, [session?.access_token]);
+  }, [session?.access_token, user?.created_at]);
 
   useEffect(() => {
     refreshSubscription();
