@@ -19,6 +19,7 @@ export default function PartnerConnectPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [myCode, setMyCode] = useState<string | null>(null);
   const [partnerCode, setPartnerCode] = useState("");
   const [copied, setCopied] = useState(false);
