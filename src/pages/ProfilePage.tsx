@@ -295,6 +295,10 @@ export default function ProfilePage() {
   const { isSupported: fullscreenSupported, isFullscreen, toggleFullscreen } = useFullscreen();
   const { isSupported: voiceSupported, enabled: voiceEnabled, toggleEnabled: toggleVoice } = useWakeWord();
   const navigate = useNavigate();
+
+  // Prompt-disable toggles
+  const [installPromptDisabled, setInstallPromptDisabled] = useState(() => localStorage.getItem("lovelist-install-prompt-disabled") === "true");
+  const [fullscreenPromptDisabled, setFullscreenPromptDisabled] = useState(() => localStorage.getItem("lovelist-fullscreen-prompt-disabled") === "true");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
