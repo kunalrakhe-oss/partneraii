@@ -795,7 +795,7 @@ export default function ProfilePage() {
                   disabled={!accessCodeInput.trim()}
                   className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-primary-foreground text-sm font-semibold disabled:opacity-50"
                 >
-                  Activate
+                  {t("common.activate")}
                 </button>
               </div>
             </motion.div>
