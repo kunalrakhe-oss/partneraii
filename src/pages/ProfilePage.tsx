@@ -763,8 +763,8 @@ export default function ProfilePage() {
                   <KeyRound size={20} className="text-primary-foreground" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-foreground">Enter Access Code</h3>
-                  <p className="text-[10px] text-muted-foreground">Unlock all premium features</p>
+                   <h3 className="text-sm font-bold text-foreground">{t("profile.enterAccessCode")}</h3>
+                   <p className="text-[10px] text-muted-foreground">{t("profile.unlockAllFeatures")}</p>
                 </div>
               </div>
               <input
