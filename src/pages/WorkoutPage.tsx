@@ -542,7 +542,7 @@ export default function WorkoutPage() {
             {/* ── Plan Picker (no plan yet) ───────────────────────────────── */}
             {!showChat && !plan && (
               <motion.div key="picker" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="px-5 py-4 space-y-5">
+                className="px-5 py-4 pb-24 space-y-5">
 
                 {/* Stats row */}
                 <div className="grid grid-cols-3 gap-3">
