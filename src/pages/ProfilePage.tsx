@@ -462,6 +462,9 @@ export default function ProfilePage() {
     }
   };
 
+  const tierLabel = tier === "premium" ? "Premium" : tier === "pro" ? "Pro" : "Free";
+  const tierSub = subscribed ? `${tierLabel} plan active` : "Free plan — upgrade anytime";
+
   const settingsSections = [
     {
       title: "Account Settings",
@@ -470,6 +473,12 @@ export default function ProfilePage() {
         { icon: Bell, label: "Notifications", sub: "Reminders & Alerts" },
         { icon: Heart, label: "Partner Profile", sub: partnerName ? `Connected to ${partnerName}` : "Invite your partner" },
         ...(partnerId ? [{ icon: UserMinus, label: "Remove Partner", sub: `Disconnect from ${partnerName || "partner"}` }] : []),
+      ],
+    },
+    {
+      title: "Subscription",
+      items: [
+        { icon: Crown, label: "Subscription & Billing", sub: tierSub },
       ],
     },
     {
