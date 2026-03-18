@@ -621,6 +621,50 @@ export default function DietPage() {
           )}
         </div>
 
+        {/* AI Suggestions Panel */}
+        <AnimatePresence>
+          {aiSuggestions && aiSuggestions.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+              className="bg-gradient-to-r from-primary/10 via-card to-secondary/10 rounded-2xl p-4 border border-primary/20 mb-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Bot size={16} className="text-primary" />
+                  <p className="text-sm font-bold text-foreground">AI Diet Suggestions</p>
+                </div>
+                <button onClick={() => setAiSuggestions(null)} className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                  <X size={12} className="text-muted-foreground" />
+                </button>
+              </div>
+              {aiTip && (
+                <p className="text-xs text-muted-foreground mb-3 bg-muted/50 rounded-xl px-3 py-2">💡 {aiTip}</p>
+              )}
+              <div className="space-y-2">
+                {aiSuggestions.map((s, i) => {
+                  const catLabel = CATEGORIES.find(c => c.key === s.meal_type)?.label || s.meal_type;
+                  const alreadyAdded = items.some(item => item.description.toLowerCase() === s.description.toLowerCase() && item.meal_type === s.meal_type);
+                  return (
+                    <div key={i} className="flex items-center gap-3 bg-card rounded-xl px-3 py-2.5 border border-border/50">
+                      <span className="text-lg">{s.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground">{s.description}</p>
+                        <p className="text-[10px] text-muted-foreground">{catLabel} · {s.calories} cal{s.notes ? ` · ${s.notes}` : ""}</p>
+                      </div>
+                      <button
+                        onClick={() => addAiSuggestion(s)}
+                        disabled={alreadyAdded}
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all ${
+                          alreadyAdded ? "bg-success/20" : "bg-primary/10 hover:bg-primary/20"
+                        }`}>
+                        {alreadyAdded ? <Check size={12} className="text-success" /> : <Plus size={12} className="text-primary" />}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Category Sections */}
         {CATEGORIES.map(cat => {
           const catItems = items.filter(i => i.meal_type === cat.key);
