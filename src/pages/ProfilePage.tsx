@@ -13,7 +13,7 @@ import { Monitor, Volume2, Vibrate, Maximize } from "lucide-react";
 import { getNotificationPrefs, setNotificationPrefs, playNotificationSound } from "@/lib/notificationSound";
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { useWakeWord } from "@/hooks/useWakeWord";
-import { useLayoutPreferences, ALL_NAV_TABS, ALL_HOME_WIDGETS } from "@/hooks/useLayoutPreferences";
+import { useLayoutPreferences, ALL_NAV_TABS, ALL_HOME_WIDGETS, type NavTabId, type HomeWidgetId } from "@/hooks/useLayoutPreferences";
 
 type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | "customize" | null;
 
