@@ -483,7 +483,7 @@ export default function HomePage() {
           </motion.div>}
 
           {/* Add Memory/Note Quick Action */}
-          <motion.div variants={item}>
+          {showWidget("add-memory") && <motion.div variants={item}>
             <button
               onClick={() => navigate("/memories?add=true")}
               className="w-full bg-gradient-to-r from-accent/15 via-primary/10 to-accent/15 rounded-2xl p-4 border border-accent/20 text-left hover:scale-[1.01] active:scale-[0.99] transition-transform"
