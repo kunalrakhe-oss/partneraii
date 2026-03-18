@@ -92,7 +92,7 @@ export default function OnboardingFlow() {
   const { user } = useAuth();
   const { exitDemo } = useDemo();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
 
   const [step, setStep] = useState<Step>(() => {
     if (user && localStorage.getItem("lovelist-demo-dismissed") === "true" && localStorage.getItem("lovelist-onboarding-done") !== "true") {
@@ -277,6 +277,15 @@ export default function OnboardingFlow() {
         {/* ─── STEP 0: Entry ─── */}
         {step === "entry" && (
           <motion.div key="entry" {...fadeUp} className="flex-1 flex flex-col items-center justify-between px-6 pt-safe pb-6">
+            {/* Language switcher */}
+            <div className="w-full flex justify-end pt-2">
+              <button
+                onClick={() => setLanguage(language === "en" ? "hi" : "en")}
+                className="px-3 py-1.5 rounded-full bg-card border border-border text-xs font-medium text-foreground flex items-center gap-1.5 shadow-sm"
+              >
+                🌐 {language === "en" ? "हिन्दी" : "English"}
+              </button>
+            </div>
             <div className="flex-1 flex flex-col items-center justify-center">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
