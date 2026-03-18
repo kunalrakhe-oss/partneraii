@@ -339,7 +339,7 @@ function AIChatSection({ lang }: { lang: string }) {
 export default function BabyPlanPage() {
   const { user } = useAuth();
   const { partnerPair } = usePartnerPair();
-  const { lang } = useLanguage();
+  const { language } = useLanguage();
   const navigate = useNavigate();
   const [tab, setTab] = useState<"tracker" | "chat">("tracker");
   const [logs, setLogs] = useState<PeriodLog[]>([]);
