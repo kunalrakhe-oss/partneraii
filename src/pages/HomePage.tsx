@@ -659,7 +659,7 @@ export default function HomePage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
-                        <p className="text-xs font-bold text-foreground">LoveList AI Insight</p>
+                        <p className="text-xs font-bold text-foreground">{t("home.aiInsight")}</p>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={(e) => { e.stopPropagation(); fetchInsight(); setInsightDismissed(false); }}
