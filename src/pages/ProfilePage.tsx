@@ -594,8 +594,8 @@ export default function ProfilePage() {
           <div key={section.title} className="mb-5">
             <p className="text-xs font-semibold text-muted-foreground mb-2">{section.title}</p>
             <div className="space-y-1">
-              {section.items.map(item => (
-                <button key={item.label} onClick={() => handleSettingTap(item.label)}
+               {section.items.map(item => (
+                <button key={(item as any).key || item.label} onClick={() => handleSettingTap((item as any).key)}
                   className="w-full bg-card rounded-2xl px-4 py-3.5 shadow-card border border-border flex items-center gap-3 active:scale-[0.98] transition-transform">
                   <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0">
                     <item.icon size={16} className="text-foreground" />
