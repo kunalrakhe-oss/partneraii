@@ -30,6 +30,19 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   const { user, loading } = useAuth();
 
+  // Authenticated — clean up onboarding state (must be before early returns)
+  useEffect(() => {
+    if (!user) return;
+    const onboardIntent = localStorage.getItem("lovelist-onboard-intent");
+    if (onboardIntent === "real") {
+      localStorage.removeItem("lovelist-onboard-intent");
+      localStorage.setItem("lovelist-demo-dismissed", "true");
+    }
+    if (localStorage.getItem("lovelist-onboarding-done") !== "true") {
+      localStorage.setItem("lovelist-onboarding-done", "true");
+    }
+  }, [user]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -52,18 +65,6 @@ function AppRoutes() {
       </Routes>
     );
   }
-
-  // Authenticated — mark onboarding done (user has an account)
-  useEffect(() => {
-    const onboardIntent = localStorage.getItem("lovelist-onboard-intent");
-    if (onboardIntent === "real") {
-      localStorage.removeItem("lovelist-onboard-intent");
-      localStorage.setItem("lovelist-demo-dismissed", "true");
-    }
-    if (localStorage.getItem("lovelist-onboarding-done") !== "true") {
-      localStorage.setItem("lovelist-onboarding-done", "true");
-    }
-  }, []);
 
   return (
     <Routes>
