@@ -52,13 +52,14 @@ Deno.serve(async (req) => {
       ...(todayPastEvents || []),
     ];
 
-    // Get today's existing overdue notifications to deduplicate
+    // Get existing overdue notifications (including deleted/read ones today) to deduplicate
+    // Check last 7 days to avoid re-creating recently deleted notifications
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
     const { data: existingNotifs } = await supabase
       .from("notifications")
       .select("title, user_id")
       .eq("type", "overdue")
-      .gte("created_at", today + "T00:00:00Z")
-      .lte("created_at", today + "T23:59:59Z");
+      .gte("created_at", sevenDaysAgo + "T00:00:00Z");
 
     const existingSet = new Set(
       (existingNotifs || []).map((n) => `${n.user_id}:${n.title}`)
