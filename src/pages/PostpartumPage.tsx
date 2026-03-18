@@ -72,10 +72,12 @@ async function streamChat(body: Record<string, unknown>, onDelta: (t: string) =>
   onDone();
 }
 
-type Tab = "assess" | "plan" | "chat";
+type Tab = "assess" | "plan" | "chat" | "myplan";
 
 export default function PostpartumPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { partnerPair } = usePartnerPair();
   const [tab, setTab] = useState<Tab>("assess");
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
@@ -85,12 +87,56 @@ export default function PostpartumPage() {
   const [planLoading, setPlanLoading] = useState(false);
   const [planError, setPlanError] = useState("");
 
+  const [hasSavedPlan, setHasSavedPlan] = useState(false);
+  const [savingPlan, setSavingPlan] = useState(false);
+
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, chatLoading, plan]);
+
+  // Check for existing saved plan on mount
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("recovery_plans")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("plan_type", "postpartum")
+      .eq("is_active", true)
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setHasSavedPlan(true);
+          setTab("myplan");
+        }
+      });
+  }, [user]);
+
+  const savePlan = async () => {
+    if (!plan || !user || !partnerPair || savingPlan) return;
+    setSavingPlan(true);
+    const title = plan.summary?.slice(0, 60) || "Postpartum Recovery Plan";
+    const { error } = await supabase.from("recovery_plans").insert({
+      user_id: user.id,
+      partner_pair: partnerPair,
+      plan_type: "postpartum",
+      title,
+      assessment_answers: answers,
+      plan_data: plan,
+    });
+    if (error) {
+      toast.error("Failed to save plan");
+    } else {
+      toast.success("Plan saved! Track your progress daily.");
+      setHasSavedPlan(true);
+      setTab("myplan");
+    }
+    setSavingPlan(false);
+  };
 
   const currentQ = QUESTIONS[step];
   const isMulti = currentQ?.type === "multi";
