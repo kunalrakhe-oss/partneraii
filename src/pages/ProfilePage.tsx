@@ -475,15 +475,6 @@ export default function ProfilePage() {
       case "theme":
         setActiveSheet("theme");
         break;
-      case "install-app":
-        if (isIOS) {
-          toast({ title: t("profile.installLoveLists"), description: t("profile.installSafari") });
-        } else if (canInstall) {
-          promptInstall();
-        } else {
-          toast({ title: t("profile.alreadyAvailable"), description: t("profile.useBrowserMenu") });
-        }
-        break;
       case "fullscreen":
         toggleFullscreen();
         break;
