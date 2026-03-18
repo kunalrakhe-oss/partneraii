@@ -583,7 +583,7 @@ export default function ProfilePage() {
           <h2 className="text-base font-bold text-foreground">{displayName.toUpperCase()}</h2>
           {partnerName && (
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Link2 size={10} /> Connected to {partnerName}
+              <Link2 size={10} /> {t("profile.connectedTo")} {partnerName}
             </p>
           )}
           <p className="text-[10px] text-muted-foreground mt-0.5">{user?.email}</p>
