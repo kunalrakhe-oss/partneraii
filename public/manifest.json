@@ -1,11 +1,11 @@
 {
-  "name": "LoveLists",
-  "short_name": "LoveLists",
-  "description": "Your couple's companion app for lists, chores, moods & more",
+  "name": "PartnerAI",
+  "short_name": "PartnerAI",
+  "description": "AI-powered life management for health, wealth, happiness & success",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f5f2ed",
-  "theme_color": "#9aab8e",
+  "background_color": "#0a0e1a",
+  "theme_color": "#6366f1",
   "orientation": "portrait",
   "icons": [
     {

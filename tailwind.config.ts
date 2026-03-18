@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['"Nunito"', '"DM Sans"', 'system-ui', 'sans-serif'],
-        body: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        sans: ['"Space Grotesk"', '"Inter"', 'system-ui', 'sans-serif'],
+        body: ['"Inter"', 'system-ui', 'sans-serif'],
       },
       spacing: {
         'xs': '4px',
@@ -107,8 +107,8 @@ export default {
           "50%": { transform: "translateY(-6px)" },
         },
         "glow-pulse": {
-          "0%, 100%": { boxShadow: "0 0 20px hsla(340, 50%, 65%, 0.15)" },
-          "50%": { boxShadow: "0 0 40px hsla(340, 50%, 65%, 0.3)" },
+          "0%, 100%": { boxShadow: "0 0 20px hsla(239, 84%, 67%, 0.15)" },
+          "50%": { boxShadow: "0 0 40px hsla(239, 84%, 67%, 0.3)" },
         },
       },
       animation: {

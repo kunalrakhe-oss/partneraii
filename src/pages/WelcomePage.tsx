@@ -1,4 +1,4 @@
-import { Heart, Sparkles, Users } from "lucide-react";
+import { Sparkles, Users, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import onboardingHero from "@/assets/onboarding-hero.jpg";
@@ -25,8 +25,8 @@ export default function WelcomePage({ onComplete }: WelcomePageProps) {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-2 mb-8"
         >
-          <Heart size={24} className="text-primary" fill="hsl(346, 77%, 60%)" />
-          <span className="text-xl font-bold text-foreground">LoveList</span>
+          <Sparkles size={24} className="text-primary" />
+          <span className="text-xl font-bold text-foreground">Partner<span className="love-gradient-text">AI</span></span>
         </motion.div>
 
         {/* Hero Image */}
@@ -50,7 +50,7 @@ export default function WelcomePage({ onComplete }: WelcomePageProps) {
           transition={{ delay: 0.2 }}
           className="text-2xl font-bold text-foreground text-center mb-3"
         >
-          Your life, organized.
+          Your AI Life Coach
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 10 }}
@@ -58,7 +58,7 @@ export default function WelcomePage({ onComplete }: WelcomePageProps) {
           transition={{ delay: 0.3 }}
           className="text-sm text-muted-foreground text-center max-w-xs leading-relaxed"
         >
-          Manage chores, groceries, wellness, and your calendar — solo or with a partner.
+          AI-powered guidance for health, wealth, happiness & success — solo or with a partner.
         </motion.p>
       </div>
 
@@ -74,7 +74,7 @@ export default function WelcomePage({ onComplete }: WelcomePageProps) {
           onClick={handleCreate}
           className="w-full h-14 rounded-2xl bg-card text-foreground font-semibold text-base flex items-center justify-center gap-2.5 shadow-soft mb-4"
         >
-          <Sparkles size={20} />
+          <Zap size={20} />
           Get Started
         </button>
 

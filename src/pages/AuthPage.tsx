@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, Mail, Lock, User, Users, ArrowRight, Loader2, Phone } from "lucide-react";
+import { Sparkles, Mail, Lock, User, Users, ArrowRight, Loader2, Phone } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -75,8 +75,8 @@ export default function AuthPage() {
           </button>
         </div>
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 mb-6">
-          <Heart size={24} className="text-secondary" fill="currentColor" />
-          <span className="text-xl font-bold text-foreground font-sans">LoveList</span>
+          <Sparkles size={24} className="text-primary" />
+          <span className="text-xl font-bold text-foreground font-sans">Partner<span className="love-gradient-text">AI</span></span>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}
@@ -84,9 +84,9 @@ export default function AuthPage() {
           <img src={onboardingHero} alt="Couple" className="w-full h-full object-cover" />
         </motion.div>
 
-        <h1 className="text-2xl font-bold text-foreground text-center mb-1">{t("auth.welcomeTo")}</h1>
+        <h1 className="text-2xl font-bold text-foreground text-center mb-1">Welcome to Partner<span className="love-gradient-text">AI</span></h1>
         <p className="text-sm text-muted-foreground text-center mb-6">
-          {mode === "login" ? t("auth.signInToAccount") : mode === "signup" ? t("auth.createAccount") : t("auth.resetPassword")}
+          {mode === "login" ? "Your AI-powered path to a better life" : mode === "signup" ? "Start your journey to being healthier, happier & wealthier" : t("auth.resetPassword")}
         </p>
 
         {/* Me / We Mode Toggle */}
