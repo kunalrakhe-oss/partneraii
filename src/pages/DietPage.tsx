@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   ArrowLeft, Plus, Check, Trash2, Edit3, X, ChevronDown, ChevronRight,
-  Sparkles, PartyPopper, Users, User, Heart, CalendarDays, Clock, Repeat
+  Sparkles, PartyPopper, Users, User, Heart, CalendarDays, Clock, Repeat,
+  Bot, Loader2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,6 +12,7 @@ import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -353,6 +355,8 @@ export default function DietPage() {
   const { user } = useAuth();
   const { partnerPair } = usePartnerPair();
 
+  const { toast } = useToast();
+
   const [items, setItems] = useState<DietItem[]>([]);
   const [partnerName, setPartnerName] = useState("Partner");
   const [expandedCats, setExpandedCats] = useState<string[]>(["morning", "breakfast", "lunch"]);
@@ -361,6 +365,11 @@ export default function DietPage() {
   const [editingItem, setEditingItem] = useState<DietItem | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // AI Diet
+  const [aiSuggesting, setAiSuggesting] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<{ meal_type: string; description: string; calories: number; notes?: string; emoji: string }[] | null>(null);
+  const [aiTip, setAiTip] = useState("");
 
   const today = format(new Date(), "yyyy-MM-dd");
 
@@ -529,7 +538,43 @@ export default function DietPage() {
     setShowForm(true);
   };
 
-  // ─── Derived ───────────────────────────────────────────────────────────────
+  const getAiDietSuggestions = async () => {
+    if (aiSuggesting) return;
+    setAiSuggesting(true);
+    setAiSuggestions(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("dietbot-chat", {
+        body: {
+          type: "suggest",
+          currentItems: items.map(i => ({ meal_type: i.meal_type, description: i.description, calories: i.calories })),
+          language: localStorage.getItem("lovelist-language") || "en",
+        },
+      });
+      if (error) throw error;
+      if (data?.plan) {
+        setAiSuggestions(data.plan.suggestions || []);
+        setAiTip(data.plan.tip || "");
+      }
+    } catch (e) {
+      console.error("AI diet error:", e);
+      toast({ title: "AI suggestion failed", description: "Please try again later.", variant: "destructive" });
+    } finally {
+      setAiSuggesting(false);
+    }
+  };
+
+  const addAiSuggestion = async (suggestion: { meal_type: string; description: string; calories: number; notes?: string }) => {
+    if (!user || !partnerPair) return;
+    const { data: row, error } = await supabase.from("diet_logs").insert({
+      user_id: user.id, partner_pair: partnerPair, meal_type: suggestion.meal_type,
+      description: suggestion.description, notes: suggestion.notes || null, assigned_to: "me",
+      calories: suggestion.calories, log_date: today, recurrence: "once",
+    }).select().single();
+    if (!error && row) {
+      setItems(prev => [...prev, row as DietItem]);
+      toast({ title: "Added! ✅", description: suggestion.description });
+    }
+  };
 
   const totalItems = items.length;
   const completedItems = items.filter(i => i.is_completed).length;
@@ -547,6 +592,11 @@ export default function DietPage() {
             <h1 className="text-2xl font-bold text-foreground">Diet Plan</h1>
             <p className="text-sm text-muted-foreground">Stay healthy together 💚</p>
           </div>
+          <button onClick={getAiDietSuggestions} disabled={aiSuggesting}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold disabled:opacity-50">
+            {aiSuggesting ? <Loader2 size={14} className="animate-spin" /> : <Bot size={14} />}
+            AI Diet
+          </button>
         </div>
 
         {/* Progress Card */}
@@ -570,6 +620,50 @@ export default function DietPage() {
             </motion.p>
           )}
         </div>
+
+        {/* AI Suggestions Panel */}
+        <AnimatePresence>
+          {aiSuggestions && aiSuggestions.length > 0 && (
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+              className="bg-gradient-to-r from-primary/10 via-card to-secondary/10 rounded-2xl p-4 border border-primary/20 mb-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Bot size={16} className="text-primary" />
+                  <p className="text-sm font-bold text-foreground">AI Diet Suggestions</p>
+                </div>
+                <button onClick={() => setAiSuggestions(null)} className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
+                  <X size={12} className="text-muted-foreground" />
+                </button>
+              </div>
+              {aiTip && (
+                <p className="text-xs text-muted-foreground mb-3 bg-muted/50 rounded-xl px-3 py-2">💡 {aiTip}</p>
+              )}
+              <div className="space-y-2">
+                {aiSuggestions.map((s, i) => {
+                  const catLabel = CATEGORIES.find(c => c.key === s.meal_type)?.label || s.meal_type;
+                  const alreadyAdded = items.some(item => item.description.toLowerCase() === s.description.toLowerCase() && item.meal_type === s.meal_type);
+                  return (
+                    <div key={i} className="flex items-center gap-3 bg-card rounded-xl px-3 py-2.5 border border-border/50">
+                      <span className="text-lg">{s.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground">{s.description}</p>
+                        <p className="text-[10px] text-muted-foreground">{catLabel} · {s.calories} cal{s.notes ? ` · ${s.notes}` : ""}</p>
+                      </div>
+                      <button
+                        onClick={() => addAiSuggestion(s)}
+                        disabled={alreadyAdded}
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-all ${
+                          alreadyAdded ? "bg-success/20" : "bg-primary/10 hover:bg-primary/20"
+                        }`}>
+                        {alreadyAdded ? <Check size={12} className="text-success" /> : <Plus size={12} className="text-primary" />}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Category Sections */}
         {CATEGORIES.map(cat => {

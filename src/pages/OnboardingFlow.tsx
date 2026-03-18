@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import onboardingHero from "@/assets/onboarding-hero.jpg";
 
-type Step = "entry" | "slides" | "mode" | "demo" | "setup-names" | "setup-relationship" | "setup-connect" | "setup-start" | "done";
+type Step = "language" | "entry" | "slides" | "mode" | "demo" | "setup-names" | "setup-relationship" | "setup-connect" | "setup-start" | "done";
 
 const slides = [
   {
@@ -68,7 +68,7 @@ const fadeUp = {
 };
 
 // Step ordering for back navigation
-const STEP_ORDER: Step[] = ["entry", "slides", "mode", "setup-names", "setup-relationship", "setup-connect", "setup-start"];
+const STEP_ORDER: Step[] = ["language", "entry", "slides", "mode", "setup-names", "setup-relationship", "setup-connect", "setup-start"];
 
 function getPrevStep(current: Step): Step | null {
   const idx = STEP_ORDER.indexOf(current);
@@ -98,7 +98,9 @@ export default function OnboardingFlow() {
     if (user && localStorage.getItem("lovelist-demo-dismissed") === "true" && localStorage.getItem("lovelist-onboarding-done") !== "true") {
       return "setup-names";
     }
-    return "entry";
+    // If language was already chosen, skip language step
+    const hasLanguage = localStorage.getItem("lovelist-language");
+    return hasLanguage ? "entry" : "language";
   });
   const [slideIndex, setSlideIndex] = useState(0);
   const [yourName, setYourName] = useState("");
@@ -274,16 +276,74 @@ export default function OnboardingFlow() {
   return (
     <div className="h-[100dvh] bg-background flex flex-col max-w-lg mx-auto relative overflow-hidden">
       <AnimatePresence mode="wait">
+        {/* ─── STEP -1: Language Selection ─── */}
+        {step === "language" && (
+          <motion.div key="language" {...fadeUp} className="flex-1 flex flex-col items-center justify-center px-6">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
+              className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-8 shadow-elevated"
+            >
+              <span className="text-4xl">🌐</span>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-2xl font-bold text-foreground mb-2 text-center"
+            >
+              Choose your language
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-sm text-muted-foreground text-center mb-10"
+            >
+              अपनी भाषा चुनें
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="w-full space-y-3 max-w-xs"
+            >
+              <button
+                onClick={() => { setLanguage("en"); setStep("entry"); }}
+                className={`w-full h-14 rounded-2xl font-semibold text-base flex items-center justify-center gap-3 transition-all ${
+                  language === "en"
+                    ? "bg-primary text-primary-foreground shadow-elevated"
+                    : "bg-card border border-border text-foreground hover:border-primary/40"
+                }`}
+              >
+                🇬🇧 English
+              </button>
+              <button
+                onClick={() => { setLanguage("hi"); setStep("entry"); }}
+                className={`w-full h-14 rounded-2xl font-semibold text-base flex items-center justify-center gap-3 transition-all ${
+                  language === "hi"
+                    ? "bg-primary text-primary-foreground shadow-elevated"
+                    : "bg-card border border-border text-foreground hover:border-primary/40"
+                }`}
+              >
+                🇮🇳 हिन्दी
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
         {/* ─── STEP 0: Entry ─── */}
         {step === "entry" && (
           <motion.div key="entry" {...fadeUp} className="flex-1 flex flex-col items-center justify-between px-6 pt-safe pb-6">
-            {/* Language switcher */}
+            {/* Language switcher (compact, top-right) */}
             <div className="w-full flex justify-end pt-2">
               <button
-                onClick={() => setLanguage(language === "en" ? "hi" : "en")}
+                onClick={() => setStep("language")}
                 className="px-3 py-1.5 rounded-full bg-card border border-border text-xs font-medium text-foreground flex items-center gap-1.5 shadow-sm"
               >
-                🌐 {language === "en" ? "हिन्दी" : "English"}
+                🌐 {language === "en" ? "English" : "हिन्दी"}
               </button>
             </div>
             <div className="flex-1 flex flex-col items-center justify-center">

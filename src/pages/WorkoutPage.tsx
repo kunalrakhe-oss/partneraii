@@ -431,7 +431,7 @@ export default function WorkoutPage() {
 
   return (
     <PageTransition>
-      <div className="flex flex-col h-screen max-w-lg mx-auto bg-background relative">
+      <div className="flex flex-col h-[100dvh] max-w-lg mx-auto bg-background relative">
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="px-5 pt-10 pb-3 shrink-0">
@@ -542,7 +542,7 @@ export default function WorkoutPage() {
             {/* ── Plan Picker (no plan yet) ───────────────────────────────── */}
             {!showChat && !plan && (
               <motion.div key="picker" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="px-5 py-4 space-y-5">
+                className="px-5 py-4 pb-24 space-y-5">
 
                 {/* Stats row */}
                 <div className="grid grid-cols-3 gap-3">
@@ -744,7 +744,7 @@ export default function WorkoutPage() {
 
         {/* ── Bottom Action Button ────────────────────────────────────────── */}
         {plan && !showChat && (
-          <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-3 bg-gradient-to-t from-background via-background to-transparent safe-bottom">
+          <div className="absolute bottom-0 left-0 right-0 px-5 pb-[calc(var(--nav-h)+1rem)] pt-3 bg-gradient-to-t from-background via-background to-transparent">
             {!workoutStarted ? (
               <button onClick={() => setWorkoutStarted(true)}
                 className="w-full h-14 rounded-2xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 shadow-elevated active:scale-[0.98] transition-transform">
