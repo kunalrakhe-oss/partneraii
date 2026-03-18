@@ -8,7 +8,7 @@ import VoiceAssistant from "@/components/VoiceAssistant";
 import CompletedTasksCleanup from "@/components/CompletedTasksCleanup";
 import { getNavTabs, type NavTabId } from "@/hooks/useLayoutPreferences";
 import { useState, useEffect } from "react";
-import PullToRefresh from "@/components/PullToRefresh";
+
 import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -69,9 +69,9 @@ export default function AppLayout() {
       <PostAuthInstallPrompt />
       <GatedVoiceAssistant />
       <CompletedTasksCleanup />
-      <PullToRefresh>
+      <div className="flex-1 overflow-y-auto pb-nav">
         <Outlet />
-      </PullToRefresh>
+      </div>
       <nav className="fixed bottom-0 left-0 right-0 glass-card border-t border-border/50 safe-bottom z-50">
         <div className="flex items-center justify-around" style={{ height: 'var(--nav-h)' }}>
           {tabs.map(({ to, icon: Icon, labelKey }) => (
