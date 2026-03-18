@@ -58,7 +58,7 @@ export default function WelcomePage({ onComplete }: WelcomePageProps) {
           transition={{ delay: 0.3 }}
           className="text-sm text-muted-foreground text-center max-w-xs leading-relaxed"
         >
-          Manage chores, groceries, wellness, and your calendar — solo or with a partner.
+          AI-powered guidance for health, wealth, happiness & success — solo or with a partner.
         </motion.p>
       </div>
 
