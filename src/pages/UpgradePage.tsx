@@ -156,8 +156,8 @@ export default function UpgradePage() {
                 <Sparkles size={20} className="text-primary-foreground" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-foreground">Pro</h3>
-                <p className="text-xs text-muted-foreground">For active couples</p>
+                <h3 className="text-sm font-bold text-foreground">{t("upgrade.pro")}</h3>
+                <p className="text-xs text-muted-foreground">{t("upgrade.forActiveCouples")}</p>
               </div>
               {tier === "pro" && (
                 <span className="ml-auto text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">Current Plan</span>
