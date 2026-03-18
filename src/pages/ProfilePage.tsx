@@ -506,6 +506,7 @@ export default function ProfilePage() {
       items: [
         { icon: Palette, label: "Theme & Appearance" },
         { icon: LayoutGrid, label: "Customize Layout", sub: "Home widgets & nav bar tabs" },
+        { icon: Globe, label: "Language", sub: localStorage.getItem("lovelist-language") === "hi" ? "हिन्दी" : "English" },
         ...(voiceSupported ? [{ icon: Mic, label: "Voice Assistant", sub: voiceEnabled ? '"Hey Love" is active' : 'Say "Hey Love" to activate AI' }] : []),
         ...(fullscreenSupported ? [{ icon: Maximize, label: "Fullscreen Mode", sub: isFullscreen ? "Currently fullscreen — tap to exit" : "Hide browser bar for app-like feel" }] : []),
         ...(!isInstalled ? [{ icon: Download, label: "Install App", sub: isIOS ? "Add to Home Screen" : "Get the native experience" }] : []),
