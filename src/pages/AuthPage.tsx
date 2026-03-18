@@ -89,6 +89,17 @@ export default function AuthPage() {
           {mode === "login" ? t("auth.signInToAccount") : mode === "signup" ? t("auth.createAccount") : t("auth.resetPassword")}
         </p>
 
+        {/* Me / We Mode Toggle */}
+        <div className="flex gap-1 bg-muted rounded-xl p-1 w-full mb-2">
+          {([{ value: "single", label: "Me Mode", icon: User }, { value: "couple", label: "We Mode", icon: Users }] as const).map(({ value, label, icon: Icon }) => (
+            <button key={value} type="button" onClick={() => { setAppMode(value); localStorage.setItem("lovelist-app-mode", value); }}
+              className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg transition-colors ${appMode === value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
+              <Icon size={14} />
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* Mode tabs */}
         <div className="flex gap-1 bg-muted rounded-xl p-1 w-full mb-4">
           {(["login", "signup"] as const).map((m) => (
