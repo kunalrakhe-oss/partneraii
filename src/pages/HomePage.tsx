@@ -487,10 +487,10 @@ export default function HomePage() {
               case "partnership-stats":
                 return (
                   <motion.div key="partnership-stats" variants={item}>
-                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t("home.partnershipStats")}</p>
+                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{isSingle ? "My Stats" : t("home.partnershipStats")}</p>
                      <div className="grid grid-cols-2 gap-3">
                        {[
-                         { label: t("home.daysTogether"), value: daysTogether, icon: Heart, gradient: "from-secondary/20 to-secondary/5", iconBg: "bg-secondary/20", iconColor: "text-secondary", link: "/memories" },
+                         { label: isSingle ? "Day Streak" : t("home.daysTogether"), value: daysTogether, icon: Heart, gradient: "from-secondary/20 to-secondary/5", iconBg: "bg-secondary/20", iconColor: "text-secondary", link: "/memories" },
                          { label: t("home.events"), value: totalEvents, icon: CalendarDays, gradient: "from-primary/20 to-primary/5", iconBg: "bg-primary/20", iconColor: "text-primary", link: "/calendar" },
                          { label: t("home.memories"), value: totalMemories, icon: Image, gradient: "from-accent/20 to-accent/5", iconBg: "bg-accent/20", iconColor: "text-accent-foreground", link: "/memories" },
                          { label: t("home.tasksDone"), value: completedChores, icon: Trophy, gradient: "from-success/20 to-success/5", iconBg: "bg-success/20", iconColor: "text-success", link: "/chores" },
