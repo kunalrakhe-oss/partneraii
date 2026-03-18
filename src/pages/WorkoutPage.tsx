@@ -82,13 +82,14 @@ async function streamFitbot({
   messages: ChatMsg[]; workoutHistory: Workout[]; stats: any;
   onDelta: (t: string) => void; onDone: () => void; onError: (m: string) => void;
 }) {
+  const language = localStorage.getItem("lovelist-language") || "en";
   const resp = await fetch(FITBOT_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
     },
-    body: JSON.stringify({ messages, workoutHistory, stats }),
+    body: JSON.stringify({ messages, workoutHistory, stats, language }),
   });
   if (!resp.ok) {
     if (resp.status === 429) { onError("Rate limited — try again"); return; }
