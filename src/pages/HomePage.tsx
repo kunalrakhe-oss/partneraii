@@ -1,4 +1,4 @@
-import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send, Bell, Users, BookOpen, Rocket, BookHeart, Dumbbell, Apple, Baby } from "lucide-react";
+import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send, Bell, Users, BookOpen, Rocket, BookHeart, Dumbbell, Apple, Baby, Shield } from "lucide-react";
 import ProfileButton from "@/components/ProfileButton";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -555,13 +555,20 @@ export default function HomePage() {
                        <p className="text-sm font-bold text-foreground">{t("home.diet")}</p>
                        <p className="text-xs text-muted-foreground">{t("home.eatWell")}</p>
                      </Link>
-                     <Link to="/baby-plan" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                       <div className="w-10 h-10 rounded-xl love-gradient flex items-center justify-center">
-                         <Baby size={18} className="text-primary-foreground" />
-                       </div>
-                       <p className="text-sm font-bold text-foreground">Baby Plan</p>
-                       <p className="text-xs text-muted-foreground">Fertility AI</p>
-                     </Link>
+                      <Link to="/baby-plan" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                        <div className="w-10 h-10 rounded-xl love-gradient flex items-center justify-center">
+                          <Baby size={18} className="text-primary-foreground" />
+                        </div>
+                        <p className="text-sm font-bold text-foreground">Baby Plan</p>
+                        <p className="text-xs text-muted-foreground">Fertility AI</p>
+                      </Link>
+                      <Link to="/mens-health" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                          <Shield size={18} className="text-blue-500" />
+                        </div>
+                        <p className="text-sm font-bold text-foreground">Men's Health</p>
+                        <p className="text-xs text-muted-foreground">Wellness AI</p>
+                      </Link>
                    </motion.div>
                  );
 
