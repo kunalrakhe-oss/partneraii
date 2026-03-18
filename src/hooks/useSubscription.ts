@@ -106,7 +106,8 @@ export function useSubscription(): SubscriptionState {
       setSubscribed(true);
       setSubscriptionEnd(null);
       setLoading(false);
-      // Still check Stripe in case they also have a paid sub — but trial grants premium meanwhile
+      // If no valid session, don't attempt Stripe check
+      if (!session?.access_token) return;
     }
 
     if (!session?.access_token) {
