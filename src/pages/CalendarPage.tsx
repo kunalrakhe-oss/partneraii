@@ -187,7 +187,7 @@ function CalendarDietForm({ defaultDate, onClose, onSave, t }: {
             </button>
           </div>
 
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Food Name</label>
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">{t("calendar.foodName")}</label>
           <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="e.g. Warm lemon water"
             className="w-full h-11 bg-muted rounded-2xl px-4 text-sm text-foreground placeholder:text-muted-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring mb-4" />
 
