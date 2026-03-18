@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, forwardRef, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users, ArrowDownAZ, CheckCheck, Trash, Pencil, Save, Lock } from "lucide-react";
+import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users, ArrowDownAZ, CheckCheck, Trash, Pencil, Save, Lock, ClipboardList, Link2 } from "lucide-react";
 import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,6 +16,16 @@ import type { Tables } from "@/integrations/supabase/types";
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_CHORES, DEMO_PARTNER1, DEMO_PARTNER2 } from "@/lib/demoData";
 import { useNavigate } from "react-router-dom";
+
+type GroceryRow = Tables<"grocery_items">;
+
+const LIST_TYPE_LABELS: Record<string, { label: string; emoji: string }> = {
+  grocery: { label: "Grocery", emoji: "🛒" },
+  todo: { label: "To-Do", emoji: "📋" },
+  gift: { label: "Gift Ideas", emoji: "🎁" },
+  travel: { label: "Travel Pack", emoji: "✈️" },
+  date: { label: "Date Ideas", emoji: "💕" },
+};
 
 type ChoreRow = Tables<"chores">;
 
