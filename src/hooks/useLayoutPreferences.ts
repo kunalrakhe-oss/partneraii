@@ -43,6 +43,8 @@ function load<T>(key: string, fallback: T): T {
   }
 }
 
+const dispatchChange = () => window.dispatchEvent(new Event("layout-prefs-changed"));
+
 export function useLayoutPreferences() {
   const [navTabs, setNavTabsState] = useState<NavTabId[]>(() => load(NAV_KEY, DEFAULT_NAV));
   const [homeWidgets, setHomeWidgetsState] = useState<HomeWidgetId[]>(() => load(WIDGETS_KEY, DEFAULT_WIDGETS));
