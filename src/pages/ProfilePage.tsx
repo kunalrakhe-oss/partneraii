@@ -483,8 +483,9 @@ export default function ProfilePage() {
     },
     {
       title: "Subscription",
-      items: [
+     items: [
         { icon: Crown, label: "Subscription & Billing", sub: tierSub },
+        { icon: KeyRound, label: accessCodeActive ? "Remove Access Code" : "Enter Access Code", sub: accessCodeActive ? "Premium unlocked via code" : "Have a code? Unlock premium" },
       ],
     },
     {
