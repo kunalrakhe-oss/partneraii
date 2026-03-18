@@ -304,9 +304,9 @@ export default function PartnerConnectPage() {
         </div>
 
         {/* Headline */}
-        <h1 className="text-2xl font-bold text-foreground text-center mb-2">Better Together</h1>
+        <h1 className="text-2xl font-bold text-foreground text-center mb-2">{t("partner.betterTogether")}</h1>
         <p className="text-sm text-muted-foreground text-center max-w-xs mx-auto leading-relaxed mb-6">
-          LoveList works best when shared. Connect with your partner to start syncing your life.
+          {t("partner.loveListWorksBest")}
         </p>
 
         {/* Step indicator */}

@@ -325,7 +325,7 @@ export default function OnboardingFlow() {
                 className="w-full h-14 rounded-2xl bg-primary text-primary-foreground font-semibold text-base flex items-center justify-center gap-2 shadow-elevated"
               >
                 <Heart size={18} fill="currentColor" />
-                Start Together
+                {t("onboarding.startTogether")}
               </button>
             </motion.div>
           </motion.div>
