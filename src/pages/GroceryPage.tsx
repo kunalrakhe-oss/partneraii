@@ -38,27 +38,46 @@ const DEFAULT_LIST_CONFIG: Record<string, { placeholder: string; emptyEmoji: str
   date: { placeholder: "Add a date idea...", emptyEmoji: "💕", emptyText: "No date ideas yet", emptyHint: "Collect fun things to do together" },
 };
 
-const CATEGORY_DISPLAY: Record<string, string> = {
-  fruits: "PRODUCE",
-  vegetables: "PRODUCE",
-  dairy: "DAIRY & EGGS",
-  meat: "MEAT & SEAFOOD",
-  household: "HOUSEHOLD",
-  snacks: "SNACKS",
-  beverages: "BEVERAGES",
-  bakery: "BAKERY",
-  other: "OTHER",
+const CATEGORY_DISPLAY: Record<string, Record<string, string>> = {
+  grocery: {
+    fruits: "PRODUCE", vegetables: "PRODUCE", dairy: "DAIRY & EGGS", meat: "MEAT & SEAFOOD",
+    household: "HOUSEHOLD", snacks: "SNACKS", beverages: "BEVERAGES", bakery: "BAKERY", other: "OTHER",
+  },
+  todo: {
+    work: "WORK", home: "HOME", errands: "ERRANDS", health: "HEALTH & FITNESS", personal: "PERSONAL", general: "GENERAL",
+  },
+  gift: {
+    tech: "TECH & GADGETS", fashion: "FASHION & ACCESSORIES", experience: "EXPERIENCES",
+    home_decor: "HOME & DECOR", books_media: "BOOKS & MEDIA", other_gifts: "OTHER IDEAS",
+  },
+  travel: {
+    clothing: "CLOTHING", toiletries: "TOILETRIES", electronics: "ELECTRONICS",
+    documents: "DOCUMENTS", essentials: "ESSENTIALS", misc: "MISCELLANEOUS",
+  },
+  date: {
+    outdoor: "OUTDOOR", food_drink: "FOOD & DRINKS", entertainment: "ENTERTAINMENT",
+    adventure: "ADVENTURE", cozy: "COZY AT HOME", other_ideas: "OTHER IDEAS",
+  },
 };
 
 const CATEGORY_COLOR: Record<string, string> = {
-  PRODUCE: "bg-success",
-  "DAIRY & EGGS": "bg-primary",
-  "MEAT & SEAFOOD": "bg-accent",
-  HOUSEHOLD: "bg-warning",
-  SNACKS: "bg-secondary",
-  BEVERAGES: "bg-[hsl(210,60%,55%)]",
-  BAKERY: "bg-[hsl(24,80%,58%)]",
-  OTHER: "bg-muted-foreground",
+  // Grocery
+  PRODUCE: "bg-success", "DAIRY & EGGS": "bg-primary", "MEAT & SEAFOOD": "bg-accent",
+  HOUSEHOLD: "bg-warning", SNACKS: "bg-secondary", "BEVERAGES": "bg-[hsl(210,60%,55%)]",
+  "BAKERY": "bg-[hsl(24,80%,58%)]", OTHER: "bg-muted-foreground",
+  // To-Do
+  WORK: "bg-primary", HOME: "bg-warning", ERRANDS: "bg-[hsl(210,60%,55%)]",
+  "HEALTH & FITNESS": "bg-success", PERSONAL: "bg-secondary", GENERAL: "bg-muted-foreground",
+  // Gift
+  "TECH & GADGETS": "bg-primary", "FASHION & ACCESSORIES": "bg-secondary",
+  EXPERIENCES: "bg-success", "HOME & DECOR": "bg-warning", "BOOKS & MEDIA": "bg-[hsl(270,60%,55%)]",
+  "OTHER IDEAS": "bg-muted-foreground",
+  // Travel
+  CLOTHING: "bg-secondary", TOILETRIES: "bg-[hsl(24,80%,58%)]", ELECTRONICS: "bg-primary",
+  DOCUMENTS: "bg-warning", ESSENTIALS: "bg-success", MISCELLANEOUS: "bg-muted-foreground",
+  // Date
+  OUTDOOR: "bg-success", "FOOD & DRINKS": "bg-[hsl(24,80%,58%)]", ENTERTAINMENT: "bg-primary",
+  ADVENTURE: "bg-accent", "COZY AT HOME": "bg-secondary",
 };
 
 export default function GroceryPage() {
