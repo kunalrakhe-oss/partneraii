@@ -126,6 +126,7 @@ export default function MoodPage() {
   const [logs, setLogs] = useState<MoodLog[]>([]);
   const [note, setNote] = useState("");
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [displayName, setDisplayName] = useState("there");
   const [reactionMessage, setReactionMessage] = useState("");
   const [moodReaction, setMoodReaction] = useState("");
