@@ -1,21 +1,19 @@
 import { useEffect, useState } from "react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { toast } from "sonner";
-import { Download, Share, Plus, X } from "lucide-react";
+import { Download, Share, Plus, X, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function InstallPrompt() {
-  const { canInstall, isIOS, isInstalled, promptInstall, dismiss } = usePWAInstall();
+  const { canInstall, isIOS, isInstalled, promptInstall, dismiss, isFirstView } = usePWAInstall();
   const [visible, setVisible] = useState(false);
 
+  // Show immediately — no delay
   useEffect(() => {
-    if (!canInstall) return;
-    const timer = setTimeout(() => setVisible(true), 2000);
-    return () => clearTimeout(timer);
+    if (canInstall) setVisible(true);
   }, [canInstall]);
 
-  // Show toast on install
   useEffect(() => {
     if (isInstalled) {
       toast.success("LoveLists installed! Find it on your home screen 💕");
@@ -24,9 +22,7 @@ export default function InstallPrompt() {
 
   const handleInstall = async () => {
     const accepted = await promptInstall();
-    if (accepted) {
-      setVisible(false);
-    }
+    if (accepted) setVisible(false);
   };
 
   const handleDismiss = () => {
@@ -38,58 +34,102 @@ export default function InstallPrompt() {
     <AnimatePresence>
       {visible && (
         <motion.div
-          initial={{ y: 200, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 200, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed bottom-20 left-2 right-2 mx-auto z-[60] rounded-2xl border border-border bg-card p-4 shadow-xl sm:max-w-md"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
         >
-          <button
-            onClick={handleDismiss}
-            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+          <motion.div
+            initial={{ scale: 0.9, y: 40 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, y: 40 }}
+            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            className="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl"
           >
-            <X size={18} />
-          </button>
+            {/* Only show dismiss X on repeat views */}
+            {!isFirstView && (
+              <button
+                onClick={handleDismiss}
+                className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X size={18} />
+              </button>
+            )}
 
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-xl love-gradient flex items-center justify-center">
-              <Download size={20} className="text-primary-foreground" />
+            {/* Icon */}
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-2xl love-gradient flex items-center justify-center shadow-lg">
+                <Smartphone size={32} className="text-primary-foreground" />
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-foreground text-sm">
-                Add LoveLists to Home Screen
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Install for quick access, offline use & a native app experience.
-              </p>
-            </div>
-          </div>
 
-          {isIOS ? (
-            <div className="mt-3 space-y-2">
-              <p className="text-xs text-muted-foreground font-medium">How to install on iOS:</p>
-              <div className="flex items-center gap-2 text-xs text-foreground">
-                <Share size={14} className="text-primary flex-shrink-0" />
-                <span>Tap the <strong>Share</strong> button in Safari</span>
+            {/* Title */}
+            <h2 className="text-center text-lg font-bold text-foreground">
+              Get the Full Experience
+            </h2>
+            <p className="text-center text-sm text-muted-foreground mt-1.5 leading-relaxed">
+              Install LoveLists for instant access, offline support & a native app feel.
+            </p>
+
+            {isIOS ? (
+              <div className="mt-5 space-y-3">
+                <p className="text-xs text-muted-foreground font-semibold text-center uppercase tracking-wide">
+                  How to install
+                </p>
+                <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                    <Share size={16} className="text-primary" />
+                  </div>
+                  <span className="text-sm text-foreground">
+                    Tap <strong>Share</strong> in Safari
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                    <Plus size={16} className="text-primary" />
+                  </div>
+                  <span className="text-sm text-foreground">
+                    Tap <strong>Add to Home Screen</strong>
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full mt-2 rounded-xl"
+                  onClick={handleDismiss}
+                >
+                  Got it
+                </Button>
               </div>
-              <div className="flex items-center gap-2 text-xs text-foreground">
-                <Plus size={14} className="text-primary flex-shrink-0" />
-                <span>Scroll down and tap <strong>Add to Home Screen</strong></span>
+            ) : (
+              <div className="mt-5 space-y-2">
+                <Button
+                  className="w-full rounded-xl h-11 text-base font-semibold gap-2"
+                  onClick={handleInstall}
+                >
+                  <Download size={18} />
+                  Install App
+                </Button>
+                {!isFirstView && (
+                  <Button
+                    variant="ghost"
+                    className="w-full rounded-xl text-muted-foreground"
+                    onClick={handleDismiss}
+                  >
+                    Not now
+                  </Button>
+                )}
+                {isFirstView && (
+                  <button
+                    onClick={handleDismiss}
+                    className="w-full text-center text-xs text-muted-foreground/60 mt-2 hover:text-muted-foreground transition-colors"
+                  >
+                    Skip for now
+                  </button>
+                )}
               </div>
-              <Button variant="outline" size="sm" className="w-full mt-2" onClick={handleDismiss}>
-                Got it
-              </Button>
-            </div>
-          ) : (
-            <div className="mt-3 flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1" onClick={handleDismiss}>
-                Not now
-              </Button>
-              <Button size="sm" className="flex-1" onClick={handleInstall}>
-                Install
-              </Button>
-            </div>
-          )}
+            )}
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>

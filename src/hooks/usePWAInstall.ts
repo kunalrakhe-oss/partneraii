@@ -6,6 +6,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const DISMISS_KEY = "lovelist-pwa-dismiss-ts";
+const VIEW_COUNT_KEY = "lovelist-pwa-view-count";
 const COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 function isStandalone() {
@@ -25,10 +26,21 @@ function isDismissedRecently(): boolean {
   return Date.now() - Number(ts) < COOLDOWN_MS;
 }
 
+function getViewCount(): number {
+  return Number(localStorage.getItem(VIEW_COUNT_KEY) || "0");
+}
+
+function incrementViewCount(): number {
+  const count = getViewCount() + 1;
+  localStorage.setItem(VIEW_COUNT_KEY, String(count));
+  return count;
+}
+
 export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [viewCount, setViewCount] = useState(0);
   const isIOS = isIOSDevice();
 
   useEffect(() => {
@@ -40,6 +52,8 @@ export function usePWAInstall() {
     if (isDismissedRecently()) {
       setDismissed(true);
     }
+
+    setViewCount(incrementViewCount());
 
     const onBeforeInstall = (e: Event) => {
       e.preventDefault();
@@ -74,6 +88,7 @@ export function usePWAInstall() {
   }, []);
 
   const canInstall = !isInstalled && !dismissed && (!!deferredPrompt || isIOS);
+  const isFirstView = viewCount <= 1;
 
-  return { canInstall, isIOS, isInstalled, promptInstall, dismiss };
+  return { canInstall, isIOS, isInstalled, promptInstall, dismiss, isFirstView };
 }
