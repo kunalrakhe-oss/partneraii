@@ -13,7 +13,8 @@ export default function FullscreenPrompt() {
     if (!isSupported || isFullscreen) return;
     const dismissed = localStorage.getItem(LS_KEY);
     if (!dismissed) {
-      const timer = setTimeout(() => setShow(true), 1500);
+      // Delay longer to avoid overlapping with the PWA install prompt
+      const timer = setTimeout(() => setShow(true), 5000);
       return () => clearTimeout(timer);
     }
   }, [isSupported, isFullscreen]);
@@ -44,7 +45,7 @@ export default function FullscreenPrompt() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 40 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed left-4 right-4 bottom-24 max-w-sm mx-auto bg-card rounded-2xl shadow-xl border border-border z-[100] p-5"
+            className="fixed inset-4 max-w-sm mx-auto my-auto bg-card rounded-2xl shadow-xl border border-border z-[100] p-6 h-fit"
           >
             <button
               onClick={dismiss}
