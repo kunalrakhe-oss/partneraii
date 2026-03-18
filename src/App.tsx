@@ -99,6 +99,7 @@ function AppRoutes() {
         <Route path="/physio" element={<PhysioPage />} />
         <Route path="/postpartum" element={<PostpartumPage />} />
         <Route path="/safety" element={<SafetyCheckInPage />} />
+        <Route path="/budget" element={<BudgetPage />} />
         <Route path="/upgrade" element={<UpgradePage />} />
       </Route>
       {/* Authenticated users always redirect away from auth/onboarding */}
