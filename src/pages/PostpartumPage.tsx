@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, Loader2, FileText, MessageCircle, ClipboardList, ChevronRight, Heart, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Send, Loader2, FileText, MessageCircle, ClipboardList, ChevronRight, Heart, AlertTriangle, Save, CalendarCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import PlanPhaseSection from "@/components/PlanPhaseSection";
+import RecoveryTracker from "@/components/RecoveryTracker";
 import { type Exercise } from "@/components/RecoveryPlanCard";
 
 type Msg = { role: "user" | "assistant"; content: string };
