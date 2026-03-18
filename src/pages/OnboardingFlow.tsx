@@ -98,7 +98,9 @@ export default function OnboardingFlow() {
     if (user && localStorage.getItem("lovelist-demo-dismissed") === "true" && localStorage.getItem("lovelist-onboarding-done") !== "true") {
       return "setup-names";
     }
-    return "entry";
+    // If language was already chosen, skip language step
+    const hasLanguage = localStorage.getItem("lovelist-language");
+    return hasLanguage ? "entry" : "language";
   });
   const [slideIndex, setSlideIndex] = useState(0);
   const [yourName, setYourName] = useState("");
