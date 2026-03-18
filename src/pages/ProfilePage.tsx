@@ -650,7 +650,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Personal Information Sheet */}
-      <BottomSheet open={activeSheet === "personal"} onClose={() => setActiveSheet(null)} title="Personal Information">
+      <BottomSheet open={activeSheet === "personal"} onClose={() => setActiveSheet(null)} title={t("profile.personalInfo")}>
         <div className="space-y-4">
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Display Name</label>
