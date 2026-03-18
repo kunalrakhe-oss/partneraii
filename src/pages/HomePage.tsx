@@ -588,7 +588,7 @@ export default function HomePage() {
                             </button>
                             <div className="flex-1 min-w-0">
                               <p className={`text-sm font-medium ${chore.is_completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{chore.title}</p>
-                              <p className="text-xs text-muted-foreground capitalize">{chore.recurrence === "daily" ? "Due now" : chore.recurrence || "Once"}</p>
+                              <p className="text-xs text-muted-foreground capitalize">{chore.recurrence === "daily" ? t("home.dueNow") : chore.recurrence || t("home.once")}</p>
                             </div>
                           </div>
                         ))
