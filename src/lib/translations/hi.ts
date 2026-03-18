@@ -449,7 +449,7 @@ export const hi: TranslationKeys = {
   // Partner Connect
   partner: {
     betterTogether: "साथ में बेहतर",
-    loveListWorksBest: "LoveList शेयर करने पर सबसे अच्छा काम करता है। अपने पार्टनर से जुड़ कर लाइफ सिंक करना शुरू करें।",
+    loveListWorksBest: "PartnerAI शेयर करने पर सबसे अच्छा काम करता है। अपने पार्टनर से जुड़ कर लाइफ सिंक करना शुरू करें।",
     createStep: "बनाएं",
     connectStep: "जोड़ें",
     yourUniqueCode: "आपका यूनिक लिंक कोड",
