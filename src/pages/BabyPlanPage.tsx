@@ -456,7 +456,7 @@ export default function BabyPlanPage() {
         </div>
       ) : (
         <div className="flex-1" style={{ height: "calc(100dvh - var(--nav-total) - 7.5rem)" }}>
-          <AIChatSection lang={lang} />
+          <AIChatSection lang={language} />
         </div>
       )}
     </PageTransition>
