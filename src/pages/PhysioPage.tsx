@@ -381,12 +381,28 @@ export default function PhysioPage() {
                   {/* Actions */}
                   <div className="flex gap-2">
                     <button onClick={resetAssessment} className="flex-1 bg-muted text-foreground rounded-xl py-2.5 text-sm font-medium">Retake</button>
-                    <button onClick={() => setTab("chat")} className="flex-1 bg-emerald-500 text-white rounded-xl py-2.5 text-sm font-semibold">Ask Follow-up</button>
+                    {!hasSavedPlan && (
+                      <button onClick={savePlan} disabled={savingPlan}
+                        className="flex-1 bg-emerald-500 text-white rounded-xl py-2.5 text-sm font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50">
+                        {savingPlan ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                        Save & Track
+                      </button>
+                    )}
+                    <button onClick={() => setTab("chat")} className="flex-1 bg-muted text-foreground rounded-xl py-2.5 text-sm font-medium">Ask Follow-up</button>
                   </div>
                 </div>
               )}
               <div ref={bottomRef} />
             </motion.div>
+          )}
+
+          {/* MY PLAN - Recovery Tracker */}
+          {tab === "myplan" && (
+            <RecoveryTracker
+              planType="physio"
+              accentColor="emerald"
+              onAskAI={(ctx) => { sendChat(ctx); setTab("chat"); }}
+            />
           )}
 
           {/* CHAT */}
