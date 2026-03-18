@@ -12,6 +12,7 @@ import { usePartnerPair } from "@/hooks/usePartnerPair";
 import NotificationsPanel, { useNotificationCount } from "@/components/NotificationsPanel";
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_STATS, DEMO_PARTNER_MOOD, DEMO_MOOD_MESSAGE, DEMO_AI_INSIGHT, DEMO_TODAY_EVENTS, DEMO_PARTNER1, DEMO_PARTNER2, DEMO_CHORES } from "@/lib/demoData";
+import { getHomeWidgets, type HomeWidgetId } from "@/hooks/useLayoutPreferences";
 
 const container = {
   hidden: { opacity: 0 },
@@ -49,6 +50,15 @@ export default function HomePage() {
   const [showAddChore, setShowAddChore] = useState(false);
   const [newChoreTitle, setNewChoreTitle] = useState("");
   const unreadCount = useNotificationCount();
+  const [visibleWidgets, setVisibleWidgets] = useState<HomeWidgetId[]>(getHomeWidgets);
+
+  useEffect(() => {
+    const onUpdate = () => setVisibleWidgets(getHomeWidgets());
+    window.addEventListener("layout-prefs-changed", onUpdate);
+    return () => window.removeEventListener("layout-prefs-changed", onUpdate);
+  }, []);
+
+  const showWidget = (id: HomeWidgetId) => visibleWidgets.includes(id);
 
   // Analytics
   const [daysTogether, setDaysTogether] = useState(0);
@@ -348,7 +358,7 @@ export default function HomePage() {
           )}
 
           {/* Next Upcoming Event */}
-          {nextEvent && (
+          {showWidget("next-event") && nextEvent && (
             <motion.div variants={item}>
               <Link to="/calendar" className="block love-gradient rounded-2xl p-4 shadow-elevated relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary-foreground/10 rounded-full -translate-y-8 translate-x-8" />
@@ -378,7 +388,7 @@ export default function HomePage() {
           )}
 
           {/* Partnership Analytics */}
-          <motion.div variants={item}>
+          {showWidget("partnership-stats") && <motion.div variants={item}>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Partnership Stats</p>
             <div className="grid grid-cols-2 gap-3">
               {[
@@ -402,10 +412,10 @@ export default function HomePage() {
                 </button>
               ))}
             </div>
-          </motion.div>
+          </motion.div>}
 
           {/* Daily Mood Check */}
-          {!myMood && !isDemoMode && (
+          {showWidget("mood-check") && !myMood && !isDemoMode && (
             <motion.div variants={item}>
               <button onClick={() => navigate("/mood")} className="w-full bg-gradient-to-r from-secondary/20 via-primary/10 to-secondary/20 rounded-2xl p-4 border border-secondary/30 text-left">
                 <div className="flex items-center gap-3">
@@ -423,7 +433,7 @@ export default function HomePage() {
           )}
 
           {/* Partner's Mood */}
-          <motion.div variants={item}>
+          {showWidget("partner-mood") && <motion.div variants={item}>
             <p className="text-sm font-semibold text-foreground mb-2">Partner's Mood</p>
             <button onClick={() => partnerMood ? setShowMoodPopup(true) : navigate("/mood")} className="w-full text-left">
               <div className="flex items-center gap-3">
@@ -446,10 +456,10 @@ export default function HomePage() {
                 </div>
               </div>
             </button>
-          </motion.div>
+          </motion.div>}
 
           {/* Today's Agenda Card */}
-          <motion.div variants={item} className="bg-primary/25 rounded-card p-5 shadow-soft">
+          {showWidget("today-agenda") && <motion.div variants={item} className="bg-primary/25 rounded-card p-5 shadow-soft">
             <div className="flex items-center justify-between mb-1">
               <p className="text-xs font-medium text-foreground/70">Today's Agenda</p>
               <Link to="/calendar" className="text-xs font-medium bg-card/80 text-foreground px-3 py-1 rounded-full">View All</Link>
@@ -470,10 +480,10 @@ export default function HomePage() {
                 ))
               )}
             </div>
-          </motion.div>
+          </motion.div>}
 
           {/* Add Memory/Note Quick Action */}
-          <motion.div variants={item}>
+          {showWidget("add-memory") && <motion.div variants={item}>
             <button
               onClick={() => navigate("/memories?add=true")}
               className="w-full bg-gradient-to-r from-accent/15 via-primary/10 to-accent/15 rounded-2xl p-4 border border-accent/20 text-left hover:scale-[1.01] active:scale-[0.99] transition-transform"
@@ -489,10 +499,10 @@ export default function HomePage() {
                 <Plus size={18} className="text-muted-foreground shrink-0" />
               </div>
             </button>
-          </motion.div>
+          </motion.div>}
 
           {/* Quick Links */}
-          <motion.div variants={item} className="grid grid-cols-3 gap-3">
+          {showWidget("quick-links") && <motion.div variants={item} className="grid grid-cols-3 gap-3">
             <Link to="/lists" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
               <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
                 <ShoppingCart size={18} className="text-foreground" />
@@ -528,10 +538,10 @@ export default function HomePage() {
               <p className="text-sm font-bold text-foreground">Diet</p>
               <p className="text-xs text-muted-foreground">Eat well</p>
             </Link>
-          </motion.div>
+          </motion.div>}
 
           {/* Urgent Chores */}
-          <motion.div variants={item}>
+          {showWidget("urgent-chores") && <motion.div variants={item}>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-bold text-foreground">Urgent Chores</h2>
               <div className="flex items-center gap-2">
@@ -604,10 +614,10 @@ export default function HomePage() {
                 )}
               </AnimatePresence>
             </div>
-          </motion.div>
+          </motion.div>}
 
           {/* AI Insight — Powered by Lovable AI */}
-          {!insightDismissed && (
+          {showWidget("ai-insight") && !insightDismissed && (
             <motion.div variants={item} className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3 cursor-pointer"
               onClick={() => setInsightDismissed(true)}>
               <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
