@@ -661,12 +661,12 @@ export default function ProfilePage() {
              />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Email</label>
-            <div className="w-full bg-muted/50 rounded-xl px-4 py-3 text-sm text-muted-foreground border border-border">
-              {user?.email}
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-1">Email cannot be changed here</p>
-          </div>
+             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("profile.emailLabel")}</label>
+             <div className="w-full bg-muted/50 rounded-xl px-4 py-3 text-sm text-muted-foreground border border-border">
+               {user?.email}
+             </div>
+             <p className="text-[10px] text-muted-foreground mt-1">{t("profile.emailCantChange")}</p>
+           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Phone</label>
             <input
