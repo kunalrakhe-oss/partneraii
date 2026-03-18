@@ -250,8 +250,8 @@ export default function GroceryPage() {
           <div className="flex items-center gap-3">
             <ProfileButton />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Love List</h1>
-              <p className="text-xs text-muted-foreground">Shared list • {uncheckedCount} items left</p>
+              <h1 className="text-2xl font-bold text-foreground">{t("lists.loveList")}</h1>
+              <p className="text-xs text-muted-foreground">{t("lists.sharedList")} • {uncheckedCount} {t("lists.itemsLeft")}</p>
             </div>
           </div>
           {activeList === "grocery" && (

@@ -402,8 +402,8 @@ export default function ChoresPage() {
           <div className="flex items-center gap-3">
             <ProfileButton />
             <div>
-              <h1 className="text-2xl font-bold text-foreground font-heading">Chore Manager</h1>
-              <p className="text-xs text-muted-foreground">Keeping our home cozy, together</p>
+              <h1 className="text-2xl font-bold text-foreground font-heading">{t("chores.choreManager")}</h1>
+              <p className="text-xs text-muted-foreground">{t("chores.keepingCozy")}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

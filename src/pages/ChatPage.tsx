@@ -324,8 +324,8 @@ export default function ChatPage() {
           {messages.length === 0 && (
             <div className="text-center py-12">
               <p className="text-4xl mb-3">💬</p>
-              <p className="text-sm font-semibold text-foreground mb-1">Start your conversation</p>
-              <p className="text-xs text-muted-foreground">Messages are private between you and {partnerFirstName}</p>
+              <p className="text-sm font-semibold text-foreground mb-1">{t("chat.startConversation")}</p>
+              <p className="text-xs text-muted-foreground">{t("chat.messagesPrivate")} {partnerFirstName}</p>
             </div>
           )}
 
