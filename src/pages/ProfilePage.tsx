@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus } from "lucide-react";
+import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download } from "lucide-react";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
