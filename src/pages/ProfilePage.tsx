@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download } from "lucide-react";
+import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download, Mic } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Monitor, Volume2, Vibrate, Maximize } from "lucide-react";
 import { getNotificationPrefs, setNotificationPrefs, playNotificationSound } from "@/lib/notificationSound";
 import { useFullscreen } from "@/hooks/useFullscreen";
+import { useWakeWord } from "@/hooks/useWakeWord";
 
 type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | null;
 
@@ -147,6 +148,7 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const { canInstall, isInstalled, isIOS, promptInstall } = usePWAInstall();
   const { isSupported: fullscreenSupported, isFullscreen, toggleFullscreen } = useFullscreen();
+  const { isSupported: voiceSupported, enabled: voiceEnabled, toggleEnabled: toggleVoice } = useWakeWord();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [displayName, setDisplayName] = useState("");
@@ -319,6 +321,10 @@ export default function ProfilePage() {
       case "Fullscreen Mode":
         toggleFullscreen();
         break;
+      case "Voice Assistant":
+        toggleVoice(!voiceEnabled);
+        toast({ title: !voiceEnabled ? 'Voice assistant enabled 🎙️' : 'Voice assistant disabled', description: !voiceEnabled ? 'Say "Hey Love" to activate' : undefined });
+        break;
       default:
         toast({ title: "Coming soon", description: `${label} will be available in a future update` });
     }
@@ -338,6 +344,7 @@ export default function ProfilePage() {
       title: "Preferences",
       items: [
         { icon: Palette, label: "Theme & Appearance" },
+        ...(voiceSupported ? [{ icon: Mic, label: "Voice Assistant", sub: voiceEnabled ? '"Hey Love" is active' : 'Say "Hey Love" to activate AI' }] : []),
         ...(fullscreenSupported ? [{ icon: Maximize, label: "Fullscreen Mode", sub: isFullscreen ? "Currently fullscreen — tap to exit" : "Hide browser bar for app-like feel" }] : []),
         ...(!isInstalled ? [{ icon: Download, label: "Install App", sub: isIOS ? "Add to Home Screen" : "Get the native experience" }] : []),
         { icon: Lock, label: "Privacy & Security" },

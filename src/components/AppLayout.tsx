@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import PartnerNotifications from "@/components/PartnerNotifications";
 import DemoBanner from "@/components/DemoBanner";
 import PostAuthInstallPrompt from "@/components/PostAuthInstallPrompt";
+import VoiceAssistant from "@/components/VoiceAssistant";
 
 const tabs = [
   { to: "/", icon: Home, label: "Home" },
@@ -19,6 +20,7 @@ export default function AppLayout() {
       <DemoBanner />
       <PartnerNotifications />
       <PostAuthInstallPrompt />
+      <VoiceAssistant />
       <main className="flex-1 overflow-y-auto pb-nav">
         <Outlet />
       </main>
