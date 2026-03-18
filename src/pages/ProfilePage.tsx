@@ -319,12 +319,14 @@ export default function ProfilePage() {
   const [birthday, setBirthday] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const isSingle = appMode === "single";
+
   useEffect(() => {
     if (!user) return;
     const fetchProfile = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, partner_id, phone, gender, birthday")
+        .select("display_name, avatar_url, partner_id, phone, gender, birthday, app_mode")
         .eq("user_id", user.id)
         .single();
       if (data) {
@@ -336,6 +338,7 @@ export default function ProfilePage() {
         setAvatarUrl(data.avatar_url || user.user_metadata?.avatar_url || null);
         setGender((data as any).gender || "");
         setBirthday((data as any).birthday || "");
+        setAppMode((data as any).app_mode || "couple");
         setPartnerId(data.partner_id);
         if (data.partner_id) {
           const { data: partner } = await supabase
