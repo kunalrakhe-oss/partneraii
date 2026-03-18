@@ -184,7 +184,7 @@ export default function UpgradePage() {
                 disabled={!!checkingOut}
                 className="w-full py-3 rounded-xl love-gradient text-primary-foreground font-semibold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {checkingOut === "pro" ? <Loader2 size={16} className="animate-spin" /> : "Upgrade to Pro"}
+                {checkingOut === "pro" ? <Loader2 size={16} className="animate-spin" /> : t("upgrade.upgradeToPro")}
               </button>
             )}
           </motion.div>
