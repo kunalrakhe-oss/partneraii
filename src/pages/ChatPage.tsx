@@ -48,6 +48,7 @@ export default function ChatPage() {
   const { canAccess } = useSubscriptionContext();
   const { partnerPair, loading: ppLoading, userId } = usePartnerPair();
   const { isDemoMode } = useDemo();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [reactions, setReactions] = useState<Reaction[]>([]);
