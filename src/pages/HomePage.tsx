@@ -477,7 +477,7 @@ export default function HomePage() {
                        <p className="text-xs font-medium text-foreground/70">{t("home.todayAgenda")}</p>
                        <Link to="/calendar" className="text-xs font-medium bg-card/80 text-foreground px-3 py-1 rounded-full">{t("common.viewAll")}</Link>
                     </div>
-                    <p className="text-xl font-bold text-foreground mb-4">{todayEvents.length} Shared Events</p>
+                    <p className="text-xl font-bold text-foreground mb-4">{todayEvents.length} {t("home.sharedEvents")}</p>
                     <div className="space-y-2">
                       {todayEvents.length === 0 ? (
                         <p className="text-sm text-foreground/60">No events scheduled for today</p>
