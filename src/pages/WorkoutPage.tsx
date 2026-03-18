@@ -314,6 +314,7 @@ export default function WorkoutPage() {
         type: "recommend",
         workoutHistory: myW.slice(0, 5),
         stats: { totalWorkouts: myW.length, totalMinutes: myW.reduce((s, w) => s + w.duration_minutes, 0) },
+        language: localStorage.getItem("lovelist-language") || "en",
       },
     }).then(({ data }) => { if (data?.recommendation) setRecommendation(data.recommendation); });
   }, [partnerPair, workouts, user]);
