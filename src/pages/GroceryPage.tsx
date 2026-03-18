@@ -270,11 +270,9 @@ export default function GroceryPage() {
               <p className="text-xs text-muted-foreground">{t("lists.sharedList")} • {uncheckedCount} {t("lists.itemsLeft")}</p>
             </div>
           </div>
-          {activeList === "grocery" && (
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card shadow-card text-xs font-medium text-muted-foreground border border-border">
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card shadow-card text-xs font-medium text-muted-foreground border border-border">
               <Sparkles size={12} /> AI Sorting
             </button>
-          )}
         </div>
 
         {/* List Tabs */}
