@@ -283,7 +283,8 @@ function LanguageSheet({ open, onClose }: { open: boolean; onClose: () => void }
       </div>
     </BottomSheet>
   );
-}
+
+export default function ProfilePage() {
   const { tier, subscribed, accessCodeActive, applyAccessCode, clearAccessCode, refreshSubscription } = useSubscriptionContext();
   const [showAccessCode, setShowAccessCode] = useState(false);
   const [accessCodeInput, setAccessCodeInput] = useState("");
