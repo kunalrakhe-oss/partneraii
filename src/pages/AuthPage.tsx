@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, Mail, Lock, User, ArrowRight, Loader2, Phone } from "lucide-react";
+import { Heart, Mail, Lock, User, Users, ArrowRight, Loader2, Phone } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -13,6 +13,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
+  const [appMode, setAppMode] = useState<"single" | "couple">(() => (localStorage.getItem("lovelist-app-mode") as "single" | "couple") || "single");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { t, language, setLanguage } = useLanguage();
@@ -87,6 +88,17 @@ export default function AuthPage() {
         <p className="text-sm text-muted-foreground text-center mb-6">
           {mode === "login" ? t("auth.signInToAccount") : mode === "signup" ? t("auth.createAccount") : t("auth.resetPassword")}
         </p>
+
+        {/* Me / We Mode Toggle */}
+        <div className="flex gap-1 bg-muted rounded-xl p-1 w-full mb-2">
+          {([{ value: "single", label: "Me Mode", icon: User }, { value: "couple", label: "We Mode", icon: Users }] as const).map(({ value, label, icon: Icon }) => (
+            <button key={value} type="button" onClick={() => { setAppMode(value); localStorage.setItem("lovelist-app-mode", value); }}
+              className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg transition-colors ${appMode === value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
+              <Icon size={14} />
+              {label}
+            </button>
+          ))}
+        </div>
 
         {/* Mode tabs */}
         <div className="flex gap-1 bg-muted rounded-xl p-1 w-full mb-4">

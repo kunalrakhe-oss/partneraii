@@ -13,7 +13,10 @@ export default function PostAuthSetup() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState<Step>("mode");
-  const [mode, setMode] = useState<"single" | "couple" | null>(null);
+  const [mode, setMode] = useState<"single" | "couple" | null>(() => {
+    const saved = localStorage.getItem("lovelist-app-mode");
+    return saved === "single" || saved === "couple" ? saved : null;
+  });
   const [name, setName] = useState(
     user?.user_metadata?.full_name ||
     user?.user_metadata?.display_name ||
