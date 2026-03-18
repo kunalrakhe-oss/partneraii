@@ -127,8 +127,11 @@ export function useSubscription(): SubscriptionState {
       setSubscriptionEnd(data?.subscription_end || null);
     } catch (e) {
       console.error("Failed to check subscription:", e);
-      setTier("free");
-      setSubscribed(false);
+      // Don't downgrade if trial is active
+      if (!isTrialActive(user?.created_at)) {
+        setTier("free");
+        setSubscribed(false);
+      }
     } finally {
       setLoading(false);
     }
