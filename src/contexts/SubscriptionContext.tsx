@@ -14,6 +14,8 @@ const SubscriptionContext = createContext<SubscriptionContextType>({
   accessCodeActive: false,
   applyAccessCode: () => false,
   clearAccessCode: () => {},
+  trialActive: false,
+  trialDaysLeft: 0,
   canAccess: () => true,
 });
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Check, Crown, Sparkles, Star, ChevronLeft, Loader2 } from "lucide-react";
+import { Check, Crown, Sparkles, Star, ChevronLeft, Loader2, Gift, KeyRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
@@ -42,11 +42,23 @@ const PREMIUM_FEATURES = [
 
 export default function UpgradePage() {
   const navigate = useNavigate();
-  const { tier, loading: subLoading } = useSubscriptionContext();
+  const { tier, loading: subLoading, trialActive, trialDaysLeft, applyAccessCode, accessCodeActive } = useSubscriptionContext();
   const { toast } = useToast();
   const { t } = useLanguage();
   const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [checkingOut, setCheckingOut] = useState<string | null>(null);
+  const [accessCode, setAccessCode] = useState("");
+  const [codeError, setCodeError] = useState(false);
+
+  const handleApplyCode = () => {
+    const success = applyAccessCode(accessCode.trim());
+    if (success) {
+      toast({ title: "🎉 Access code applied!", description: "You now have Premium access." });
+      setCodeError(false);
+    } else {
+      setCodeError(true);
+    }
+  };
 
   const handleCheckout = async (planTier: "pro" | "premium") => {
     setCheckingOut(planTier);
@@ -82,6 +94,23 @@ export default function UpgradePage() {
           <h1 className="text-base font-bold text-foreground">{t("upgrade.chooseYourPlan")}</h1>
           <div className="w-9" />
         </div>
+
+        {/* Trial Banner */}
+        {trialActive && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 p-4 rounded-2xl border border-accent bg-accent/10 flex items-center gap-3"
+          >
+            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shrink-0">
+              <Gift size={20} className="text-accent-foreground" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-foreground">🎉 Free Premium Trial Active</p>
+              <p className="text-xs text-muted-foreground">{trialDaysLeft} day{trialDaysLeft !== 1 ? "s" : ""} remaining — enjoy all features!</p>
+            </div>
+          </motion.div>
+        )}
 
         {/* Billing Toggle */}
         <div className="flex items-center justify-center gap-1 mb-6">
@@ -234,6 +263,40 @@ export default function UpgradePage() {
             )}
           </motion.div>
         </div>
+
+        {/* Access Code Section */}
+        {!accessCodeActive && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="mt-6 bg-card border border-border rounded-2xl p-5"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <KeyRound size={16} className="text-muted-foreground" />
+              <h3 className="text-sm font-semibold text-foreground">Have an access code?</h3>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={accessCode}
+                onChange={(e) => { setAccessCode(e.target.value); setCodeError(false); }}
+                placeholder="Enter code"
+                className={`flex-1 px-4 py-2.5 rounded-xl text-sm bg-muted text-foreground border ${codeError ? "border-destructive" : "border-border"} outline-none focus:ring-2 focus:ring-primary/30`}
+              />
+              <button
+                onClick={handleApplyCode}
+                disabled={!accessCode.trim()}
+                className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40"
+              >
+                Apply
+              </button>
+            </div>
+            {codeError && (
+              <p className="text-xs text-destructive mt-2">Invalid access code. Please try again.</p>
+            )}
+          </motion.div>
+        )}
 
         <p className="text-center text-[10px] text-muted-foreground mt-6">
           {t("upgrade.cancelAnytime")}
