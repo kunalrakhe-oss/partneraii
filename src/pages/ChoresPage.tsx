@@ -396,7 +396,7 @@ export default function ChoresPage() {
 
   return (
     <PageTransition>
-      <div className="px-5 pt-10 pb-28">
+      <div className="pb-28">
         {/* Header */}
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-3">
