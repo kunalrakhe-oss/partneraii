@@ -388,7 +388,7 @@ export default function HomePage() {
           )}
 
           {/* Partnership Analytics */}
-          <motion.div variants={item}>
+          {showWidget("partnership-stats") && <motion.div variants={item}>
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Partnership Stats</p>
             <div className="grid grid-cols-2 gap-3">
               {[
