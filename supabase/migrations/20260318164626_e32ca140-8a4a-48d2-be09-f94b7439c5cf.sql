@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN app_mode TEXT NOT NULL DEFAULT 'couple';
