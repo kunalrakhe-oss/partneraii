@@ -64,6 +64,15 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto">
       <div className="flex-1 flex flex-col items-center pt-10 px-6">
+        {/* Language switcher */}
+        <div className="w-full flex justify-end mb-2">
+          <button
+            onClick={() => setLanguage(language === "en" ? "hi" : "en")}
+            className="px-3 py-1.5 rounded-full bg-card border border-border text-xs font-medium text-foreground flex items-center gap-1.5 shadow-sm"
+          >
+            🌐 {language === "en" ? "हिन्दी" : "English"}
+          </button>
+        </div>
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 mb-6">
           <Heart size={24} className="text-secondary" fill="currentColor" />
           <span className="text-xl font-bold text-foreground font-sans">LoveList</span>
