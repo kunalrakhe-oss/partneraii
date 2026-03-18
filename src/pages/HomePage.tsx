@@ -609,102 +609,120 @@ export default function HomePage() {
 
               case "quick-links":
                 return (
-                  <motion.div key="quick-links" variants={item} className="grid grid-cols-3 gap-3">
-                    <Link to="/lists" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                        <ShoppingCart size={18} className="text-foreground" />
+                  <motion.div key="quick-links" variants={item} className="space-y-5">
+                    {/* 🏥 HEALTHY */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-success/15 flex items-center justify-center">
+                          <HeartPulse size={14} className="text-success" />
+                        </div>
+                        <h2 className="text-sm font-bold text-foreground tracking-wide">Stay Healthy</h2>
                       </div>
-                       <p className="text-sm font-bold text-foreground">{t("home.groceries")}</p>
-                       <p className="text-xs text-muted-foreground">{uncheckedGroceries} {t("common.items")}</p>
-                     </Link>
-                     {!isSingle && (
-                       <Link to="/chat" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                         <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                           <MessageSquare size={18} className="text-primary" />
-                         </div>
-                         <p className="text-sm font-bold text-foreground">{t("nav.chat")}</p>
-                         <p className="text-xs text-muted-foreground">{messageCount} {t("common.msgs")}</p>
-                       </Link>
-                     )}
-                     <Link to="/memories" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                       <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
-                         <Camera size={18} className="text-accent-foreground" />
-                       </div>
-                       <p className="text-sm font-bold text-foreground">{t("home.memories")}</p>
-                       <p className="text-xs text-muted-foreground">{t("home.timeline")}</p>
-                     </Link>
-                     <Link to="/workout" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                       <div className="w-10 h-10 rounded-xl bg-destructive/15 flex items-center justify-center">
-                         <Dumbbell size={18} className="text-destructive" />
-                       </div>
-                       <p className="text-sm font-bold text-foreground">{t("home.workout")}</p>
-                       <p className="text-xs text-muted-foreground">{t("home.stayFit")}</p>
-                     </Link>
-                     <Link to="/diet" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                       <div className="w-10 h-10 rounded-xl bg-secondary/15 flex items-center justify-center">
-                         <Apple size={18} className="text-secondary" />
-                       </div>
-                       <p className="text-sm font-bold text-foreground">{t("home.diet")}</p>
-                       <p className="text-xs text-muted-foreground">{t("home.eatWell")}</p>
-                     </Link>
-                      <Link to="/baby-plan" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                        <div className="w-10 h-10 rounded-xl love-gradient flex items-center justify-center">
-                          <Baby size={18} className="text-primary-foreground" />
+                      <div className="grid grid-cols-2 gap-2.5">
+                        {[
+                          { to: "/workout", icon: Dumbbell, label: "Workout AI", desc: "Smart fitness plans", gradient: "from-success/12 to-success/4", iconBg: "bg-success/15", iconColor: "text-success" },
+                          { to: "/diet", icon: Salad, label: "Diet AI", desc: "Nutrition coaching", gradient: "from-secondary/12 to-secondary/4", iconBg: "bg-secondary/15", iconColor: "text-secondary" },
+                          { to: "/health", icon: Activity, label: "Health Analytics", desc: "Track vitals", gradient: "from-primary/12 to-primary/4", iconBg: "bg-primary/15", iconColor: "text-primary" },
+                          { to: "/physio", icon: Activity, label: "Physio AI", desc: "Recovery plans", gradient: "from-success/12 to-success/4", iconBg: "bg-success/15", iconColor: "text-success" },
+                          { to: "/postpartum", icon: HeartPulse, label: "Postpartum", desc: "Mom recovery", gradient: "from-primary/12 to-primary/4", iconBg: "bg-primary/15", iconColor: "text-primary" },
+                          { to: "/mens-health", icon: Shield, label: "Men's Health", desc: "Wellness AI", gradient: "from-primary/12 to-primary/4", iconBg: "bg-primary/15", iconColor: "text-primary" },
+                        ].map(item => (
+                          <Link key={item.to} to={item.to} className={`bg-gradient-to-br ${item.gradient} rounded-2xl p-3.5 flex items-center gap-3 border border-border/30 hover:scale-[1.02] active:scale-[0.98] transition-transform`}>
+                            <div className={`w-10 h-10 rounded-xl ${item.iconBg} flex items-center justify-center shrink-0`}>
+                              <item.icon size={18} className={item.iconColor} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-foreground truncate">{item.label}</p>
+                              <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 😊 HAPPY */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-warning/15 flex items-center justify-center">
+                          <Sparkles size={14} className="text-warning" />
                         </div>
-                        <p className="text-sm font-bold text-foreground">Baby Plan</p>
-                        <p className="text-xs text-muted-foreground">Fertility AI</p>
-                      </Link>
-                      <Link to="/mens-health" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                          <Shield size={18} className="text-blue-500" />
+                        <h2 className="text-sm font-bold text-foreground tracking-wide">Stay Happy</h2>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        {[
+                          { to: "/mood", icon: Heart, label: "Mood Tracker", desc: "Log & reflect", gradient: "from-warning/12 to-warning/4", iconBg: "bg-warning/15", iconColor: "text-warning" },
+                          { to: "/memories", icon: Camera, label: "Memories", desc: "Capture moments", gradient: "from-primary/12 to-primary/4", iconBg: "bg-primary/15", iconColor: "text-primary" },
+                          { to: "/baby-plan", icon: Baby, label: "Baby Plan AI", desc: "Fertility guidance", gradient: "from-primary/12 to-primary/4", iconBg: "bg-primary/15", iconColor: "text-primary" },
+                          ...(!isSingle ? [{ to: "/chat", icon: MessageSquare, label: "Partner Chat", desc: "Stay connected", gradient: "from-secondary/12 to-secondary/4", iconBg: "bg-secondary/15", iconColor: "text-secondary" }] : []),
+                        ].map(item => (
+                          <Link key={item.to} to={item.to} className={`bg-gradient-to-br ${item.gradient} rounded-2xl p-3.5 flex items-center gap-3 border border-border/30 hover:scale-[1.02] active:scale-[0.98] transition-transform`}>
+                            <div className={`w-10 h-10 rounded-xl ${item.iconBg} flex items-center justify-center shrink-0`}>
+                              <item.icon size={18} className={item.iconColor} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-foreground truncate">{item.label}</p>
+                              <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 💰 WEALTHY */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-warning/15 flex items-center justify-center">
+                          <Wallet size={14} className="text-warning" />
                         </div>
-                        <p className="text-sm font-bold text-foreground">Men's Health</p>
-                        <p className="text-xs text-muted-foreground">Wellness AI</p>
-                      </Link>
-                      <Link to="/physio" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                          <Activity size={18} className="text-emerald-500" />
+                        <h2 className="text-sm font-bold text-foreground tracking-wide">Stay Wealthy</h2>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        {[
+                          { to: "/budget", icon: Wallet, label: "Finance AI", desc: "Smart budgeting", gradient: "from-warning/12 to-warning/4", iconBg: "bg-warning/15", iconColor: "text-warning" },
+                          { to: "/lists", icon: ShoppingCart, label: "Smart Lists", desc: `${uncheckedGroceries} items`, gradient: "from-primary/12 to-primary/4", iconBg: "bg-primary/15", iconColor: "text-primary" },
+                        ].map(item => (
+                          <Link key={item.to} to={item.to} className={`bg-gradient-to-br ${item.gradient} rounded-2xl p-3.5 flex items-center gap-3 border border-border/30 hover:scale-[1.02] active:scale-[0.98] transition-transform`}>
+                            <div className={`w-10 h-10 rounded-xl ${item.iconBg} flex items-center justify-center shrink-0`}>
+                              <item.icon size={18} className={item.iconColor} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-foreground truncate">{item.label}</p>
+                              <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 🚀 SUCCESSFUL */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
+                          <Target size={14} className="text-primary" />
                         </div>
-                        <p className="text-sm font-bold text-foreground">Physio</p>
-                        <p className="text-xs text-muted-foreground">Recovery AI</p>
-                      </Link>
-                      <Link to="/postpartum" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center">
-                          <HeartPulse size={18} className="text-pink-500" />
-                        </div>
-                        <p className="text-sm font-bold text-foreground">Postpartum</p>
-                        <p className="text-xs text-muted-foreground">Mom Recovery</p>
-                      </Link>
-                      <Link to="/safety" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center">
-                          <MapPin size={18} className="text-orange-500" />
-                        </div>
-                        <p className="text-sm font-bold text-foreground">Safety</p>
-                        <p className="text-xs text-muted-foreground">Live Location</p>
-                      </Link>
-                      <Link to="/budget" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                          <Wallet size={18} className="text-amber-500" />
-                        </div>
-                        <p className="text-sm font-bold text-foreground">Budget</p>
-                        <p className="text-xs text-muted-foreground">Finance AI</p>
-                      </Link>
-                      <Link to="/health" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center">
-                          <Activity size={18} className="text-teal-500" />
-                        </div>
-                        <p className="text-sm font-bold text-foreground">Health</p>
-                        <p className="text-xs text-muted-foreground">AI Analytics</p>
-                      </Link>
-                      <Link to="/event-planner" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                        <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center">
-                          <PartyPopper size={18} className="text-pink-500" />
-                        </div>
-                        <p className="text-sm font-bold text-foreground">Events</p>
-                        <p className="text-xs text-muted-foreground">AI Planner</p>
-                      </Link>
-                   </motion.div>
-                 );
+                        <h2 className="text-sm font-bold text-foreground tracking-wide">Stay Successful</h2>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2.5">
+                        {[
+                          { to: "/chores", icon: Check, label: "Task Manager", desc: `${pendingChores} pending`, gradient: "from-primary/12 to-primary/4", iconBg: "bg-primary/15", iconColor: "text-primary" },
+                          { to: "/calendar", icon: CalendarDays, label: "Calendar", desc: `${totalEvents} events`, gradient: "from-secondary/12 to-secondary/4", iconBg: "bg-secondary/15", iconColor: "text-secondary" },
+                          { to: "/event-planner", icon: PartyPopper, label: "Event AI", desc: "Plan anything", gradient: "from-warning/12 to-warning/4", iconBg: "bg-warning/15", iconColor: "text-warning" },
+                          { to: "/safety", icon: MapPin, label: "Safety", desc: "Live location", gradient: "from-destructive/12 to-destructive/4", iconBg: "bg-destructive/15", iconColor: "text-destructive" },
+                        ].map(item => (
+                          <Link key={item.to} to={item.to} className={`bg-gradient-to-br ${item.gradient} rounded-2xl p-3.5 flex items-center gap-3 border border-border/30 hover:scale-[1.02] active:scale-[0.98] transition-transform`}>
+                            <div className={`w-10 h-10 rounded-xl ${item.iconBg} flex items-center justify-center shrink-0`}>
+                              <item.icon size={18} className={item.iconColor} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-foreground truncate">{item.label}</p>
+                              <p className="text-[10px] text-muted-foreground">{item.desc}</p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
 
               case "urgent-chores":
                 return (
