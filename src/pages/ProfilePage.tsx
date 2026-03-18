@@ -256,7 +256,9 @@ function CustomizeLayoutSheet({ open, onClose }: { open: boolean; onClose: () =>
 }
 
 export default function ProfilePage() {
-  const { tier, subscribed } = useSubscriptionContext();
+  const { tier, subscribed, accessCodeActive, applyAccessCode, clearAccessCode, refreshSubscription } = useSubscriptionContext();
+  const [showAccessCode, setShowAccessCode] = useState(false);
+  const [accessCodeInput, setAccessCodeInput] = useState("");
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const { canInstall, isInstalled, isIOS, promptInstall } = usePWAInstall();
