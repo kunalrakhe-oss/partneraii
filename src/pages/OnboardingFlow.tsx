@@ -68,7 +68,7 @@ const fadeUp = {
 };
 
 // Step ordering for back navigation
-const STEP_ORDER: Step[] = ["entry", "slides", "mode", "setup-names", "setup-relationship", "setup-connect", "setup-start"];
+const STEP_ORDER: Step[] = ["language", "entry", "slides", "mode", "setup-names", "setup-relationship", "setup-connect", "setup-start"];
 
 function getPrevStep(current: Step): Step | null {
   const idx = STEP_ORDER.indexOf(current);
