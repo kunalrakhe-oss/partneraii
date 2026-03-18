@@ -17,9 +17,23 @@ export interface SubscriptionState {
 
 const ACCESS_CODE_KEY = "lovelist-access-code";
 const VALID_ACCESS_CODE = "NeeKun";
+const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export function isAccessCodeActive(): boolean {
   return localStorage.getItem(ACCESS_CODE_KEY) === VALID_ACCESS_CODE;
+}
+
+export function isTrialActive(userCreatedAt?: string): boolean {
+  if (!userCreatedAt) return false;
+  const createdTime = new Date(userCreatedAt).getTime();
+  return Date.now() - createdTime < TRIAL_DURATION_MS;
+}
+
+export function getTrialDaysLeft(userCreatedAt?: string): number {
+  if (!userCreatedAt) return 0;
+  const createdTime = new Date(userCreatedAt).getTime();
+  const remaining = TRIAL_DURATION_MS - (Date.now() - createdTime);
+  return Math.max(0, Math.ceil(remaining / (24 * 60 * 60 * 1000)));
 }
 
 // Feature to minimum tier mapping
