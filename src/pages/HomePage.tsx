@@ -723,7 +723,7 @@ export default function HomePage() {
                 className="fixed inset-x-5 top-1/3 max-w-sm mx-auto bg-card rounded-3xl shadow-elevated z-[60] p-5"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm font-bold text-foreground">Partner's Mood</p>
+                  <p className="text-sm font-bold text-foreground">{t("home.partnerMood")}</p>
                   <button onClick={() => setShowMoodPopup(false)} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                     <X size={14} className="text-muted-foreground" />
                   </button>
