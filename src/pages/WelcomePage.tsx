@@ -50,7 +50,7 @@ export default function WelcomePage({ onComplete }: WelcomePageProps) {
           transition={{ delay: 0.2 }}
           className="text-2xl font-bold text-foreground text-center mb-3"
         >
-          Your life, organized.
+          Your AI Life Coach
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 10 }}
