@@ -108,9 +108,23 @@ export default function AddEventModal({
   }
   if (open !== lastOpen) setLastOpen(open);
 
+  const { canAccess } = useSubscriptionContext();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !partnerPair || !formTitle.trim()) return;
+
+    // Free tier: cap at 10 calendar events
+    if (!editingEvent && !canAccess("unlimited-calendar")) {
+      const { count } = await supabase
+        .from("calendar_events")
+        .select("id", { count: "exact", head: true })
+        .eq("partner_pair", partnerPair);
+      if ((count ?? 0) >= 10) {
+        toast.error("Free plan limited to 10 events. Upgrade to Pro for unlimited!");
+        return;
+      }
+    }
 
     let imageUrl: string | null = null;
     if (formFile) {

@@ -17,6 +17,7 @@ import PageTransition from "@/components/PageTransition";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { toast } from "sonner";
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_CALENDAR_EVENTS } from "@/lib/demoData";
