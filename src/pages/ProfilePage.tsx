@@ -677,6 +677,68 @@ export default function ProfilePage() {
           </button>
         </div>
       </BottomSheet>
+
+      {/* Access Code Modal */}
+      <AnimatePresence>
+        {showAccessCode && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6"
+            onClick={() => setShowAccessCode(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-card rounded-2xl border border-border p-6 w-full max-w-sm shadow-lg"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                  <KeyRound size={20} className="text-primary-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">Enter Access Code</h3>
+                  <p className="text-[10px] text-muted-foreground">Unlock all premium features</p>
+                </div>
+              </div>
+              <input
+                value={accessCodeInput}
+                onChange={e => setAccessCodeInput(e.target.value)}
+                placeholder="Enter your code"
+                className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring mb-4"
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowAccessCode(false)}
+                  className="flex-1 py-2.5 rounded-xl bg-muted text-foreground text-sm font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    const success = applyAccessCode(accessCodeInput.trim());
+                    if (success) {
+                      toast({ title: "Premium unlocked! 🎉", description: "All features are now available." });
+                      setShowAccessCode(false);
+                      setAccessCodeInput("");
+                    } else {
+                      toast({ title: "Invalid code", description: "Please check your access code and try again.", variant: "destructive" });
+                    }
+                  }}
+                  disabled={!accessCodeInput.trim()}
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-primary-foreground text-sm font-semibold disabled:opacity-50"
+                >
+                  Activate
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </PageTransition>
   );
 }
