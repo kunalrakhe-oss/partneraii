@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.health-analytics]
 verify_jwt = false
+
+[functions.event-planner]
+verify_jwt = false

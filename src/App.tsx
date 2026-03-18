@@ -27,6 +27,7 @@ import PostpartumPage from "@/pages/PostpartumPage";
 import SafetyCheckInPage from "@/pages/SafetyCheckInPage";
 import BudgetPage from "@/pages/BudgetPage";
 import HealthPage from "@/pages/HealthPage";
+import EventPlannerPage from "@/pages/EventPlannerPage";
 import PartnerConnectPage from "@/pages/PartnerConnectPage";
 import CoupleProfilePage from "@/pages/CoupleProfilePage";
 import AuthPage from "@/pages/AuthPage";
@@ -102,6 +103,7 @@ function AppRoutes() {
         <Route path="/safety" element={<SafetyCheckInPage />} />
         <Route path="/budget" element={<BudgetPage />} />
         <Route path="/health" element={<HealthPage />} />
+        <Route path="/event-planner" element={<EventPlannerPage />} />
         <Route path="/upgrade" element={<UpgradePage />} />
       </Route>
       {/* Authenticated users always redirect away from auth/onboarding */}
