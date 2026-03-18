@@ -653,12 +653,12 @@ export default function ProfilePage() {
       <BottomSheet open={activeSheet === "personal"} onClose={() => setActiveSheet(null)} title={t("profile.personalInfo")}>
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Display Name</label>
-            <input
-              value={editName} onChange={e => setEditName(e.target.value)}
-              className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Your name"
-            />
+             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("profile.displayName")}</label>
+             <input
+               value={editName} onChange={e => setEditName(e.target.value)}
+               className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+               placeholder={t("profile.yourNamePlaceholder")}
+             />
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Email</label>
