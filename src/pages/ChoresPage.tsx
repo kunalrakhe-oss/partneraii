@@ -123,6 +123,59 @@ export default function ChoresPage() {
   const [editDueDate, setEditDueDate] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
 
+  // List linking state
+  const [allListItems, setAllListItems] = useState<GroceryRow[]>([]);
+  const [selectedLinkedItems, setSelectedLinkedItems] = useState<string[]>([]);
+  const [showListPicker, setShowListPicker] = useState(false);
+  const [listPickerFilter, setListPickerFilter] = useState<string>("all");
+  const [linkedItemsMap, setLinkedItemsMap] = useState<Record<string, GroceryRow[]>>({});
+
+  // Fetch all list items for linking
+  const fetchListItems = useCallback(async () => {
+    if (!partnerPair) return;
+    const { data } = await supabase
+      .from("grocery_items")
+      .select("*")
+      .eq("partner_pair", partnerPair)
+      .eq("is_checked", false)
+      .order("created_at", { ascending: false });
+    if (data) setAllListItems(data);
+  }, [partnerPair]);
+
+  // Fetch linked items for all chores
+  const fetchLinkedItems = useCallback(async () => {
+    if (!partnerPair) return;
+    const { data: links } = await supabase
+      .from("chore_linked_items" as any)
+      .select("chore_id, grocery_item_id")
+      .eq("partner_pair", partnerPair);
+    if (!links || links.length === 0) { setLinkedItemsMap({}); return; }
+    
+    const itemIds = [...new Set((links as any[]).map((l: any) => l.grocery_item_id))];
+    const { data: items } = await supabase
+      .from("grocery_items")
+      .select("*")
+      .in("id", itemIds);
+    
+    const itemMap: Record<string, GroceryRow> = {};
+    (items || []).forEach(it => { itemMap[it.id] = it; });
+    
+    const result: Record<string, GroceryRow[]> = {};
+    (links as any[]).forEach((l: any) => {
+      if (itemMap[l.grocery_item_id]) {
+        if (!result[l.chore_id]) result[l.chore_id] = [];
+        result[l.chore_id].push(itemMap[l.grocery_item_id]);
+      }
+    });
+    setLinkedItemsMap(result);
+  }, [partnerPair]);
+
+  useEffect(() => {
+    if (!partnerPair || pairLoading) return;
+    fetchListItems();
+    fetchLinkedItems();
+  }, [partnerPair, pairLoading, fetchListItems, fetchLinkedItems]);
+
   // Close settings on outside click
   useEffect(() => {
     if (!showSettings) return;
