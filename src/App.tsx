@@ -23,6 +23,7 @@ import DietPage from "@/pages/DietPage";
 import BabyPlanPage from "@/pages/BabyPlanPage";
 import MensHealthPage from "@/pages/MensHealthPage";
 import PhysioPage from "@/pages/PhysioPage";
+import PostpartumPage from "@/pages/PostpartumPage";
 import PartnerConnectPage from "@/pages/PartnerConnectPage";
 import CoupleProfilePage from "@/pages/CoupleProfilePage";
 import AuthPage from "@/pages/AuthPage";
@@ -94,6 +95,7 @@ function AppRoutes() {
         <Route path="/baby-plan" element={<BabyPlanPage />} />
         <Route path="/mens-health" element={<MensHealthPage />} />
         <Route path="/physio" element={<PhysioPage />} />
+        <Route path="/postpartum" element={<PostpartumPage />} />
         <Route path="/upgrade" element={<UpgradePage />} />
       </Route>
       {/* Authenticated users always redirect away from auth/onboarding */}
