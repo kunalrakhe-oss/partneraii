@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -29,6 +30,19 @@ const queryClient = new QueryClient();
 function AppRoutes() {
   const { user, loading } = useAuth();
 
+  // Authenticated — clean up onboarding state (must be before early returns)
+  useEffect(() => {
+    if (!user) return;
+    const onboardIntent = localStorage.getItem("lovelist-onboard-intent");
+    if (onboardIntent === "real") {
+      localStorage.removeItem("lovelist-onboard-intent");
+      localStorage.setItem("lovelist-demo-dismissed", "true");
+    }
+    if (localStorage.getItem("lovelist-onboarding-done") !== "true") {
+      localStorage.setItem("lovelist-onboarding-done", "true");
+    }
+  }, [user]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -50,25 +64,6 @@ function AppRoutes() {
         <Route path="*" element={<Navigate to={defaultRoute} replace />} />
       </Routes>
     );
-  }
-
-  // Authenticated — if user chose "real" path, exit demo and resume onboarding
-  const onboardIntent = localStorage.getItem("lovelist-onboard-intent");
-  if (onboardIntent === "real") {
-    localStorage.removeItem("lovelist-onboard-intent");
-    localStorage.setItem("lovelist-demo-dismissed", "true");
-    // Don't mark onboarding done — let them finish the setup flow
-    return (
-      <Routes>
-        <Route path="*" element={<Navigate to="/onboarding" replace />} />
-        <Route path="/onboarding" element={<OnboardingFlow />} />
-      </Routes>
-    );
-  }
-
-  // Authenticated — mark onboarding done (user has an account, no need for onboarding)
-  if (localStorage.getItem("lovelist-onboarding-done") !== "true") {
-    localStorage.setItem("lovelist-onboarding-done", "true");
   }
 
   return (
