@@ -315,7 +315,7 @@ export default function MoodPage() {
                   disabled={(!moodReaction && !reactionMessage.trim()) || sendingReaction}
                   className="h-9 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold flex items-center gap-1.5 disabled:opacity-40">
                   <Send size={12} />
-                  Send
+                  {t("common.send")}
                 </button>
               </div>
             </>

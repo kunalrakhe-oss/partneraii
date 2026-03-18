@@ -236,7 +236,7 @@ export default function UpgradePage() {
         </div>
 
         <p className="text-center text-[10px] text-muted-foreground mt-6">
-          Cancel anytime • Secure payment via Stripe
+          {t("upgrade.cancelAnytime")}
         </p>
       </div>
     </PageTransition>
