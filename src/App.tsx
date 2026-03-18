@@ -91,6 +91,7 @@ function AppRoutes() {
         <Route path="/workout" element={<FeatureGate feature="workout" featureName="Workout Tracking"><WorkoutPage /></FeatureGate>} />
         <Route path="/diet" element={<FeatureGate feature="diet" featureName="Diet Tracking"><DietPage /></FeatureGate>} />
         <Route path="/baby-plan" element={<BabyPlanPage />} />
+        <Route path="/mens-health" element={<MensHealthPage />} />
         <Route path="/upgrade" element={<UpgradePage />} />
       </Route>
       {/* Authenticated users always redirect away from auth/onboarding */}

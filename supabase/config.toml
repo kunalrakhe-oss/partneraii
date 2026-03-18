@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.dietbot-chat]
 verify_jwt = false
+
+[functions.mens-health-chat]
+verify_jwt = false
