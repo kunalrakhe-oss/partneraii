@@ -145,7 +145,35 @@ function NotificationSettingsContent() {
 }
 
 function CustomizeLayoutSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { navTabs, homeWidgets, toggleNavTab, toggleHomeWidget, resetDefaults } = useLayoutPreferences();
+  const { navTabs, homeWidgets, toggleNavTab, toggleHomeWidget, setNavTabs, setHomeWidgets, resetDefaults } = useLayoutPreferences();
+
+  // Local ordered lists for reorder (includes all items, active or not, in display order)
+  const allNavIds = ALL_NAV_TABS.map(t => t.id);
+  const allWidgetIds = ALL_HOME_WIDGETS.map(w => w.id);
+
+  // Build ordered list: active items in current order, then inactive items
+  const navOrder = [
+    ...navTabs.filter(id => allNavIds.includes(id)),
+    ...allNavIds.filter(id => !navTabs.includes(id)),
+  ];
+  const widgetOrder = [
+    ...homeWidgets.filter(id => allWidgetIds.includes(id)),
+    ...allWidgetIds.filter(id => !homeWidgets.includes(id)),
+  ];
+
+  const navLabel = (id: string) => ALL_NAV_TABS.find(t => t.id === id)?.label || id;
+  const widgetLabel = (id: string) => ALL_HOME_WIDGETS.find(w => w.id === id)?.label || id;
+
+  const handleNavReorder = (newOrder: string[]) => {
+    // Keep only active ones in new order
+    const activeInOrder = newOrder.filter(id => navTabs.includes(id)) as typeof navTabs;
+    setNavTabs(activeInOrder);
+  };
+
+  const handleWidgetReorder = (newOrder: string[]) => {
+    const activeInOrder = newOrder.filter(id => homeWidgets.includes(id)) as typeof homeWidgets;
+    setHomeWidgets(activeInOrder);
+  };
 
   return (
     <BottomSheet open={open} onClose={onClose} title="Customize Layout">
@@ -153,57 +181,66 @@ function CustomizeLayoutSheet({ open, onClose }: { open: boolean; onClose: () =>
         {/* Nav Bar Tabs */}
         <div>
           <p className="text-xs font-semibold text-muted-foreground mb-2">Navigation Bar</p>
-          <p className="text-[10px] text-muted-foreground mb-3">Choose which tabs appear in your bottom nav (Home is always shown)</p>
-          <div className="space-y-1.5">
-            {ALL_NAV_TABS.map(tab => {
-              const isActive = navTabs.includes(tab.id);
-              const isHome = tab.id === "home";
+          <p className="text-[10px] text-muted-foreground mb-3">Drag to reorder • Toggle to show/hide (Home is always shown)</p>
+          <Reorder.Group axis="y" values={navOrder} onReorder={handleNavReorder} className="space-y-1.5">
+            {navOrder.map(id => {
+              const isActive = navTabs.includes(id);
+              const isHome = id === "home";
               return (
-                <button
-                  key={tab.id}
-                  onClick={() => !isHome && toggleNavTab(tab.id)}
-                  disabled={isHome}
-                  className={`w-full flex items-center justify-between bg-muted rounded-xl px-4 py-3 border transition-colors ${
+                <Reorder.Item
+                  key={id}
+                  value={id}
+                  dragListener={!isHome}
+                  className={`flex items-center gap-2 bg-muted rounded-xl px-3 py-3 border transition-colors cursor-grab active:cursor-grabbing ${
                     isActive ? "border-primary" : "border-border"
-                  } ${isHome ? "opacity-60" : ""}`}
+                  } ${isHome ? "opacity-60 cursor-default" : ""}`}
                 >
-                  <p className="text-sm font-medium text-foreground">{tab.label}</p>
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                    isActive ? "bg-primary" : "bg-border"
-                  }`}>
+                  <GripVertical size={14} className="text-muted-foreground shrink-0" />
+                  <p className="text-sm font-medium text-foreground flex-1">{navLabel(id)}</p>
+                  <button
+                    onClick={() => !isHome && toggleNavTab(id)}
+                    disabled={isHome}
+                    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                      isActive ? "bg-primary" : "bg-border"
+                    }`}
+                  >
                     {isActive && <Check size={12} className="text-primary-foreground" />}
-                  </div>
-                </button>
+                  </button>
+                </Reorder.Item>
               );
             })}
-          </div>
+          </Reorder.Group>
         </div>
 
         {/* Home Screen Widgets */}
         <div>
           <p className="text-xs font-semibold text-muted-foreground mb-2">Home Screen Widgets</p>
-          <p className="text-[10px] text-muted-foreground mb-3">Toggle which sections appear on your home page</p>
-          <div className="space-y-1.5">
-            {ALL_HOME_WIDGETS.map(widget => {
-              const isActive = homeWidgets.includes(widget.id);
+          <p className="text-[10px] text-muted-foreground mb-3">Drag to reorder • Toggle to show/hide</p>
+          <Reorder.Group axis="y" values={widgetOrder} onReorder={handleWidgetReorder} className="space-y-1.5">
+            {widgetOrder.map(id => {
+              const isActive = homeWidgets.includes(id);
               return (
-                <button
-                  key={widget.id}
-                  onClick={() => toggleHomeWidget(widget.id)}
-                  className={`w-full flex items-center justify-between bg-muted rounded-xl px-4 py-3 border transition-colors ${
+                <Reorder.Item
+                  key={id}
+                  value={id}
+                  className={`flex items-center gap-2 bg-muted rounded-xl px-3 py-3 border transition-colors cursor-grab active:cursor-grabbing ${
                     isActive ? "border-primary" : "border-border"
                   }`}
                 >
-                  <p className="text-sm font-medium text-foreground">{widget.label}</p>
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                    isActive ? "bg-primary" : "bg-border"
-                  }`}>
+                  <GripVertical size={14} className="text-muted-foreground shrink-0" />
+                  <p className="text-sm font-medium text-foreground flex-1">{widgetLabel(id)}</p>
+                  <button
+                    onClick={() => toggleHomeWidget(id)}
+                    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                      isActive ? "bg-primary" : "bg-border"
+                    }`}
+                  >
                     {isActive && <Check size={12} className="text-primary-foreground" />}
-                  </div>
-                </button>
+                  </button>
+                </Reorder.Item>
               );
             })}
-          </div>
+          </Reorder.Group>
         </div>
 
         {/* Reset */}
