@@ -1,4 +1,4 @@
-import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send, Bell, Users, BookOpen, Rocket, BookHeart, Dumbbell, Apple, Baby, Shield } from "lucide-react";
+import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send, Bell, Users, BookOpen, Rocket, BookHeart, Dumbbell, Apple, Baby, Shield, Activity } from "lucide-react";
 import ProfileButton from "@/components/ProfileButton";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -568,6 +568,13 @@ export default function HomePage() {
                         </div>
                         <p className="text-sm font-bold text-foreground">Men's Health</p>
                         <p className="text-xs text-muted-foreground">Wellness AI</p>
+                      </Link>
+                      <Link to="/physio" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                          <Activity size={18} className="text-emerald-500" />
+                        </div>
+                        <p className="text-sm font-bold text-foreground">Physio</p>
+                        <p className="text-xs text-muted-foreground">Recovery AI</p>
                       </Link>
                    </motion.div>
                  );

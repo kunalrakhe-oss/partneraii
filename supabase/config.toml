@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.mens-health-chat]
 verify_jwt = false
+
+[functions.physio-chat]
+verify_jwt = false
