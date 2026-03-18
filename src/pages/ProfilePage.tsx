@@ -257,7 +257,33 @@ function CustomizeLayoutSheet({ open, onClose }: { open: boolean; onClose: () =>
   );
 }
 
-export default function ProfilePage() {
+function LanguageSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { language, setLanguage } = useLanguage();
+  return (
+    <BottomSheet open={open} onClose={onClose} title="Language / भाषा">
+      <div className="space-y-2">
+        <p className="text-xs text-muted-foreground mb-1">Choose your preferred language</p>
+        {LANGUAGE_OPTIONS.map(opt => (
+          <button key={opt.value} onClick={() => { setLanguage(opt.value); onClose(); }}
+            className={`w-full flex items-center gap-3 bg-muted rounded-xl px-4 py-3 border transition-colors ${language === opt.value ? "border-primary" : "border-border"}`}>
+            <div className="w-9 h-9 rounded-xl bg-card flex items-center justify-center">
+              <Globe size={16} className="text-foreground" />
+            </div>
+            <div className="text-left flex-1">
+              <p className="text-sm font-medium text-foreground">{opt.nativeLabel}</p>
+              <p className="text-[10px] text-muted-foreground">{opt.label}</p>
+            </div>
+            {language === opt.value && (
+              <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                <Check size={12} className="text-primary-foreground" />
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    </BottomSheet>
+  );
+}
   const { tier, subscribed, accessCodeActive, applyAccessCode, clearAccessCode, refreshSubscription } = useSubscriptionContext();
   const [showAccessCode, setShowAccessCode] = useState(false);
   const [accessCodeInput, setAccessCodeInput] = useState("");
