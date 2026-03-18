@@ -256,6 +256,48 @@ export type Database = {
         }
         Relationships: []
       }
+      location_shares: {
+        Row: {
+          accuracy: number | null
+          expires_at: string
+          id: string
+          is_active: boolean
+          latitude: number
+          longitude: number
+          message: string | null
+          partner_pair: string
+          started_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          latitude: number
+          longitude: number
+          message?: string | null
+          partner_pair: string
+          started_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          latitude?: number
+          longitude?: number
+          message?: string | null
+          partner_pair?: string
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       memories: {
         Row: {
           created_at: string
