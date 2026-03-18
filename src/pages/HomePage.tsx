@@ -453,9 +453,9 @@ export default function HomePage() {
                             {partnerMood ? ({ happy: "😊", excited: "🤩", neutral: "🥰", calm: "😌", grateful: "🙏", silly: "🤪", tired: "😵‍💫", sad: "😢", stressed: "😫", anxious: "😰", angry: "😠", furious: "🤬", lonely: "🥺", hopeful: "🌟", confused: "😕" }[partnerMood.mood] || "✨") : "✨"}
                           </span>
                           <div>
-                            <p className="text-xs text-foreground/70">Your partner is feeling</p>
-                            <p className="text-sm font-bold text-foreground">
-                              {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : "No mood yet today"}
+                             <p className="text-xs text-foreground/70">{t("home.partnerFeeling")}</p>
+                             <p className="text-sm font-bold text-foreground">
+                               {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : t("home.noMoodYet")}
                             </p>
                             {partnerMood?.note && (
                               <p className="text-xs text-foreground/50 mt-0.5">"{partnerMood.note}"</p>
