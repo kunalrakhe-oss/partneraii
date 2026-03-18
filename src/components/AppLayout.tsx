@@ -10,13 +10,14 @@ import { getNavTabs, type NavTabId } from "@/hooks/useLayoutPreferences";
 import { useState, useEffect } from "react";
 import PullToRefresh from "@/components/PullToRefresh";
 import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const tabMeta: Record<string, { icon: typeof Home; label: string; to: string }> = {
-  home: { to: "/", icon: Home, label: "Home" },
-  calendar: { to: "/calendar", icon: CalendarDays, label: "Calendar" },
-  lists: { to: "/lists", icon: ShoppingCart, label: "Lists" },
-  chat: { to: "/chat", icon: MessageCircle, label: "Chat" },
-  chores: { to: "/chores", icon: ClipboardList, label: "Chores" },
+const tabMeta: Record<string, { icon: typeof Home; labelKey: string; to: string }> = {
+  home: { to: "/", icon: Home, labelKey: "nav.home" },
+  calendar: { to: "/calendar", icon: CalendarDays, labelKey: "nav.calendar" },
+  lists: { to: "/lists", icon: ShoppingCart, labelKey: "nav.lists" },
+  chat: { to: "/chat", icon: MessageCircle, labelKey: "nav.chat" },
+  chores: { to: "/chores", icon: ClipboardList, labelKey: "nav.chores" },
 };
 
 function GatedVoiceAssistant() {
