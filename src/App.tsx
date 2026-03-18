@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { DemoProvider } from "@/contexts/DemoContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
@@ -35,6 +36,7 @@ import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NotFound from "@/pages/NotFound";
 import OnboardingFlow from "@/pages/OnboardingFlow";
 import UpgradePage from "@/pages/UpgradePage";
+import PostAuthSetup from "@/pages/PostAuthSetup";
 import InstallPrompt from "@/components/InstallPrompt";
 import FullscreenPrompt from "@/components/FullscreenPrompt";
 import FeatureGate from "@/components/FeatureGate";
@@ -44,6 +46,7 @@ const queryClient = new QueryClient();
 
 function AppRoutes() {
   const { user, loading } = useAuth();
+  const [needsSetup, setNeedsSetup] = useState<boolean | null>(null);
 
   // Authenticated — clean up onboarding state (must be before early returns)
   useEffect(() => {
@@ -58,7 +61,36 @@ function AppRoutes() {
     }
   }, [user]);
 
-  if (loading) {
+  // Check if newly authenticated user needs setup
+  useEffect(() => {
+    if (!user) { setNeedsSetup(null); return; }
+    // If user already completed setup via this flow, skip
+    if (localStorage.getItem("lovelist-setup-done") === "true") {
+      setNeedsSetup(false);
+      return;
+    }
+    // Check profile for explicit mode choice
+    const checkProfile = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("app_mode, display_name")
+        .eq("user_id", user.id)
+        .single();
+      // Default app_mode is 'couple' from DB. If user has a display_name that
+      // differs from email prefix, they likely completed setup before.
+      // We check a localStorage flag to be safe.
+      if (!data) {
+        setNeedsSetup(true);
+      } else {
+        // Mark as done so we don't check again
+        localStorage.setItem("lovelist-setup-done", "true");
+        setNeedsSetup(false);
+      }
+    };
+    checkProfile();
+  }, [user]);
+
+  if (loading || (user && needsSetup === null)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -77,6 +109,16 @@ function AppRoutes() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/onboarding" element={<OnboardingFlow />} />
         <Route path="*" element={<Navigate to={defaultRoute} replace />} />
+      </Routes>
+    );
+  }
+
+  // Needs post-auth setup (mode selection + name)
+  if (needsSetup) {
+    return (
+      <Routes>
+        <Route path="/setup" element={<PostAuthSetup />} />
+        <Route path="*" element={<Navigate to="/setup" replace />} />
       </Routes>
     );
   }
