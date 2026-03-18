@@ -75,8 +75,8 @@ export default function AuthPage() {
           </button>
         </div>
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 mb-6">
-          <Heart size={24} className="text-secondary" fill="currentColor" />
-          <span className="text-xl font-bold text-foreground font-sans">LoveList</span>
+          <Sparkles size={24} className="text-primary" />
+          <span className="text-xl font-bold text-foreground font-sans">Partner<span className="love-gradient-text">AI</span></span>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}
