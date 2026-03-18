@@ -39,6 +39,7 @@ export const hi: TranslationKeys = {
     pending: "बाकी",
     overdue: "अतिदेय",
     comingSoon: "जल्द आ रहा है",
+    change: "बदलें",
     or: "या",
     items: "आइटम",
     msgs: "संदेश",
