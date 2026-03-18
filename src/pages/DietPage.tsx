@@ -538,7 +538,43 @@ export default function DietPage() {
     setShowForm(true);
   };
 
-  // ─── Derived ───────────────────────────────────────────────────────────────
+  const getAiDietSuggestions = async () => {
+    if (aiSuggesting) return;
+    setAiSuggesting(true);
+    setAiSuggestions(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("dietbot-chat", {
+        body: {
+          type: "suggest",
+          currentItems: items.map(i => ({ meal_type: i.meal_type, description: i.description, calories: i.calories })),
+          language: localStorage.getItem("lovelist-language") || "en",
+        },
+      });
+      if (error) throw error;
+      if (data?.plan) {
+        setAiSuggestions(data.plan.suggestions || []);
+        setAiTip(data.plan.tip || "");
+      }
+    } catch (e) {
+      console.error("AI diet error:", e);
+      toast({ title: "AI suggestion failed", description: "Please try again later.", variant: "destructive" });
+    } finally {
+      setAiSuggesting(false);
+    }
+  };
+
+  const addAiSuggestion = async (suggestion: { meal_type: string; description: string; calories: number; notes?: string }) => {
+    if (!user || !partnerPair) return;
+    const { data: row, error } = await supabase.from("diet_logs").insert({
+      user_id: user.id, partner_pair: partnerPair, meal_type: suggestion.meal_type,
+      description: suggestion.description, notes: suggestion.notes || null, assigned_to: "me",
+      calories: suggestion.calories, log_date: today, recurrence: "once",
+    }).select().single();
+    if (!error && row) {
+      setItems(prev => [...prev, row as DietItem]);
+      toast({ title: "Added! ✅", description: suggestion.description });
+    }
+  };
 
   const totalItems = items.length;
   const completedItems = items.filter(i => i.is_completed).length;
