@@ -542,7 +542,49 @@ export default function HomePage() {
                   </motion.div>
                 );
 
-              case "mood-check":
+              case "mood-check": {
+                const MOOD_EMOJI: Record<string, string> = { happy: "😊", excited: "🤩", neutral: "🥰", calm: "😌", grateful: "🙏", silly: "🤪", tired: "😵‍💫", sad: "😢", stressed: "😫", anxious: "😰", angry: "😠", furious: "🤬", lonely: "🥺", hopeful: "🌟", confused: "😕" };
+                if (myMood && !isDemoMode) {
+                  return (
+                    <motion.div key="mood-check" variants={item} className="space-y-3">
+                      {/* User's logged mood */}
+                      <div className="bg-gradient-to-r from-secondary/20 via-primary/10 to-secondary/20 rounded-2xl p-4 border border-secondary/30">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center shrink-0">
+                            <span className="text-2xl">{MOOD_EMOJI[myMood.mood] || "✨"}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-muted-foreground">{t("home.yourMoodToday") || "Your mood today"}</p>
+                            <p className="text-sm font-bold text-foreground">{myMood.mood.charAt(0).toUpperCase() + myMood.mood.slice(1)}</p>
+                            {myMood.note && <p className="text-xs text-muted-foreground mt-0.5 truncate">"{myMood.note}"</p>}
+                          </div>
+                          <button onClick={() => navigate("/mood")} className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1.5 rounded-full shrink-0">
+                            {t("common.change") || "Change"}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* AI Mood Check-in */}
+                      <div className="bg-card rounded-2xl p-4 border border-border shadow-card">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Brain size={14} className="text-primary" />
+                          <span className="text-xs font-semibold text-primary">AI Check-in</span>
+                        </div>
+                        {aiMoodLoading ? (
+                          <div className="flex items-center gap-2 py-1">
+                            <Loader2 size={12} className="animate-spin text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">Checking in…</span>
+                          </div>
+                        ) : (
+                          <p className="text-xs text-muted-foreground leading-relaxed">{aiMoodCheckin || "Loading…"}</p>
+                        )}
+                        <button onClick={() => navigate("/chat?tab=ai")} className="text-xs font-semibold text-primary mt-2 flex items-center gap-1">
+                          Chat with AI →
+                        </button>
+                      </div>
+                    </motion.div>
+                  );
+                }
                 return !myMood && !isDemoMode ? (
                   <motion.div key="mood-check" variants={item}>
                     <button onClick={() => navigate("/mood")} className="w-full bg-gradient-to-r from-secondary/20 via-primary/10 to-secondary/20 rounded-2xl p-4 border border-secondary/30 text-left">
@@ -559,6 +601,7 @@ export default function HomePage() {
                     </button>
                   </motion.div>
                 ) : null;
+              }
 
               case "partner-mood":
                 if (isSingle) return null; // Hide partner mood for single users
