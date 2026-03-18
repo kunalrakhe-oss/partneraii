@@ -316,6 +316,9 @@ export default function ProfilePage() {
           toast({ title: "Already available", description: "Use your browser menu to install the app" });
         }
         break;
+      case "Fullscreen Mode":
+        toggleFullscreen();
+        break;
       default:
         toast({ title: "Coming soon", description: `${label} will be available in a future update` });
     }
