@@ -784,12 +784,12 @@ export default function ProfilePage() {
                 <button
                   onClick={() => {
                     const success = applyAccessCode(accessCodeInput.trim());
-                    if (success) {
-                      toast({ title: "Premium unlocked! 🎉", description: "All features are now available." });
-                      setShowAccessCode(false);
-                      setAccessCodeInput("");
-                    } else {
-                      toast({ title: "Invalid code", description: "Please check your access code and try again.", variant: "destructive" });
+                     if (success) {
+                       toast({ title: t("profile.premiumUnlockedToast"), description: t("profile.allFeaturesAvailable") });
+                       setShowAccessCode(false);
+                       setAccessCodeInput("");
+                     } else {
+                       toast({ title: t("profile.invalidCode"), description: t("profile.checkCode"), variant: "destructive" });
                     }
                   }}
                   disabled={!accessCodeInput.trim()}
