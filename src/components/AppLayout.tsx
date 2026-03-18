@@ -14,7 +14,7 @@ const tabs = [
 
 export default function AppLayout() {
   return (
-    <div className="flex flex-col min-h-[100dvh] max-w-lg mx-auto bg-background relative">
+    <div className="flex flex-col min-h-[100dvh] bg-background relative">
       <DemoBanner />
       <PartnerNotifications />
       <main className="flex-1 overflow-y-auto pb-20">
