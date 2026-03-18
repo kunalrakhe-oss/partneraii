@@ -61,6 +61,17 @@ function AppRoutes() {
   // Check if newly authenticated user needs setup
   useEffect(() => {
     if (!user) { setNeedsSetup(null); return; }
+
+    // Always sync localStorage mode selection to DB (even for returning users)
+    const syncMode = async () => {
+      const savedMode = localStorage.getItem("lovelist-app-mode");
+      if (savedMode && (savedMode === "single" || savedMode === "couple")) {
+        await supabase.from("profiles").update({ app_mode: savedMode }).eq("user_id", user.id);
+        localStorage.removeItem("lovelist-app-mode");
+      }
+    };
+    syncMode();
+
     // If user already completed setup via this flow, skip
     if (localStorage.getItem("lovelist-setup-done") === "true") {
       setNeedsSetup(false);
@@ -73,13 +84,6 @@ function AppRoutes() {
         .select("app_mode, display_name")
         .eq("user_id", user.id)
         .single();
-
-      // Sync localStorage mode selection to DB
-      const savedMode = localStorage.getItem("lovelist-app-mode");
-      if (savedMode && (savedMode === "single" || savedMode === "couple")) {
-        await supabase.from("profiles").update({ app_mode: savedMode }).eq("user_id", user.id);
-        localStorage.removeItem("lovelist-app-mode");
-      }
 
       if (!data || !data.display_name) {
         setNeedsSetup(true);

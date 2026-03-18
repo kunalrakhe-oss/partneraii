@@ -617,13 +617,15 @@ export default function HomePage() {
                        <p className="text-sm font-bold text-foreground">{t("home.groceries")}</p>
                        <p className="text-xs text-muted-foreground">{uncheckedGroceries} {t("common.items")}</p>
                      </Link>
-                     <Link to="/chat" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                       <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                         <MessageSquare size={18} className="text-primary" />
-                       </div>
-                       <p className="text-sm font-bold text-foreground">{t("nav.chat")}</p>
-                       <p className="text-xs text-muted-foreground">{messageCount} {t("common.msgs")}</p>
-                     </Link>
+                     {!isSingle && (
+                       <Link to="/chat" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                         <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+                           <MessageSquare size={18} className="text-primary" />
+                         </div>
+                         <p className="text-sm font-bold text-foreground">{t("nav.chat")}</p>
+                         <p className="text-xs text-muted-foreground">{messageCount} {t("common.msgs")}</p>
+                       </Link>
+                     )}
                      <Link to="/memories" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
                        <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
                          <Camera size={18} className="text-accent-foreground" />
