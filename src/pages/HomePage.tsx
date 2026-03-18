@@ -614,7 +614,7 @@ export default function HomePage() {
                 )}
               </AnimatePresence>
             </div>
-          </motion.div>
+          </motion.div>}
 
           {/* AI Insight — Powered by Lovable AI */}
           {!insightDismissed && (
