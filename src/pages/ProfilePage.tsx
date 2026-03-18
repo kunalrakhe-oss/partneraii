@@ -459,6 +459,14 @@ export default function ProfilePage() {
           navigate("/upgrade");
         }
         break;
+      case "Enter Access Code":
+        setShowAccessCode(true);
+        break;
+      case "Remove Access Code":
+        clearAccessCode();
+        refreshSubscription();
+        toast({ title: "Access code removed" });
+        break;
       default:
         toast({ title: "Coming soon", description: `${label} will be available in a future update` });
     }
