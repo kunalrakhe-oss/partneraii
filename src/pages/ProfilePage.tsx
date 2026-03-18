@@ -439,27 +439,25 @@ export default function ProfilePage() {
     setRemovingPartner(false);
   };
 
-  const handleSettingTap = (label: string) => {
-    switch (label) {
-      case "Personal Information":
+  const handleSettingTap = (key: string) => {
+    switch (key) {
+      case "personal-info":
         openPersonalInfo();
         break;
-      case "Notifications":
+      case "notifications":
         setActiveSheet("notifications");
         break;
-      case "Partner Profile":
+      case "partner-profile":
+      case "couple-connection":
         navigate("/couple");
         break;
-      case "Couple Connection":
-        navigate("/couple");
-        break;
-      case "Remove Partner":
+      case "remove-partner":
         setActiveSheet("remove-partner");
         break;
-      case "Theme & Appearance":
+      case "theme":
         setActiveSheet("theme");
         break;
-      case "Install App":
+      case "install-app":
         if (isIOS) {
           toast({ title: t("profile.installLoveLists"), description: t("profile.installSafari") });
         } else if (canInstall) {
@@ -468,22 +466,21 @@ export default function ProfilePage() {
           toast({ title: t("profile.alreadyAvailable"), description: t("profile.useBrowserMenu") });
         }
         break;
-      case "Fullscreen Mode":
+      case "fullscreen":
         toggleFullscreen();
         break;
-      case "Voice Assistant":
+      case "voice-assistant":
         toggleVoice(!voiceEnabled);
         toast({ title: !voiceEnabled ? t("profile.voiceEnabled") : t("profile.voiceDisabled"), description: !voiceEnabled ? t("profile.sayHeyLove") : undefined });
         break;
-      case "Customize Layout":
+      case "customize-layout":
         setActiveSheet("customize");
         break;
-      case "Language":
+      case "language":
         setActiveSheet("language");
         break;
-      case "Subscription & Billing":
+      case "subscription":
         if (subscribed) {
-          // Open customer portal
           (async () => {
             try {
               const { data, error } = await supabase.functions.invoke("customer-portal");
@@ -497,16 +494,16 @@ export default function ProfilePage() {
           navigate("/upgrade");
         }
         break;
-      case "Enter Access Code":
+      case "enter-access-code":
         setShowAccessCode(true);
         break;
-      case "Remove Access Code":
+      case "remove-access-code":
         clearAccessCode();
         refreshSubscription();
         toast({ title: t("profile.accessCodeRemoved") });
         break;
       default:
-        toast({ title: t("common.comingSoon"), description: `${label}` });
+        toast({ title: t("common.comingSoon") });
     }
   };
 
