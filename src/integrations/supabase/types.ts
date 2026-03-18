@@ -154,6 +154,45 @@ export type Database = {
           },
         ]
       }
+      chore_linked_items: {
+        Row: {
+          chore_id: string
+          created_at: string
+          grocery_item_id: string
+          id: string
+          partner_pair: string
+        }
+        Insert: {
+          chore_id: string
+          created_at?: string
+          grocery_item_id: string
+          id?: string
+          partner_pair: string
+        }
+        Update: {
+          chore_id?: string
+          created_at?: string
+          grocery_item_id?: string
+          id?: string
+          partner_pair?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chore_linked_items_chore_id_fkey"
+            columns: ["chore_id"]
+            isOneToOne: false
+            referencedRelation: "chores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chore_linked_items_grocery_item_id_fkey"
+            columns: ["grocery_item_id"]
+            isOneToOne: false
+            referencedRelation: "grocery_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chores: {
         Row: {
           assigned_to: string | null

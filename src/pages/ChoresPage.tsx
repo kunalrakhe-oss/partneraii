@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, forwardRef, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users, ArrowDownAZ, CheckCheck, Trash, Pencil, Save, Lock } from "lucide-react";
+import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users, ArrowDownAZ, CheckCheck, Trash, Pencil, Save, Lock, ClipboardList, Link2 } from "lucide-react";
 import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,6 +16,16 @@ import type { Tables } from "@/integrations/supabase/types";
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_CHORES, DEMO_PARTNER1, DEMO_PARTNER2 } from "@/lib/demoData";
 import { useNavigate } from "react-router-dom";
+
+type GroceryRow = Tables<"grocery_items">;
+
+const LIST_TYPE_LABELS: Record<string, { label: string; emoji: string }> = {
+  grocery: { label: "Grocery", emoji: "🛒" },
+  todo: { label: "To-Do", emoji: "📋" },
+  gift: { label: "Gift Ideas", emoji: "🎁" },
+  travel: { label: "Travel Pack", emoji: "✈️" },
+  date: { label: "Date Ideas", emoji: "💕" },
+};
 
 type ChoreRow = Tables<"chores">;
 
@@ -112,6 +122,59 @@ export default function ChoresPage() {
   const [editAssign, setEditAssign] = useState("");
   const [editDueDate, setEditDueDate] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+
+  // List linking state
+  const [allListItems, setAllListItems] = useState<GroceryRow[]>([]);
+  const [selectedLinkedItems, setSelectedLinkedItems] = useState<string[]>([]);
+  const [showListPicker, setShowListPicker] = useState(false);
+  const [listPickerFilter, setListPickerFilter] = useState<string>("all");
+  const [linkedItemsMap, setLinkedItemsMap] = useState<Record<string, GroceryRow[]>>({});
+
+  // Fetch all list items for linking
+  const fetchListItems = useCallback(async () => {
+    if (!partnerPair) return;
+    const { data } = await supabase
+      .from("grocery_items")
+      .select("*")
+      .eq("partner_pair", partnerPair)
+      .eq("is_checked", false)
+      .order("created_at", { ascending: false });
+    if (data) setAllListItems(data);
+  }, [partnerPair]);
+
+  // Fetch linked items for all chores
+  const fetchLinkedItems = useCallback(async () => {
+    if (!partnerPair) return;
+    const { data: links } = await supabase
+      .from("chore_linked_items" as any)
+      .select("chore_id, grocery_item_id")
+      .eq("partner_pair", partnerPair);
+    if (!links || links.length === 0) { setLinkedItemsMap({}); return; }
+    
+    const itemIds = [...new Set((links as any[]).map((l: any) => l.grocery_item_id))];
+    const { data: items } = await supabase
+      .from("grocery_items")
+      .select("*")
+      .in("id", itemIds);
+    
+    const itemMap: Record<string, GroceryRow> = {};
+    (items || []).forEach(it => { itemMap[it.id] = it; });
+    
+    const result: Record<string, GroceryRow[]> = {};
+    (links as any[]).forEach((l: any) => {
+      if (itemMap[l.grocery_item_id]) {
+        if (!result[l.chore_id]) result[l.chore_id] = [];
+        result[l.chore_id].push(itemMap[l.grocery_item_id]);
+      }
+    });
+    setLinkedItemsMap(result);
+  }, [partnerPair]);
+
+  useEffect(() => {
+    if (!partnerPair || pairLoading) return;
+    fetchListItems();
+    fetchLinkedItems();
+  }, [partnerPair, pairLoading, fetchListItems, fetchLinkedItems]);
 
   // Close settings on outside click
   useEffect(() => {
@@ -211,6 +274,9 @@ export default function ChoresPage() {
     setShowCalendar(true);
     setNewFile(null);
     setNewFilePreview("");
+    setSelectedLinkedItems([]);
+    setShowListPicker(false);
+    setListPickerFilter("all");
   };
 
   const addChore = async () => {
@@ -247,7 +313,7 @@ export default function ChoresPage() {
       }
     }
 
-    const { error } = await supabase.from("chores").insert({
+    const { data: newChore, error } = await supabase.from("chores").insert({
       title,
       recurrence: newFrequency || null,
       assigned_to: assignedTo,
@@ -255,10 +321,21 @@ export default function ChoresPage() {
       partner_pair: partnerPair,
       due_date: hasDueDate && newDueDate ? format(newDueDate, "yyyy-MM-dd") : null,
       image_url: imageUrl,
-    } as any);
+    } as any).select().single();
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
+      // Save linked list items
+      if (selectedLinkedItems.length > 0 && newChore) {
+        await supabase.from("chore_linked_items" as any).insert(
+          selectedLinkedItems.map(itemId => ({
+            chore_id: (newChore as any).id,
+            grocery_item_id: itemId,
+            partner_pair: partnerPair,
+          }))
+        );
+        fetchLinkedItems();
+      }
       setShowAdd(false);
       resetForm();
       fetchChores();
@@ -625,6 +702,27 @@ export default function ChoresPage() {
                             )}
                           </div>
 
+                          {/* Linked List Items */}
+                          {linkedItemsMap[chore.id] && linkedItemsMap[chore.id].length > 0 && (
+                            <div className="mx-4 mb-3 rounded-xl bg-muted/40 p-4">
+                              <p className="text-xs font-bold text-foreground flex items-center gap-1.5 mb-3">
+                                <Link2 size={13} className="text-primary" /> Linked List Items
+                              </p>
+                              <div className="space-y-2">
+                                {linkedItemsMap[chore.id].map(item => {
+                                  const typeInfo = LIST_TYPE_LABELS[item.list_type] || { label: item.list_type, emoji: "📦" };
+                                  return (
+                                    <div key={item.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-card/60">
+                                      <span className="text-sm">{typeInfo.emoji}</span>
+                                      <span className="text-xs text-foreground flex-1 truncate">{item.name}</span>
+                                      <span className="text-[10px] text-muted-foreground">{typeInfo.label}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
                           {/* Edit form */}
                           {editingId === chore.id && (
                             <div className="mx-4 mb-3 rounded-xl bg-muted/60 p-4 space-y-3">
@@ -936,6 +1034,95 @@ export default function ChoresPage() {
                         )}
                       </select>
                     </div>
+                  </div>
+
+                  {/* Link List Items */}
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => { setShowListPicker(!showListPicker); if (!showListPicker) fetchListItems(); }}
+                      className="w-full px-4 py-3 flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
+                          <Link2 size={16} className="text-primary" />
+                        </div>
+                        <span className="text-sm text-foreground font-medium">Link List Items</span>
+                      </div>
+                      <span className="text-sm text-primary font-medium">
+                        {selectedLinkedItems.length > 0 ? `${selectedLinkedItems.length} selected` : "None"}
+                      </span>
+                    </button>
+
+                    <AnimatePresence>
+                      {showListPicker && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          {/* Filter tabs */}
+                          <div className="flex gap-1.5 px-4 py-2 overflow-x-auto no-scrollbar">
+                            <button
+                              onClick={() => setListPickerFilter("all")}
+                              className={`px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all ${
+                                listPickerFilter === "all" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                              }`}
+                            >All</button>
+                            {Object.entries(LIST_TYPE_LABELS).map(([key, { label, emoji }]) => (
+                              <button
+                                key={key}
+                                onClick={() => setListPickerFilter(key)}
+                                className={`px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all ${
+                                  listPickerFilter === key ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                                }`}
+                              >{emoji} {label}</button>
+                            ))}
+                          </div>
+
+                          {/* Item list */}
+                          <div className="max-h-48 overflow-y-auto px-4 pb-3 space-y-1">
+                            {allListItems
+                              .filter(item => listPickerFilter === "all" || item.list_type === listPickerFilter)
+                              .map(item => {
+                                const isSelected = selectedLinkedItems.includes(item.id);
+                                const typeInfo = LIST_TYPE_LABELS[item.list_type] || { label: item.list_type, emoji: "📦" };
+                                return (
+                                  <button
+                                    key={item.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedLinkedItems(prev =>
+                                        isSelected ? prev.filter(id => id !== item.id) : [...prev, item.id]
+                                      );
+                                    }}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${
+                                      isSelected ? "bg-primary/10 border border-primary/20" : "hover:bg-muted/50"
+                                    }`}
+                                  >
+                                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${
+                                      isSelected ? "border-primary bg-primary" : "border-border"
+                                    }`}>
+                                      {isSelected && <Check size={12} className="text-primary-foreground" />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm text-foreground truncate">{item.name}</p>
+                                    </div>
+                                    <span className="text-[10px] text-muted-foreground font-medium shrink-0">
+                                      {typeInfo.emoji} {typeInfo.label}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            {allListItems.filter(item => listPickerFilter === "all" || item.list_type === listPickerFilter).length === 0 && (
+                              <p className="text-xs text-muted-foreground text-center py-4">No items found</p>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   {/* Photo attachment */}
