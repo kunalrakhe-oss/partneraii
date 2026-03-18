@@ -688,6 +688,98 @@ export type Database = {
           },
         ]
       }
+      recovery_plans: {
+        Row: {
+          assessment_answers: Json
+          created_at: string
+          current_phase: number
+          id: string
+          is_active: boolean
+          partner_pair: string
+          plan_data: Json
+          plan_type: string
+          started_at: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          assessment_answers?: Json
+          created_at?: string
+          current_phase?: number
+          id?: string
+          is_active?: boolean
+          partner_pair: string
+          plan_data?: Json
+          plan_type?: string
+          started_at?: string
+          title?: string
+          user_id: string
+        }
+        Update: {
+          assessment_answers?: Json
+          created_at?: string
+          current_phase?: number
+          id?: string
+          is_active?: boolean
+          partner_pair?: string
+          plan_data?: Json
+          plan_type?: string
+          started_at?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recovery_progress: {
+        Row: {
+          completed: boolean
+          created_at: string
+          exercise_name: string
+          id: string
+          log_date: string
+          notes: string | null
+          pain_level: number | null
+          partner_pair: string
+          phase_index: number
+          plan_id: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          exercise_name: string
+          id?: string
+          log_date?: string
+          notes?: string | null
+          pain_level?: number | null
+          partner_pair: string
+          phase_index?: number
+          plan_id: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          exercise_name?: string
+          id?: string
+          log_date?: string
+          notes?: string | null
+          pain_level?: number | null
+          partner_pair?: string
+          phase_index?: number
+          plan_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recovery_progress_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "recovery_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       relationship_details: {
         Row: {
           anniversary_date: string | null
