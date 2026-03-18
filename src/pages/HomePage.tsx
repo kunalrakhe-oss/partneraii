@@ -412,7 +412,7 @@ export default function HomePage() {
                 </button>
               ))}
             </div>
-          </motion.div>
+          </motion.div>}
 
           {/* Daily Mood Check */}
           {!myMood && !isDemoMode && (
