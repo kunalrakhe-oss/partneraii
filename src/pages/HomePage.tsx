@@ -78,7 +78,36 @@ export default function HomePage() {
   const [insightDismissed, setInsightDismissed] = useState(false);
   const [insightLoading, setInsightLoading] = useState(false);
 
+  // AI Mood Check-in
+  const [aiMoodCheckin, setAiMoodCheckin] = useState<string | null>(null);
+  const [aiMoodLoading, setAiMoodLoading] = useState(false);
+
   const isSingle = appMode === "single";
+
+  // Fetch AI mood check-in when myMood changes
+  useEffect(() => {
+    if (!myMood?.mood) { setAiMoodCheckin(null); return; }
+    const fetchMoodCheckin = async () => {
+      setAiMoodLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("mood-tip", {
+          body: {
+            myMood: myMood.mood,
+            partnerMood: isSingle ? null : partnerMood?.mood || null,
+            weekHistory: "",
+            language: localStorage.getItem("lovelist-language") || "en",
+          },
+        });
+        if (error) throw error;
+        if (data?.tip) setAiMoodCheckin(data.tip);
+      } catch {
+        setAiMoodCheckin("Take a moment to check in with yourself today! 💕");
+      } finally {
+        setAiMoodLoading(false);
+      }
+    };
+    fetchMoodCheckin();
+  }, [myMood?.mood, isSingle, partnerMood?.mood]);
 
   useEffect(() => {
     if (!user) return;
