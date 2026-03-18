@@ -19,6 +19,12 @@ const tabMeta: Record<string, { icon: typeof Home; label: string; to: string }> 
   chores: { to: "/chores", icon: ClipboardList, label: "Chores" },
 };
 
+function GatedVoiceAssistant() {
+  const { canAccess } = useSubscriptionContext();
+  if (!canAccess("voice-assistant")) return null;
+  return <VoiceAssistant />;
+}
+
 export default function AppLayout() {
   const [visibleTabs, setVisibleTabs] = useState<NavTabId[]>(getNavTabs);
 
