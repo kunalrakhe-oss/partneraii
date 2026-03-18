@@ -240,8 +240,8 @@ export default function HomePage() {
 
   const formatEventDate = (dateStr: string) => {
     const d = parseISO(dateStr);
-    if (isToday(d)) return "Today";
-    if (isTomorrow(d)) return "Tomorrow";
+    if (isToday(d)) return t("common.today");
+    if (isTomorrow(d)) return t("common.tomorrow");
     return format(d, "MMM d");
   };
 
