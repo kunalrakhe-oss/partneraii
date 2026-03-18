@@ -29,6 +29,7 @@ type NextEvent = { id: string; title: string; event_date: string; event_time: st
 export default function HomePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { canAccess } = useSubscriptionContext();
   const { partnerPair } = usePartnerPair();
   const { isDemoMode } = useDemo();
   const [firstName, setFirstName] = useState("");
