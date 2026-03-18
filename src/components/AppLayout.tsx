@@ -11,6 +11,8 @@ import { useState, useEffect } from "react";
 import PullToRefresh from "@/components/PullToRefresh";
 import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const tabMeta: Record<string, { icon: typeof Home; labelKey: string; to: string }> = {
   home: { to: "/", icon: Home, labelKey: "nav.home" },
@@ -28,16 +30,25 @@ function GatedVoiceAssistant() {
 
 export default function AppLayout() {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [visibleTabs, setVisibleTabs] = useState<NavTabId[]>(getNavTabs);
+  const [appMode, setAppMode] = useState<string>("couple");
+
+  // Fetch app_mode from profile
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("app_mode").eq("user_id", user.id).maybeSingle()
+      .then(({ data }) => {
+        if (data?.app_mode) setAppMode(data.app_mode);
+      });
+  }, [user]);
 
   // Listen for localStorage changes (when user updates prefs in settings)
   useEffect(() => {
     const onStorage = () => setVisibleTabs(getNavTabs());
     window.addEventListener("storage", onStorage);
-    // Also poll on focus in case same-tab change
     const onFocus = () => setVisibleTabs(getNavTabs());
     window.addEventListener("focus", onFocus);
-    // Custom event for same-tab updates
     const onCustom = () => setVisibleTabs(getNavTabs());
     window.addEventListener("layout-prefs-changed", onCustom);
     return () => {
