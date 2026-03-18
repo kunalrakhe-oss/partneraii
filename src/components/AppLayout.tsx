@@ -9,6 +9,7 @@ import CompletedTasksCleanup from "@/components/CompletedTasksCleanup";
 import { getNavTabs, type NavTabId } from "@/hooks/useLayoutPreferences";
 import { useState, useEffect } from "react";
 import PullToRefresh from "@/components/PullToRefresh";
+import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 
 const tabMeta: Record<string, { icon: typeof Home; label: string; to: string }> = {
   home: { to: "/", icon: Home, label: "Home" },
