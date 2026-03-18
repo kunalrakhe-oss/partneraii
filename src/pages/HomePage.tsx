@@ -480,7 +480,7 @@ export default function HomePage() {
                     <p className="text-xl font-bold text-foreground mb-4">{todayEvents.length} {t("home.sharedEvents")}</p>
                     <div className="space-y-2">
                       {todayEvents.length === 0 ? (
-                        <p className="text-sm text-foreground/60">No events scheduled for today</p>
+                        <p className="text-sm text-foreground/60">{t("home.noEventsToday")}</p>
                       ) : (
                         todayEvents.slice(0, 3).map(event => (
                           <div key={event.id} className="flex items-center gap-3">
