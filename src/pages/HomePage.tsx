@@ -644,9 +644,9 @@ export default function HomePage() {
                         <Sparkles size={16} className="text-muted-foreground" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-foreground">LoveList AI Insight</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Upgrade to Pro for daily AI-powered insights.</p>
-                        <button onClick={() => navigate("/upgrade")} className="text-xs font-semibold text-primary mt-1.5">Upgrade →</button>
+                         <p className="text-xs font-bold text-foreground">{t("home.aiInsight")}</p>
+                         <p className="text-xs text-muted-foreground mt-0.5">{t("home.upgradeForInsight")}</p>
+                         <button onClick={() => navigate("/upgrade")} className="text-xs font-semibold text-primary mt-1.5">{t("home.upgradeNow")}</button>
                       </div>
                     </motion.div>
                   );
