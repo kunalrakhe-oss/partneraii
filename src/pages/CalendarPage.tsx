@@ -449,6 +449,17 @@ export default function CalendarPage() {
       if (error) { toast.error("Failed to update event"); return; }
       toast.success("Event updated ✨");
     } else {
+      // Free tier: cap at 10 calendar events
+      if (!canAccess("unlimited-calendar")) {
+        const { count } = await supabase
+          .from("calendar_events")
+          .select("id", { count: "exact", head: true })
+          .eq("partner_pair", partnerPair);
+        if ((count ?? 0) >= 10) {
+          toast.error("Free plan limited to 10 events. Upgrade to Pro for unlimited!");
+          return;
+        }
+      }
       const { error } = await supabase
         .from("calendar_events")
         .insert({
