@@ -17,7 +17,7 @@ import { useLayoutPreferences, ALL_NAV_TABS, ALL_HOME_WIDGETS } from "@/hooks/us
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { useWakeWord } from "@/hooks/useWakeWord";
 
-type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | null;
+type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | "customize" | null;
 
 function BottomSheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   return (
