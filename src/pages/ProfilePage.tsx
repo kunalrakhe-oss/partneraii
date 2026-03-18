@@ -165,13 +165,12 @@ function CustomizeLayoutSheet({ open, onClose }: { open: boolean; onClose: () =>
   const widgetLabel = (id: string) => ALL_HOME_WIDGETS.find(w => w.id === id)?.label || id;
 
   const handleNavReorder = (newOrder: string[]) => {
-    // Keep only active ones in new order
-    const activeInOrder = newOrder.filter(id => navTabs.includes(id)) as typeof navTabs;
+    const activeInOrder = newOrder.filter(id => navTabs.includes(id as any)) as NavTabId[];
     setNavTabs(activeInOrder);
   };
 
   const handleWidgetReorder = (newOrder: string[]) => {
-    const activeInOrder = newOrder.filter(id => homeWidgets.includes(id)) as typeof homeWidgets;
+    const activeInOrder = newOrder.filter(id => homeWidgets.includes(id as any)) as HomeWidgetId[];
     setHomeWidgets(activeInOrder);
   };
 
