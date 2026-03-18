@@ -130,7 +130,7 @@ export default function UpgradePage() {
                 <span className="ml-auto text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">{t("upgrade.currentPlan")}</span>
               )}
             </div>
-            <p className="text-2xl font-bold text-foreground mb-4">$0<span className="text-xs text-muted-foreground font-normal">/forever</span></p>
+            <p className="text-2xl font-bold text-foreground mb-4">$0<span className="text-xs text-muted-foreground font-normal">/{t("upgrade.forever")}</span></p>
             <ul className="space-y-2">
               {FREE_FEATURES.map(f => (
                 <li key={f} className="flex items-start gap-2 text-xs text-foreground">
