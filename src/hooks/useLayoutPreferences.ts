@@ -59,6 +59,7 @@ export function useLayoutPreferences() {
   const setHomeWidgets = useCallback((widgets: HomeWidgetId[]) => {
     setHomeWidgetsState(widgets);
     localStorage.setItem(WIDGETS_KEY, JSON.stringify(widgets));
+    dispatchChange();
   }, []);
 
   const toggleNavTab = useCallback((id: NavTabId) => {
