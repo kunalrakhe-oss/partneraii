@@ -14,6 +14,7 @@ import NotificationsPanel, { useNotificationCount } from "@/components/Notificat
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_STATS, DEMO_PARTNER_MOOD, DEMO_MOOD_MESSAGE, DEMO_AI_INSIGHT, DEMO_TODAY_EVENTS, DEMO_PARTNER1, DEMO_PARTNER2, DEMO_CHORES } from "@/lib/demoData";
 import { getHomeWidgets, type HomeWidgetId } from "@/hooks/useLayoutPreferences";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const container = {
   hidden: { opacity: 0 },
