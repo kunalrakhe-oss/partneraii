@@ -256,7 +256,7 @@ export default function ChatPage() {
             ) : (
               <motion.div key="tabs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="flex items-center justify-between w-full">
-                <h1 className="text-lg font-bold text-foreground shrink-0">Chat</h1>
+                <h1 className="text-lg font-bold text-foreground shrink-0">{t("chat.chat")}</h1>
 
                 <div className="flex bg-muted rounded-2xl p-1 gap-1">
                   <button
