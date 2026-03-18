@@ -15,7 +15,7 @@ export default function AuthPage() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
