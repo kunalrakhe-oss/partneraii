@@ -503,10 +503,10 @@ export default function ProfilePage() {
       case "Remove Access Code":
         clearAccessCode();
         refreshSubscription();
-        toast({ title: "Access code removed" });
+        toast({ title: t("profile.accessCodeRemoved") });
         break;
       default:
-        toast({ title: "Coming soon", description: `${label} will be available in a future update` });
+        toast({ title: t("common.comingSoon"), description: `${label}` });
     }
   };
 
