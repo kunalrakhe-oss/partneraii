@@ -456,7 +456,7 @@ export default function HomePage() {
                 </div>
               </div>
             </button>
-          </motion.div>
+          </motion.div>}
 
           {/* Today's Agenda Card */}
           <motion.div variants={item} className="bg-primary/25 rounded-card p-5 shadow-soft">
