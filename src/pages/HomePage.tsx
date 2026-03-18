@@ -617,7 +617,7 @@ export default function HomePage() {
           </motion.div>}
 
           {/* AI Insight — Powered by Lovable AI */}
-          {!insightDismissed && (
+          {showWidget("ai-insight") && !insightDismissed && (
             <motion.div variants={item} className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3 cursor-pointer"
               onClick={() => setInsightDismissed(true)}>
               <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
