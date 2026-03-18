@@ -15,6 +15,8 @@ import { useFullscreen } from "@/hooks/useFullscreen";
 import { useWakeWord } from "@/hooks/useWakeWord";
 import { useLayoutPreferences, ALL_NAV_TABS, ALL_HOME_WIDGETS, type NavTabId, type HomeWidgetId } from "@/hooks/useLayoutPreferences";
 import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LANGUAGE_OPTIONS } from "@/lib/translations";
 
 type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | "customize" | null;
 
