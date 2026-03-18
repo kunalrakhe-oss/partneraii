@@ -458,6 +458,13 @@ export default function ProfilePage() {
       case "remove-partner":
         setActiveSheet("remove-partner");
         break;
+      case "switch-to-couple":
+        // Switch to couple mode and navigate to partner connect
+        supabase.from("profiles").update({ app_mode: "couple" } as any).eq("user_id", user!.id).then(() => {
+          setAppMode("couple");
+          navigate("/connect");
+        });
+        break;
       case "theme":
         setActiveSheet("theme");
         break;
