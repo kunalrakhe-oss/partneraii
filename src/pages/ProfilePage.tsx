@@ -338,6 +338,7 @@ export default function ProfilePage() {
       title: "Preferences",
       items: [
         { icon: Palette, label: "Theme & Appearance" },
+        ...(fullscreenSupported ? [{ icon: Maximize, label: "Fullscreen Mode", sub: isFullscreen ? "Currently fullscreen — tap to exit" : "Hide browser bar for app-like feel" }] : []),
         ...(!isInstalled ? [{ icon: Download, label: "Install App", sub: isIOS ? "Add to Home Screen" : "Get the native experience" }] : []),
         { icon: Lock, label: "Privacy & Security" },
         { icon: HelpCircle, label: "Help & Support" },
