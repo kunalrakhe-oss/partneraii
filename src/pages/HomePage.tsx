@@ -742,7 +742,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Quick reactions - select, don't auto-send */}
-                <p className="text-xs text-muted-foreground text-center mb-2">React to their mood</p>
+                <p className="text-xs text-muted-foreground text-center mb-2">{t("mood.reactToMood")}</p>
                 <div className="flex justify-center gap-3 mb-4 relative">
                   {["❤️", "🤗", "💪", "😘"].map(emoji => (
                     <button
