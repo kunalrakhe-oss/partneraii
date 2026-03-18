@@ -216,7 +216,7 @@ export default function ChatPage() {
 
   return (
     <PageTransition>
-      <div className="flex flex-col h-[calc(100vh-4rem)]">
+      <div className="flex flex-col h-[calc(100dvh-var(--nav-total))] overflow-hidden">
         {/* Header */}
         <div className="px-4 pt-8 pb-2 shrink-0">
           <AnimatePresence mode="wait">
