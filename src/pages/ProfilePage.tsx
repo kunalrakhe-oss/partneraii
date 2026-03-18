@@ -553,7 +553,7 @@ export default function ProfilePage() {
           <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
             <ChevronLeft size={18} className="text-foreground" />
           </button>
-          <h1 className="text-base font-bold text-foreground">Profile</h1>
+          <h1 className="text-base font-bold text-foreground">{t("profile.profile")}</h1>
           <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
             <X size={16} className="text-muted-foreground" />
           </button>
