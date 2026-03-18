@@ -740,6 +740,50 @@ export default function ProfilePage() {
       {/* Language Sheet */}
       <LanguageSheet open={activeSheet === "language"} onClose={() => setActiveSheet(null)} />
 
+      {/* App Mode Sheet */}
+      <BottomSheet open={activeSheet === "app-mode"} onClose={() => setActiveSheet(null)} title="App Mode">
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground mb-1">Choose how you want to use LoveList</p>
+          {([
+            { value: "single", label: "Me Mode", desc: "Personal productivity & wellness", icon: User },
+            { value: "couple", label: "We Mode", desc: "Shared with your partner", icon: Users },
+          ] as const).map(opt => (
+            <button
+              key={opt.value}
+              onClick={async () => {
+                if (opt.value === "single" && partnerId) {
+                  toast({ title: "Remove partner first", description: "Disconnect your partner before switching to Me Mode", variant: "destructive" });
+                  return;
+                }
+                await supabase.from("profiles").update({ app_mode: opt.value }).eq("user_id", user!.id);
+                setAppMode(opt.value);
+                setActiveSheet(null);
+                toast({ title: `Switched to ${opt.label}` });
+                if (opt.value === "couple" && !partnerId) {
+                  navigate("/connect");
+                }
+              }}
+              className={`w-full flex items-center gap-3 bg-muted rounded-xl px-4 py-3 border transition-colors ${
+                appMode === opt.value ? "border-primary" : "border-border"
+              }`}
+            >
+              <div className="w-9 h-9 rounded-xl bg-card flex items-center justify-center">
+                <opt.icon size={16} className="text-foreground" />
+              </div>
+              <div className="text-left flex-1">
+                <p className="text-sm font-medium text-foreground">{opt.label}</p>
+                <p className="text-[10px] text-muted-foreground">{opt.desc}</p>
+              </div>
+              {appMode === opt.value && (
+                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                  <Check size={12} className="text-primary-foreground" />
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+      </BottomSheet>
+
       {/* Remove Partner Confirmation */}
        <BottomSheet open={activeSheet === "remove-partner"} onClose={() => setActiveSheet(null)} title={t("profile.removePartner")}>
          <div className="flex flex-col items-center py-4 gap-3">
