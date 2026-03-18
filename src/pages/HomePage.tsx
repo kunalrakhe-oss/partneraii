@@ -415,7 +415,7 @@ export default function HomePage() {
           </motion.div>}
 
           {/* Daily Mood Check */}
-          {!myMood && !isDemoMode && (
+          {showWidget("mood-check") && !myMood && !isDemoMode && (
             <motion.div variants={item}>
               <button onClick={() => navigate("/mood")} className="w-full bg-gradient-to-r from-secondary/20 via-primary/10 to-secondary/20 rounded-2xl p-4 border border-secondary/30 text-left">
                 <div className="flex items-center gap-3">
