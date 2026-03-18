@@ -79,7 +79,7 @@ export default function UpgradePage() {
           <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
             <ChevronLeft size={18} className="text-foreground" />
           </button>
-          <h1 className="text-base font-bold text-foreground">Choose Your Plan</h1>
+          <h1 className="text-base font-bold text-foreground">{t("upgrade.chooseYourPlan")}</h1>
           <div className="w-9" />
         </div>
 
