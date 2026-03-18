@@ -566,7 +566,7 @@ export default function ProfilePage() {
 
   return (
     <PageTransition>
-      <div className="px-5 pt-10 pb-6">
+      <div className="pb-6">
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
             <ChevronLeft size={18} className="text-foreground" />
