@@ -81,7 +81,8 @@ export default function NotificationsPanel({ open, onClose }: { open: boolean; o
 
   const clearAll = async () => {
     if (!user) return;
-    await supabase.from("notifications").delete().eq("user_id", user.id);
+    // Mark all as read instead of deleting, so overdue-check dedup still works
+    await supabase.from("notifications").update({ is_read: true }).eq("user_id", user.id);
     setNotifications([]);
   };
 
