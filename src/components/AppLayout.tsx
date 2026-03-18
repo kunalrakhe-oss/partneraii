@@ -6,16 +6,39 @@ import DemoBanner from "@/components/DemoBanner";
 import PostAuthInstallPrompt from "@/components/PostAuthInstallPrompt";
 import VoiceAssistant from "@/components/VoiceAssistant";
 import CompletedTasksCleanup from "@/components/CompletedTasksCleanup";
+import { getNavTabs, type NavTabId } from "@/hooks/useLayoutPreferences";
+import { useState, useEffect } from "react";
 
-const tabs = [
-  { to: "/", icon: Home, label: "Home" },
-  { to: "/calendar", icon: CalendarDays, label: "Calendar" },
-  { to: "/lists", icon: ShoppingCart, label: "Lists" },
-  { to: "/chat", icon: MessageCircle, label: "Chat" },
-  { to: "/chores", icon: ClipboardList, label: "Chores" },
-];
+const tabMeta: Record<string, { icon: typeof Home; label: string; to: string }> = {
+  home: { to: "/", icon: Home, label: "Home" },
+  calendar: { to: "/calendar", icon: CalendarDays, label: "Calendar" },
+  lists: { to: "/lists", icon: ShoppingCart, label: "Lists" },
+  chat: { to: "/chat", icon: MessageCircle, label: "Chat" },
+  chores: { to: "/chores", icon: ClipboardList, label: "Chores" },
+};
 
 export default function AppLayout() {
+  const [visibleTabs, setVisibleTabs] = useState<NavTabId[]>(getNavTabs);
+
+  // Listen for localStorage changes (when user updates prefs in settings)
+  useEffect(() => {
+    const onStorage = () => setVisibleTabs(getNavTabs());
+    window.addEventListener("storage", onStorage);
+    // Also poll on focus in case same-tab change
+    const onFocus = () => setVisibleTabs(getNavTabs());
+    window.addEventListener("focus", onFocus);
+    // Custom event for same-tab updates
+    const onCustom = () => setVisibleTabs(getNavTabs());
+    window.addEventListener("layout-prefs-changed", onCustom);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("layout-prefs-changed", onCustom);
+    };
+  }, []);
+
+  const tabs = visibleTabs.map(id => tabMeta[id]).filter(Boolean);
+
   return (
     <div className="flex flex-col min-h-[100dvh] bg-background relative">
       <DemoBanner />
