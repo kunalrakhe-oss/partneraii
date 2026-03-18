@@ -11,6 +11,9 @@ const SubscriptionContext = createContext<SubscriptionContextType>({
   subscriptionEnd: null,
   loading: true,
   refreshSubscription: async () => {},
+  accessCodeActive: false,
+  applyAccessCode: () => false,
+  clearAccessCode: () => {},
   canAccess: () => true,
 });
 

@@ -10,6 +10,16 @@ export interface SubscriptionState {
   subscriptionEnd: string | null;
   loading: boolean;
   refreshSubscription: () => Promise<void>;
+  accessCodeActive: boolean;
+  applyAccessCode: (code: string) => boolean;
+  clearAccessCode: () => void;
+}
+
+const ACCESS_CODE_KEY = "lovelist-access-code";
+const VALID_ACCESS_CODE = "NeeKun";
+
+export function isAccessCodeActive(): boolean {
+  return localStorage.getItem(ACCESS_CODE_KEY) === VALID_ACCESS_CODE;
 }
 
 // Feature to minimum tier mapping
@@ -43,8 +53,35 @@ export function useSubscription(): SubscriptionState {
   const [subscribed, setSubscribed] = useState(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [accessCodeActive, setAccessCodeActive] = useState(isAccessCodeActive());
+
+  const applyAccessCode = useCallback((code: string): boolean => {
+    if (code === VALID_ACCESS_CODE) {
+      localStorage.setItem(ACCESS_CODE_KEY, code);
+      setAccessCodeActive(true);
+      setTier("premium");
+      setSubscribed(true);
+      return true;
+    }
+    return false;
+  }, []);
+
+  const clearAccessCode = useCallback(() => {
+    localStorage.removeItem(ACCESS_CODE_KEY);
+    setAccessCodeActive(false);
+  }, []);
 
   const refreshSubscription = useCallback(async () => {
+    // Access code overrides everything
+    if (isAccessCodeActive()) {
+      setTier("premium");
+      setSubscribed(true);
+      setSubscriptionEnd(null);
+      setAccessCodeActive(true);
+      setLoading(false);
+      return;
+    }
+
     if (!session?.access_token) {
       setTier("free");
       setSubscribed(false);
@@ -78,5 +115,5 @@ export function useSubscription(): SubscriptionState {
     return () => clearInterval(interval);
   }, [user, refreshSubscription]);
 
-  return { tier, subscribed, subscriptionEnd, loading, refreshSubscription };
+  return { tier, subscribed, subscriptionEnd, loading, refreshSubscription, accessCodeActive, applyAccessCode, clearAccessCode };
 }
