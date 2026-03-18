@@ -18,6 +18,7 @@ export default function AppLayout() {
     <div className="flex flex-col min-h-[100dvh] bg-background relative">
       <DemoBanner />
       <PartnerNotifications />
+      <PostAuthInstallPrompt />
       <main className="flex-1 overflow-y-auto pb-20">
         <Outlet />
       </main>
