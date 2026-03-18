@@ -256,6 +256,7 @@ function CustomizeLayoutSheet({ open, onClose }: { open: boolean; onClose: () =>
 }
 
 export default function ProfilePage() {
+  const { tier, subscribed } = useSubscriptionContext();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const { canInstall, isInstalled, isIOS, promptInstall } = usePWAInstall();
