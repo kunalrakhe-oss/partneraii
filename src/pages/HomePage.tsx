@@ -50,6 +50,15 @@ export default function HomePage() {
   const [showAddChore, setShowAddChore] = useState(false);
   const [newChoreTitle, setNewChoreTitle] = useState("");
   const unreadCount = useNotificationCount();
+  const [visibleWidgets, setVisibleWidgets] = useState<HomeWidgetId[]>(getHomeWidgets);
+
+  useEffect(() => {
+    const onUpdate = () => setVisibleWidgets(getHomeWidgets());
+    window.addEventListener("layout-prefs-changed", onUpdate);
+    return () => window.removeEventListener("layout-prefs-changed", onUpdate);
+  }, []);
+
+  const showWidget = (id: HomeWidgetId) => visibleWidgets.includes(id);
 
   // Analytics
   const [daysTogether, setDaysTogether] = useState(0);
