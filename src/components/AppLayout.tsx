@@ -65,7 +65,7 @@ export default function AppLayout() {
     <div className="flex flex-col min-h-[100dvh] bg-background relative">
       <DemoBanner />
       {!isSingle && <PartnerNotifications />}
-      <PostAuthInstallPrompt />
+      
       <GatedVoiceAssistant />
       <CompletedTasksCleanup />
       <div className="flex-1 overflow-y-auto pb-nav">
