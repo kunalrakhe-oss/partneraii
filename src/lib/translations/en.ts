@@ -51,7 +51,7 @@ export const en = {
 
   // Auth Page
   auth: {
-    welcomeTo: "Welcome to LoveList",
+    welcomeTo: "Welcome to PartnerAI",
     signIn: "Sign In",
     signUp: "Sign Up",
     signInToAccount: "Sign in to your account",
@@ -115,7 +115,7 @@ export const en = {
     quickAddChore: "Quick add chore...",
     dueNow: "Due now",
     once: "Once",
-    aiInsight: "LoveList AI Insight",
+    aiInsight: "PartnerAI Insight",
     upgradeForInsight: "Upgrade to Pro for daily AI-powered insights.",
     upgradeNow: "Upgrade now →",
     refreshInsight: "New Insight",
@@ -388,7 +388,7 @@ export const en = {
     voiceDisabled: "Voice assistant disabled",
 
     // Install
-    installLoveLists: "Install LoveLists",
+    installLoveLists: "Install PartnerAI",
     installSafari: "Tap Share → Add to Home Screen in Safari",
     alreadyAvailable: "Already available",
     useBrowserMenu: "Use your browser menu to install the app",
@@ -448,7 +448,7 @@ export const en = {
   // Partner Connect
   partner: {
     betterTogether: "Better Together",
-    loveListWorksBest: "LoveList works best when shared. Connect with your partner to start syncing your life.",
+    loveListWorksBest: "PartnerAI works best when shared. Connect with your partner to start syncing your life.",
     createStep: "Create",
     connectStep: "Connect",
     yourUniqueCode: "Your Unique Link Code",
@@ -483,7 +483,7 @@ export const en = {
 
   // Onboarding
   onboarding: {
-    loveList: "LoveList",
+    loveList: "PartnerAI",
     buildRelationship: "Build your relationship, not just tasks",
     startTogether: "Start Together",
     stayConnected: "Stay connected daily",

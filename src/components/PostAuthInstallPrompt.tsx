@@ -59,7 +59,7 @@ export default function PostAuthInstallPrompt() {
               <Download size={20} className="text-primary-foreground" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground">Install LoveLists</p>
+              <p className="text-sm font-semibold text-foreground">Install PartnerAI</p>
               <p className="text-xs text-muted-foreground">Quick access from your home screen</p>
             </div>
             <Button size="sm" className="rounded-xl" onClick={handleInstall}>

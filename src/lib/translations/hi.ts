@@ -53,7 +53,7 @@ export const hi: TranslationKeys = {
 
   // Auth Page
   auth: {
-    welcomeTo: "LoveList में आपका स्वागत है",
+    welcomeTo: "PartnerAI में आपका स्वागत है",
     signIn: "साइन इन",
     signUp: "साइन अप",
     signInToAccount: "अपने अकाउंट में साइन इन करें",
@@ -390,7 +390,7 @@ export const hi: TranslationKeys = {
     voiceDisabled: "वॉइस असिस्टेंट निष्क्रिय",
 
     // Install
-    installLoveLists: "LoveLists इंस्टॉल करें",
+    installLoveLists: "PartnerAI इंस्टॉल करें",
     installSafari: "Safari में शेयर → होम स्क्रीन में जोड़ें टैप करें",
     alreadyAvailable: "पहले से उपलब्ध",
     useBrowserMenu: "ऐप इंस्टॉल करने के लिए ब्राउज़र मेनू का उपयोग करें",
@@ -449,7 +449,7 @@ export const hi: TranslationKeys = {
   // Partner Connect
   partner: {
     betterTogether: "साथ में बेहतर",
-    loveListWorksBest: "LoveList शेयर करने पर सबसे अच्छा काम करता है। अपने पार्टनर से जुड़ कर लाइफ सिंक करना शुरू करें।",
+    loveListWorksBest: "PartnerAI शेयर करने पर सबसे अच्छा काम करता है। अपने पार्टनर से जुड़ कर लाइफ सिंक करना शुरू करें।",
     createStep: "बनाएं",
     connectStep: "जोड़ें",
     yourUniqueCode: "आपका यूनिक लिंक कोड",
@@ -484,7 +484,7 @@ export const hi: TranslationKeys = {
 
   // Onboarding
   onboarding: {
-    loveList: "LoveList",
+    loveList: "PartnerAI",
     buildRelationship: "अपने रिश्ते को बनाएं, न कि सिर्फ़ काम",
     startTogether: "साथ में शुरू करें",
     stayConnected: "रोज़ जुड़े रहें",

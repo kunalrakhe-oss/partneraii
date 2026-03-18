@@ -16,7 +16,7 @@ export default function InstallPrompt() {
 
   useEffect(() => {
     if (isInstalled) {
-      toast.success("LoveLists installed! Find it on your home screen 💕");
+      toast.success("PartnerAI installed! Find it on your home screen 💕");
     }
   }, [isInstalled]);
 
@@ -69,7 +69,7 @@ export default function InstallPrompt() {
               Get the Full Experience
             </h2>
             <p className="text-center text-sm text-muted-foreground mt-1.5 leading-relaxed">
-              Install LoveLists for instant access, offline support & a native app feel.
+              Install PartnerAI for instant access, offline support & a native app feel.
             </p>
 
             {isIOS ? (
