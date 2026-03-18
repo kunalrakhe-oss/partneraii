@@ -165,7 +165,7 @@ export default function HomePage() {
     return () => { supabase.removeChannel(moodChannel); };
   }, [partnerPair, user, today]);
 
-  // Fetch active recovery plan
+  // Fetch active recovery plan & diet plan
   useEffect(() => {
     if (!user) return;
     supabase
@@ -178,6 +178,18 @@ export default function HomePage() {
       .maybeSingle()
       .then(({ data }) => {
         setActivePlan(data as any);
+      });
+
+    supabase
+      .from("diet_plans")
+      .select("title, goal, started_at")
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        setActiveDietPlan(data as any);
       });
   }, [user]);
 
