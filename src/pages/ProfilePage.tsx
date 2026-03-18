@@ -146,6 +146,7 @@ export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const { canInstall, isInstalled, isIOS, promptInstall } = usePWAInstall();
+  const { isSupported: fullscreenSupported, isFullscreen, toggleFullscreen } = useFullscreen();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [displayName, setDisplayName] = useState("");
