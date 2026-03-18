@@ -3,6 +3,7 @@ import { Home, CalendarDays, ShoppingCart, MessageCircle, ClipboardList } from "
 import { motion } from "framer-motion";
 import PartnerNotifications from "@/components/PartnerNotifications";
 import DemoBanner from "@/components/DemoBanner";
+import PostAuthInstallPrompt from "@/components/PostAuthInstallPrompt";
 
 const tabs = [
   { to: "/", icon: Home, label: "Home" },
