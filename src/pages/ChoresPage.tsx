@@ -966,7 +966,6 @@ export default function ChoresPage() {
             </motion.div>
           )}
         </AnimatePresence>
-        </div>
       </div>
     </PageTransition>
   );
