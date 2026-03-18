@@ -562,12 +562,12 @@ export default function HomePage() {
                 return (
                   <motion.div key="urgent-chores" variants={item}>
                     <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-base font-bold text-foreground">Urgent Chores</h2>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => setShowAddChore(true)} className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
-                          <Plus size={14} className="text-primary" />
-                        </button>
-                        <Link to="/chores" className="text-sm text-muted-foreground font-medium">Manage</Link>
+                       <h2 className="text-base font-bold text-foreground">{t("home.urgentChores")}</h2>
+                       <div className="flex items-center gap-2">
+                         <button onClick={() => setShowAddChore(true)} className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
+                           <Plus size={14} className="text-primary" />
+                         </button>
+                         <Link to="/chores" className="text-sm text-muted-foreground font-medium">{t("common.manage")}</Link>
                       </div>
                     </div>
                     <div className="space-y-2">
