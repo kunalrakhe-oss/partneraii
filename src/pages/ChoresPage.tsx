@@ -337,7 +337,14 @@ export default function ChoresPage() {
     setSavingEdit(false);
   };
 
+  const { canAccess } = useSubscriptionContext();
+  const choreNavigate = useNavigate();
+
   const handleToggleExpand = (chore: ChoreRow) => {
+    if (!canAccess("ai-chore-steps")) {
+      choreNavigate("/upgrade");
+      return;
+    }
     if (expandedId === chore.id) {
       setExpandedId(null);
       setEditingId(null);

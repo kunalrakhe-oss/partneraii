@@ -46,7 +46,7 @@ export default function AppLayout() {
       <DemoBanner />
       <PartnerNotifications />
       <PostAuthInstallPrompt />
-      <VoiceAssistant />
+      <GatedVoiceAssistant />
       <CompletedTasksCleanup />
       <PullToRefresh>
         <Outlet />

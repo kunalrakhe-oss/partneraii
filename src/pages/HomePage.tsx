@@ -634,6 +634,20 @@ export default function HomePage() {
                 );
 
               case "ai-insight":
+                if (!canAccess("daily-insight")) {
+                  return (
+                    <motion.div key="ai-insight" variants={item} className="border border-border rounded-2xl p-4 flex items-start gap-3 bg-muted/50">
+                      <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+                        <Sparkles size={16} className="text-muted-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-foreground">LoveList AI Insight</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Upgrade to Pro for daily AI-powered insights.</p>
+                        <button onClick={() => navigate("/upgrade")} className="text-xs font-semibold text-primary mt-1.5">Upgrade →</button>
+                      </div>
+                    </motion.div>
+                  );
+                }
                 return !insightDismissed ? (
                   <motion.div key="ai-insight" variants={item} className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3 cursor-pointer"
                     onClick={() => setInsightDismissed(true)}>
