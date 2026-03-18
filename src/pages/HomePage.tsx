@@ -445,7 +445,7 @@ export default function HomePage() {
               case "partner-mood":
                 return (
                   <motion.div key="partner-mood" variants={item}>
-                    <p className="text-sm font-semibold text-foreground mb-2">Partner's Mood</p>
+                    <p className="text-sm font-semibold text-foreground mb-2">{t("home.partnerMood")}</p>
                     <button onClick={() => partnerMood ? setShowMoodPopup(true) : navigate("/mood")} className="w-full text-left">
                       <div className="flex items-center gap-3">
                         <div className="flex-1 bg-primary/20 rounded-2xl px-4 py-3 flex items-center gap-3">
