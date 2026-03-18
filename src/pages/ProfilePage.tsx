@@ -9,8 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Monitor, Volume2, Vibrate } from "lucide-react";
+import { Monitor, Volume2, Vibrate, Maximize } from "lucide-react";
 import { getNotificationPrefs, setNotificationPrefs, playNotificationSound } from "@/lib/notificationSound";
+import { useFullscreen } from "@/hooks/useFullscreen";
 
 type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | null;
 
