@@ -418,12 +418,6 @@ export default function OnboardingFlow() {
               >
                 ❤️ With My Partner
               </button>
-              <button
-                onClick={enterDemoMode}
-                className="w-full h-12 rounded-2xl bg-card border border-border text-foreground font-medium text-sm flex items-center justify-center gap-2"
-              >
-                ✨ Explore Demo First
-              </button>
             </div>
           </motion.div>
         )}
