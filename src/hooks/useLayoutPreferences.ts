@@ -77,6 +77,7 @@ export function useLayoutPreferences() {
     setHomeWidgetsState(prev => {
       const next = prev.includes(id) ? prev.filter(w => w !== id) : [...prev, id];
       localStorage.setItem(WIDGETS_KEY, JSON.stringify(next));
+      dispatchChange();
       return next;
     });
   }, []);
