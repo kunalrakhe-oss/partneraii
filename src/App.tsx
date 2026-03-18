@@ -25,6 +25,7 @@ import MensHealthPage from "@/pages/MensHealthPage";
 import PhysioPage from "@/pages/PhysioPage";
 import PostpartumPage from "@/pages/PostpartumPage";
 import SafetyCheckInPage from "@/pages/SafetyCheckInPage";
+import BudgetPage from "@/pages/BudgetPage";
 import PartnerConnectPage from "@/pages/PartnerConnectPage";
 import CoupleProfilePage from "@/pages/CoupleProfilePage";
 import AuthPage from "@/pages/AuthPage";
@@ -98,6 +99,7 @@ function AppRoutes() {
         <Route path="/physio" element={<PhysioPage />} />
         <Route path="/postpartum" element={<PostpartumPage />} />
         <Route path="/safety" element={<SafetyCheckInPage />} />
+        <Route path="/budget" element={<BudgetPage />} />
         <Route path="/upgrade" element={<UpgradePage />} />
       </Route>
       {/* Authenticated users always redirect away from auth/onboarding */}
