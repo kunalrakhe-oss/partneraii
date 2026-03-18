@@ -42,11 +42,23 @@ const PREMIUM_FEATURES = [
 
 export default function UpgradePage() {
   const navigate = useNavigate();
-  const { tier, loading: subLoading } = useSubscriptionContext();
+  const { tier, loading: subLoading, trialActive, trialDaysLeft, applyAccessCode, accessCodeActive } = useSubscriptionContext();
   const { toast } = useToast();
   const { t } = useLanguage();
   const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [checkingOut, setCheckingOut] = useState<string | null>(null);
+  const [accessCode, setAccessCode] = useState("");
+  const [codeError, setCodeError] = useState(false);
+
+  const handleApplyCode = () => {
+    const success = applyAccessCode(accessCode.trim());
+    if (success) {
+      toast({ title: "🎉 Access code applied!", description: "You now have Premium access." });
+      setCodeError(false);
+    } else {
+      setCodeError(true);
+    }
+  };
 
   const handleCheckout = async (planTier: "pro" | "premium") => {
     setCheckingOut(planTier);
