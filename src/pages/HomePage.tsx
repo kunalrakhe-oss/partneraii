@@ -1,4 +1,4 @@
-import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send, Bell, Users, BookOpen, Rocket, BookHeart, Dumbbell, Apple, Baby, Shield, Activity, HeartPulse } from "lucide-react";
+import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send, Bell, Users, BookOpen, Rocket, BookHeart, Dumbbell, Apple, Baby, Shield, Activity, HeartPulse, MapPin } from "lucide-react";
 import ProfileButton from "@/components/ProfileButton";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
