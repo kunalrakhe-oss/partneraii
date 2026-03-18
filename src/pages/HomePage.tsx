@@ -590,6 +590,13 @@ export default function HomePage() {
                         <p className="text-sm font-bold text-foreground">Safety</p>
                         <p className="text-xs text-muted-foreground">Live Location</p>
                       </Link>
+                      <Link to="/budget" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                        <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                          <Wallet size={18} className="text-amber-500" />
+                        </div>
+                        <p className="text-sm font-bold text-foreground">Budget</p>
+                        <p className="text-xs text-muted-foreground">Finance AI</p>
+                      </Link>
                    </motion.div>
                  );
 
