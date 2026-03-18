@@ -569,6 +569,13 @@ export default function HomePage() {
                         <p className="text-sm font-bold text-foreground">Men's Health</p>
                         <p className="text-xs text-muted-foreground">Wellness AI</p>
                       </Link>
+                      <Link to="/physio" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                          <Activity size={18} className="text-emerald-500" />
+                        </div>
+                        <p className="text-sm font-bold text-foreground">Physio</p>
+                        <p className="text-xs text-muted-foreground">Recovery AI</p>
+                      </Link>
                    </motion.div>
                  );
 
