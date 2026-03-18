@@ -719,25 +719,25 @@ export default function ProfilePage() {
       <LanguageSheet open={activeSheet === "language"} onClose={() => setActiveSheet(null)} />
 
       {/* Remove Partner Confirmation */}
-      <BottomSheet open={activeSheet === "remove-partner"} onClose={() => setActiveSheet(null)} title="Remove Partner">
-        <div className="flex flex-col items-center py-4 gap-3">
-          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-            <UserMinus size={28} className="text-destructive" />
-          </div>
-          <p className="text-sm font-bold text-foreground">Disconnect from {partnerName}?</p>
-          <p className="text-xs text-muted-foreground text-center leading-relaxed max-w-xs">
-            This will unlink your accounts. Shared data (chores, lists, events) will remain but won't sync anymore. You can reconnect anytime with a new invite code.
-          </p>
-          <button
-            onClick={handleRemovePartner}
-            disabled={removingPartner}
-            className="w-full h-11 rounded-xl bg-destructive text-destructive-foreground font-semibold text-sm mt-2 flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {removingPartner ? <Loader2 size={16} className="animate-spin" /> : "Remove Partner"}
-          </button>
-          <button onClick={() => setActiveSheet(null)} className="text-xs text-muted-foreground font-medium">
-            Cancel
-          </button>
+       <BottomSheet open={activeSheet === "remove-partner"} onClose={() => setActiveSheet(null)} title={t("profile.removePartner")}>
+         <div className="flex flex-col items-center py-4 gap-3">
+           <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+             <UserMinus size={28} className="text-destructive" />
+           </div>
+           <p className="text-sm font-bold text-foreground">{t("profile.disconnectFrom")} {partnerName}?</p>
+           <p className="text-xs text-muted-foreground text-center leading-relaxed max-w-xs">
+             {t("profile.disconnectConfirm")}
+           </p>
+           <button
+             onClick={handleRemovePartner}
+             disabled={removingPartner}
+             className="w-full h-11 rounded-xl bg-destructive text-destructive-foreground font-semibold text-sm mt-2 flex items-center justify-center gap-2 disabled:opacity-50"
+           >
+             {removingPartner ? <Loader2 size={16} className="animate-spin" /> : t("profile.removePartner")}
+           </button>
+           <button onClick={() => setActiveSheet(null)} className="text-xs text-muted-foreground font-medium">
+             {t("common.cancel")}
+           </button>
         </div>
       </BottomSheet>
 
