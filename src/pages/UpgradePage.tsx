@@ -103,9 +103,9 @@ export default function UpgradePage() {
                 : "bg-muted text-muted-foreground"
             }`}
           >
-            Yearly
+            {t("upgrade.yearly")}
             <span className="absolute -top-2 -right-2 bg-success text-success-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-              Save 33%
+              {t("upgrade.save33")}
             </span>
           </button>
         </div>
