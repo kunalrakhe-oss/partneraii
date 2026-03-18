@@ -554,9 +554,16 @@ export default function HomePage() {
                        </div>
                        <p className="text-sm font-bold text-foreground">{t("home.diet")}</p>
                        <p className="text-xs text-muted-foreground">{t("home.eatWell")}</p>
-                    </Link>
-                  </motion.div>
-                );
+                     </Link>
+                     <Link to="/baby-plan" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                       <div className="w-10 h-10 rounded-xl love-gradient flex items-center justify-center">
+                         <Baby size={18} className="text-primary-foreground" />
+                       </div>
+                       <p className="text-sm font-bold text-foreground">Baby Plan</p>
+                       <p className="text-xs text-muted-foreground">Fertility AI</p>
+                     </Link>
+                   </motion.div>
+                 );
 
               case "urgent-chores":
                 return (
