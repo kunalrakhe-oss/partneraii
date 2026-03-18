@@ -1,4 +1,4 @@
-import { Heart, PlusCircle, Users } from "lucide-react";
+import { Heart, Sparkles, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import onboardingHero from "@/assets/onboarding-hero.jpg";
@@ -38,7 +38,7 @@ export default function WelcomePage({ onComplete }: WelcomePageProps) {
         >
           <img
             src={onboardingHero}
-            alt="Couple together"
+            alt="Get started"
             className="w-full h-full object-cover"
           />
         </motion.div>
@@ -50,7 +50,7 @@ export default function WelcomePage({ onComplete }: WelcomePageProps) {
           transition={{ delay: 0.2 }}
           className="text-2xl font-bold text-foreground text-center mb-3"
         >
-          Your life together, organized.
+          Your life, organized.
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 10 }}
@@ -58,7 +58,7 @@ export default function WelcomePage({ onComplete }: WelcomePageProps) {
           transition={{ delay: 0.3 }}
           className="text-sm text-muted-foreground text-center max-w-xs leading-relaxed"
         >
-          Manage chores, groceries, and your shared calendar in one beautiful place.
+          Manage chores, groceries, wellness, and your calendar — solo or with a partner.
         </motion.p>
       </div>
 
@@ -69,13 +69,13 @@ export default function WelcomePage({ onComplete }: WelcomePageProps) {
         transition={{ delay: 0.4 }}
         className="bg-foreground rounded-t-3xl px-6 pt-8 pb-10"
       >
-        {/* Create Our Space button */}
+        {/* Get Started button */}
         <button
           onClick={handleCreate}
           className="w-full h-14 rounded-2xl bg-card text-foreground font-semibold text-base flex items-center justify-center gap-2.5 shadow-soft mb-4"
         >
-          <PlusCircle size={20} />
-          Create Our Space
+          <Sparkles size={20} />
+          Get Started
         </button>
 
         {/* Join My Partner */}
@@ -93,7 +93,7 @@ export default function WelcomePage({ onComplete }: WelcomePageProps) {
             <div className="w-7 h-7 rounded-full bg-[hsl(100,25%,78%)] border-2 border-foreground flex items-center justify-center text-[10px]">👩</div>
             <div className="w-7 h-7 rounded-full bg-primary/30 border-2 border-foreground flex items-center justify-center text-[10px]">👨</div>
           </div>
-          <p className="text-xs text-muted">Joined by 10,000+ happy couples</p>
+          <p className="text-xs text-muted">Joined by 10,000+ happy users</p>
         </div>
 
         {/* Terms */}
