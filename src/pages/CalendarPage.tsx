@@ -289,6 +289,7 @@ export default function CalendarPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { partnerPair, loading: ppLoading } = usePartnerPair();
+  const { canAccess } = useSubscriptionContext();
   const { isDemoMode } = useDemo();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
