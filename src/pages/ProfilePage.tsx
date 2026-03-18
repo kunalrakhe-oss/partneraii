@@ -641,7 +641,7 @@ export default function ProfilePage() {
           <div className="w-9 h-9 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
             <LogOut size={16} className="text-destructive" />
           </div>
-          <p className="text-sm font-medium text-destructive">Sign Out</p>
+          <p className="text-sm font-medium text-destructive">{t("profile.signOut")}</p>
         </button>
 
         <p className="text-center text-[10px] text-muted-foreground mt-5 mb-2">
