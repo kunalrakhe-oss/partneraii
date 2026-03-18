@@ -325,13 +325,6 @@ export default function OnboardingFlow() {
                 <Heart size={18} fill="currentColor" />
                 Start Together
               </button>
-              <button
-                onClick={enterDemoMode}
-                className="w-full h-12 rounded-2xl bg-card border border-border text-foreground font-medium text-sm flex items-center justify-center gap-2"
-              >
-                <Sparkles size={16} className="text-primary" />
-                Try Demo
-              </button>
             </motion.div>
           </motion.div>
         )}
@@ -424,12 +417,6 @@ export default function OnboardingFlow() {
                 className="w-full h-14 rounded-2xl bg-primary text-primary-foreground font-semibold text-base flex items-center justify-center gap-2 shadow-elevated"
               >
                 ❤️ With My Partner
-              </button>
-              <button
-                onClick={enterDemoMode}
-                className="w-full h-12 rounded-2xl bg-card border border-border text-foreground font-medium text-sm flex items-center justify-center gap-2"
-              >
-                ✨ Explore Demo First
               </button>
             </div>
           </motion.div>
