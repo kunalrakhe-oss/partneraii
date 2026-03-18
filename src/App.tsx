@@ -20,6 +20,7 @@ import ProfilePage from "@/pages/ProfilePage";
 import MemoriesPage from "@/pages/MemoriesPage";
 import WorkoutPage from "@/pages/WorkoutPage";
 import DietPage from "@/pages/DietPage";
+import BabyPlanPage from "@/pages/BabyPlanPage";
 import PartnerConnectPage from "@/pages/PartnerConnectPage";
 import CoupleProfilePage from "@/pages/CoupleProfilePage";
 import AuthPage from "@/pages/AuthPage";
@@ -88,6 +89,7 @@ function AppRoutes() {
         <Route path="/memories" element={<FeatureGate feature="memories" featureName="Memories"><MemoriesPage /></FeatureGate>} />
         <Route path="/workout" element={<FeatureGate feature="workout" featureName="Workout Tracking"><WorkoutPage /></FeatureGate>} />
         <Route path="/diet" element={<FeatureGate feature="diet" featureName="Diet Tracking"><DietPage /></FeatureGate>} />
+        <Route path="/baby-plan" element={<BabyPlanPage />} />
         <Route path="/upgrade" element={<UpgradePage />} />
       </Route>
       {/* Authenticated users always redirect away from auth/onboarding */}
