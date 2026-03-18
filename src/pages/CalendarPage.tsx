@@ -714,7 +714,7 @@ export default function CalendarPage() {
         )}
         <button
           onClick={() => setShowFabMenu(prev => !prev)}
-          className="fixed bottom-20 right-5 max-w-lg love-gradient text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-elevated z-50"
+          className="fixed bottom-above-nav right-5 max-w-lg love-gradient text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-elevated z-50"
         >
           <Plus size={22} className={`transition-transform ${showFabMenu ? "rotate-45" : ""}`} />
         </button>

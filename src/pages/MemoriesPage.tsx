@@ -500,7 +500,7 @@ export default function MemoriesPage() {
         {/* FAB */}
         <button
           onClick={() => setShowAdd(true)}
-          className="fixed bottom-20 right-5 max-w-lg love-gradient text-primary-foreground w-14 h-14 rounded-full flex items-center justify-center shadow-elevated z-40"
+          className="fixed bottom-above-nav right-5 max-w-lg love-gradient text-primary-foreground w-14 h-14 rounded-full flex items-center justify-center shadow-elevated z-40"
         >
           <Plus size={22} />
         </button>

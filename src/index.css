@@ -155,4 +155,32 @@
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+
+  /* Fullscreen-safe layout variables */
+  :root {
+    --nav-h: 4rem;
+    --sab: env(safe-area-inset-bottom, 0px);
+    --nav-total: calc(var(--nav-h) + var(--sab));
+    --sat: env(safe-area-inset-top, 0px);
+  }
+
+  /* Content bottom padding to clear nav */
+  .pb-nav {
+    padding-bottom: var(--nav-total);
+  }
+
+  /* Position above nav bar */
+  .bottom-above-nav {
+    bottom: calc(var(--nav-total) + 1rem);
+  }
+
+  /* Position sitting on top of nav */
+  .bottom-on-nav {
+    bottom: var(--nav-total);
+  }
+
+  /* Safe top padding for fullscreen */
+  .pt-safe {
+    padding-top: max(2.5rem, var(--sat));
+  }
 }

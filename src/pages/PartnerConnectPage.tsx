@@ -286,7 +286,7 @@ export default function PartnerConnectPage() {
 
   return (
     <PageTransition>
-      <div className="bg-background max-w-lg mx-auto px-5 pb-24">
+      <div className="bg-background max-w-lg mx-auto px-5 pb-nav">
         {/* Back button */}
         <div className="sticky top-0 z-10 bg-background pt-4 pb-2">
           <button onClick={() => navigate(-1)} className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
