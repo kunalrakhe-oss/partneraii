@@ -194,6 +194,7 @@ export default function MoodPage() {
       setLogs(prev => [...prev, data]);
       toast.success("Mood logged!");
       navigate(-1);
+    }
   };
 
   const updateNote = async () => {
