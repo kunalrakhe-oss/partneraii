@@ -334,15 +334,16 @@ export default function OnboardingFlow() {
             </motion.div>
           </motion.div>
         )}
+        {/* ─── STEP 0: Entry ─── */}
         {step === "entry" && (
           <motion.div key="entry" {...fadeUp} className="flex-1 flex flex-col items-center justify-between px-6 pt-safe pb-6">
-            {/* Language switcher */}
+            {/* Language switcher (compact, top-right) */}
             <div className="w-full flex justify-end pt-2">
               <button
-                onClick={() => setLanguage(language === "en" ? "hi" : "en")}
+                onClick={() => setStep("language")}
                 className="px-3 py-1.5 rounded-full bg-card border border-border text-xs font-medium text-foreground flex items-center gap-1.5 shadow-sm"
               >
-                🌐 {language === "en" ? "हिन्दी" : "English"}
+                🌐 {language === "en" ? "English" : "हिन्दी"}
               </button>
             </div>
             <div className="flex-1 flex flex-col items-center justify-center">
