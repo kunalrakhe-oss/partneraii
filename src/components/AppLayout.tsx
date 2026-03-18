@@ -58,9 +58,7 @@ export default function AppLayout() {
     };
   }, []);
 
-  const isSingle = appMode === "single";
-  const filteredTabs = isSingle ? visibleTabs.filter(id => id !== "chat") : visibleTabs;
-  const tabs = filteredTabs.map(id => tabMeta[id]).filter(Boolean);
+  const tabs = visibleTabs.map(id => tabMeta[id]).filter(Boolean);
 
   return (
     <div className="flex flex-col min-h-[100dvh] bg-background relative">
