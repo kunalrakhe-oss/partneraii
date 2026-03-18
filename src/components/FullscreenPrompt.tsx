@@ -13,7 +13,8 @@ export default function FullscreenPrompt() {
     if (!isSupported || isFullscreen) return;
     const dismissed = localStorage.getItem(LS_KEY);
     if (!dismissed) {
-      const timer = setTimeout(() => setShow(true), 1500);
+      // Delay longer to avoid overlapping with the PWA install prompt
+      const timer = setTimeout(() => setShow(true), 5000);
       return () => clearTimeout(timer);
     }
   }, [isSupported, isFullscreen]);
