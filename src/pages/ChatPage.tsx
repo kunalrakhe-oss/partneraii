@@ -251,7 +251,9 @@ export default function ChatPage() {
               </motion.div>
             ) : (
               <motion.div key="tabs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="flex items-center gap-1.5">
+                className="flex items-center justify-between w-full">
+                <h1 className="text-lg font-bold text-foreground shrink-0">Chat</h1>
+
                 <div className="flex bg-muted rounded-2xl p-1 gap-1">
                   <button
                     onClick={() => setActiveTab("partner")}
@@ -282,8 +284,6 @@ export default function ChatPage() {
                     <span>Your AI</span>
                   </button>
                 </div>
-
-                <div className="flex-1" />
 
                 <button
                   onClick={() => { setSearchOpen(true); setTimeout(() => searchInputRef.current?.focus(), 100); }}
