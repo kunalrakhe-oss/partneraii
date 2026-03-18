@@ -27,6 +27,7 @@ import PostpartumPage from "@/pages/PostpartumPage";
 import SafetyCheckInPage from "@/pages/SafetyCheckInPage";
 import BudgetPage from "@/pages/BudgetPage";
 import HealthPage from "@/pages/HealthPage";
+import EventPlannerPage from "@/pages/EventPlannerPage";
 import PartnerConnectPage from "@/pages/PartnerConnectPage";
 import CoupleProfilePage from "@/pages/CoupleProfilePage";
 import AuthPage from "@/pages/AuthPage";
