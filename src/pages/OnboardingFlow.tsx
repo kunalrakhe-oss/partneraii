@@ -270,11 +270,11 @@ export default function OnboardingFlow() {
   // ─── RENDER ─────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto relative overflow-hidden">
+    <div className="h-[100dvh] bg-background flex flex-col max-w-lg mx-auto relative overflow-hidden">
       <AnimatePresence mode="wait">
         {/* ─── STEP 0: Entry ─── */}
         {step === "entry" && (
-          <motion.div key="entry" {...fadeUp} className="flex-1 flex flex-col items-center justify-between px-6 py-12">
+          <motion.div key="entry" {...fadeUp} className="flex-1 flex flex-col items-center justify-between px-6 pt-safe pb-6">
             <div className="flex-1 flex flex-col items-center justify-center">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
