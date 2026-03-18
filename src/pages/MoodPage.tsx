@@ -246,7 +246,7 @@ export default function MoodPage() {
           <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
         </div>
 
-        <div className="flex items-center justify-between mb-6">
+        <div className="sticky top-0 z-20 bg-background pt-2 pb-3 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("mood.howAreYou")} {displayName}?</h1>
             <p className="text-sm text-muted-foreground">{t("mood.shareVibe")}</p>

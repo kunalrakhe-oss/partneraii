@@ -222,7 +222,7 @@ export default function ChatPage() {
     <PageTransition className="h-[calc(100dvh-var(--nav-total))] overflow-hidden">
       <div className="flex flex-col h-full overflow-hidden">
         {/* Header */}
-        <div className="px-4 pt-8 pb-2 shrink-0">
+        <div className="sticky top-0 z-20 bg-background px-4 pt-8 pb-2 shrink-0">
           <AnimatePresence mode="wait">
             {searchOpen ? (
               <motion.div

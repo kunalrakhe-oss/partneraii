@@ -203,8 +203,8 @@ export default function EventPlannerPage() {
 
   return (
     <PageTransition>
-      <div className="max-w-lg mx-auto px-4 py-6 pb-28 space-y-5">
-        <div className="flex items-center gap-3">
+      <div className="max-w-lg mx-auto px-4 pb-28 space-y-5">
+        <div className="sticky top-0 z-20 bg-background -mx-4 px-4 pt-6 pb-3 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center">
             <PartyPopper size={20} className="text-pink-500" />
           </div>

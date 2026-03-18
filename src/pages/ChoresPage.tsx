@@ -396,9 +396,9 @@ export default function ChoresPage() {
 
   return (
     <PageTransition>
-      <div className="px-5 pt-10 pb-28">
+      <div className="px-5 pb-28">
         {/* Header */}
-        <div className="flex items-center justify-between mb-1">
+        <div className="sticky top-0 z-20 bg-background -mx-5 px-5 pt-10 pb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ProfileButton />
             <div>

@@ -228,7 +228,7 @@ export default function PhysioPage() {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-4 pb-2 shrink-0">
+      <div className="sticky top-0 z-20 bg-background flex items-center gap-3 px-4 pt-4 pb-2 shrink-0">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-xl hover:bg-muted"><ArrowLeft size={20} /></button>
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
