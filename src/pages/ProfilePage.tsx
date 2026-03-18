@@ -531,8 +531,14 @@ export default function ProfilePage() {
       items: [
         { key: "personal-info", icon: User, label: t("profile.personalInfo"), sub: t("profile.namePhone") },
         { key: "notifications", icon: Bell, label: t("profile.notifications"), sub: t("profile.remindersAlerts") },
-        { key: "partner-profile", icon: Heart, label: t("profile.partnerProfile"), sub: partnerName ? `${t("profile.connectedTo")} ${partnerName}` : t("profile.invitePartner") },
-        ...(partnerId ? [{ key: "remove-partner", icon: UserMinus, label: t("profile.removePartner"), sub: `${t("profile.disconnectFrom")} ${partnerName || "partner"}` }] : []),
+        // Show partner profile for couple mode, or "Switch to Couple Mode" for singles
+        ...(isSingle
+          ? [{ key: "switch-to-couple", icon: Users, label: "Switch to Couple Mode", sub: "Connect with a partner" }]
+          : [
+            { key: "partner-profile", icon: Heart, label: t("profile.partnerProfile"), sub: partnerName ? `${t("profile.connectedTo")} ${partnerName}` : t("profile.invitePartner") },
+            ...(partnerId ? [{ key: "remove-partner", icon: UserMinus, label: t("profile.removePartner"), sub: `${t("profile.disconnectFrom")} ${partnerName || "partner"}` }] : []),
+          ]
+        ),
       ],
     },
     {
