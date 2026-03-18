@@ -36,9 +36,12 @@ const CATEGORY_COLORS: Record<string, string> = {
   chore: "bg-orange-400/70", reminder: "bg-blue-400/70", birthday: "bg-pink-400/70", "grocery-due": "bg-emerald-400/70",
   diet: "bg-green-400/70",
 };
-// Category labels are now translated dynamically via t()
-
-type ViewMode = "day" | "multiday" | "month";
+const CATEGORY_LABEL: Record<string, string> = {
+  "date-night": "Romance", groceries: "Household", cleaning: "Cleaning",
+  bills: "Bills", travel: "Travel", family: "Family",
+  chore: "Chore", reminder: "Reminder", birthday: "Birthday", "grocery-due": "Shopping",
+  diet: "Diet",
+};
 
 type ViewMode = "day" | "multiday" | "month";
 
