@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.finance-chat]
 verify_jwt = false
+
+[functions.health-analytics]
+verify_jwt = false

@@ -15,6 +15,7 @@ import PageTransition from "@/components/PageTransition";
 
 type HealthMetric = {
   id: string;
+  user_id: string;
   metric_date: string;
   steps: number | null;
   heart_rate: number | null;
