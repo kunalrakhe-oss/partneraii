@@ -567,7 +567,7 @@ export default function HomePage() {
                        <p className="text-xs font-medium text-foreground/70">{t("home.todayAgenda")}</p>
                        <Link to="/calendar" className="text-xs font-medium bg-card/80 text-foreground px-3 py-1 rounded-full">{t("common.viewAll")}</Link>
                     </div>
-                    <p className="text-xl font-bold text-foreground mb-4">{todayEvents.length} {t("home.sharedEvents")}</p>
+                    <p className="text-xl font-bold text-foreground mb-4">{todayEvents.length} {isSingle ? "Events" : t("home.sharedEvents")}</p>
                     <div className="space-y-2">
                       {todayEvents.length === 0 ? (
                         <p className="text-sm text-foreground/60">{t("home.noEventsToday")}</p>
@@ -617,13 +617,15 @@ export default function HomePage() {
                        <p className="text-sm font-bold text-foreground">{t("home.groceries")}</p>
                        <p className="text-xs text-muted-foreground">{uncheckedGroceries} {t("common.items")}</p>
                      </Link>
-                     <Link to="/chat" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                       <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                         <MessageSquare size={18} className="text-primary" />
-                       </div>
-                       <p className="text-sm font-bold text-foreground">{t("nav.chat")}</p>
-                       <p className="text-xs text-muted-foreground">{messageCount} {t("common.msgs")}</p>
-                     </Link>
+                     {!isSingle && (
+                       <Link to="/chat" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                         <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+                           <MessageSquare size={18} className="text-primary" />
+                         </div>
+                         <p className="text-sm font-bold text-foreground">{t("nav.chat")}</p>
+                         <p className="text-xs text-muted-foreground">{messageCount} {t("common.msgs")}</p>
+                       </Link>
+                     )}
                      <Link to="/memories" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
                        <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
                          <Camera size={18} className="text-accent-foreground" />
