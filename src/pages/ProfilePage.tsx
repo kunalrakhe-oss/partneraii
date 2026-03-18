@@ -328,6 +328,9 @@ export default function ProfilePage() {
         toggleVoice(!voiceEnabled);
         toast({ title: !voiceEnabled ? 'Voice assistant enabled 🎙️' : 'Voice assistant disabled', description: !voiceEnabled ? 'Say "Hey Love" to activate' : undefined });
         break;
+      case "Customize Layout":
+        setActiveSheet("customize");
+        break;
       default:
         toast({ title: "Coming soon", description: `${label} will be available in a future update` });
     }
