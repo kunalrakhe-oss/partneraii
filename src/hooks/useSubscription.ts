@@ -13,6 +13,8 @@ export interface SubscriptionState {
   accessCodeActive: boolean;
   applyAccessCode: (code: string) => boolean;
   clearAccessCode: () => void;
+  trialActive: boolean;
+  trialDaysLeft: number;
 }
 
 const ACCESS_CODE_KEY = "lovelist-access-code";
