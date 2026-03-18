@@ -293,6 +293,7 @@ export default function CalendarPage() {
   const { partnerPair, loading: ppLoading } = usePartnerPair();
   const { canAccess } = useSubscriptionContext();
   const { isDemoMode } = useDemo();
+  const { t } = useLanguage();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
