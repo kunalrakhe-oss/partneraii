@@ -610,7 +610,7 @@ export default function HomePage() {
                                     setNewChoreTitle(""); setShowAddChore(false);
                                   }
                                 })()}
-                                placeholder="Quick add chore..."
+                                placeholder={t("home.quickAddChore")}
                                 autoFocus
                                 className="flex-1 h-10 bg-card rounded-xl px-3 text-sm text-foreground placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
                               />
