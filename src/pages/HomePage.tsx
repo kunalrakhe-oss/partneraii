@@ -538,7 +538,7 @@ export default function HomePage() {
               <p className="text-sm font-bold text-foreground">Diet</p>
               <p className="text-xs text-muted-foreground">Eat well</p>
             </Link>
-          </motion.div>
+          </motion.div>}
 
           {/* Urgent Chores */}
           <motion.div variants={item}>
