@@ -321,6 +321,10 @@ export default function ProfilePage() {
       case "Fullscreen Mode":
         toggleFullscreen();
         break;
+      case "Voice Assistant":
+        toggleVoice(!voiceEnabled);
+        toast({ title: !voiceEnabled ? 'Voice assistant enabled 🎙️' : 'Voice assistant disabled', description: !voiceEnabled ? 'Say "Hey Love" to activate' : undefined });
+        break;
       default:
         toast({ title: "Coming soon", description: `${label} will be available in a future update` });
     }
