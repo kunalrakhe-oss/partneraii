@@ -215,8 +215,8 @@ export default function ChatPage() {
   if (ppLoading) return <PageTransition><div className="flex items-center justify-center h-64"><div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" /></div></PageTransition>;
 
   return (
-    <PageTransition>
-      <div className="flex flex-col h-[calc(100dvh-var(--nav-total))] overflow-hidden">
+    <PageTransition className="h-[calc(100dvh-var(--nav-total))] overflow-hidden">
+      <div className="flex flex-col h-full overflow-hidden">
         {/* Header */}
         <div className="px-4 pt-8 pb-2 shrink-0">
           <AnimatePresence mode="wait">
