@@ -33,7 +33,7 @@ const difficultyColors: Record<string, string> = {
   Challenging: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
 };
 
-export default function RecoveryPlanCard({ exercise, accentColor = "emerald", onGenerateImage }: Props) {
+export default function RecoveryPlanCard({ exercise, accentColor = "emerald", onGenerateImage, completable, completed, onToggleComplete }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
