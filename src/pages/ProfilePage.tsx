@@ -698,8 +698,8 @@ export default function ProfilePage() {
             onClick={savePersonalInfo} disabled={saving || !editName.trim()}
             className="w-full love-gradient text-primary-foreground font-semibold py-3 rounded-xl mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-            Save Changes
+             {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+             {t("profile.saveChanges")}
           </button>
         </div>
       </BottomSheet>
