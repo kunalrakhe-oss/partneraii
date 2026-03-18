@@ -133,7 +133,7 @@ export default function HomePage() {
       .order("event_time", { ascending: true })
       .limit(1)
       .maybeSingle()
-      .then(({ data }) => { if (data) setNextEvent(data); });
+      .then(({ data }) => { setNextEvent(data || null); });
 
     // Chores
     supabase.from("chores").select("id, title, is_completed, recurrence").eq("partner_pair", partnerPair).eq("is_completed", false).limit(3)
