@@ -293,7 +293,7 @@ export default function OnboardingFlow() {
                 transition={{ delay: 0.2 }}
                 className="text-3xl font-bold text-foreground mb-2"
               >
-                LoveList
+                {t("onboarding.loveList")}
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
@@ -301,7 +301,7 @@ export default function OnboardingFlow() {
                 transition={{ delay: 0.3 }}
                 className="text-sm text-muted-foreground text-center max-w-[240px] leading-relaxed"
               >
-                Build your relationship, not just tasks
+                {t("onboarding.buildRelationship")}
               </motion.p>
 
               <motion.div
