@@ -295,6 +295,7 @@ export default function ProfilePage() {
   const { isSupported: fullscreenSupported, isFullscreen, toggleFullscreen } = useFullscreen();
   const { isSupported: voiceSupported, enabled: voiceEnabled, toggleEnabled: toggleVoice } = useWakeWord();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   // Prompt-disable toggles
   const [installPromptDisabled, setInstallPromptDisabled] = useState(() => localStorage.getItem("lovelist-install-prompt-disabled") === "true");
