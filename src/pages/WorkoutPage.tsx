@@ -63,6 +63,12 @@ const FOCUS_OPTIONS = [
   { label: "Walking", emoji: "🚶", value: "walking and light movement" },
 ];
 
+const CALISTHENICS_PROGRAMS = [
+  { label: "Beginner", emoji: "🌱", value: "beginner", desc: "Foundations: push-ups, squats, planks, lunges. No equipment needed.", color: "from-green-500/15 to-green-500/5" },
+  { label: "Intermediate", emoji: "🔥", value: "intermediate", desc: "Dips, pull-ups, pistol squats, L-sits, muscle-up progressions.", color: "from-orange-500/15 to-orange-500/5" },
+  { label: "Advanced", emoji: "⚡", value: "advanced", desc: "Muscle-ups, handstand push-ups, planche, front lever, human flag.", color: "from-red-500/15 to-red-500/5" },
+];
+
 const MUSCLE_COLORS: Record<string, string> = {
   Chest: "bg-primary/20 text-primary",
   Back: "bg-secondary/20 text-secondary-foreground",
