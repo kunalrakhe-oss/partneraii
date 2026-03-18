@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus } from "lucide-react";
+import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download } from "lucide-react";
+import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
@@ -143,6 +144,7 @@ function NotificationSettingsContent() {
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const { canInstall, isInstalled, isIOS, promptInstall } = usePWAInstall();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [displayName, setDisplayName] = useState("");
@@ -303,6 +305,15 @@ export default function ProfilePage() {
       case "Theme & Appearance":
         setActiveSheet("theme");
         break;
+      case "Install App":
+        if (isIOS) {
+          toast({ title: "Install LoveLists", description: "Tap Share → Add to Home Screen in Safari" });
+        } else if (canInstall) {
+          promptInstall();
+        } else {
+          toast({ title: "Already available", description: "Use your browser menu to install the app" });
+        }
+        break;
       default:
         toast({ title: "Coming soon", description: `${label} will be available in a future update` });
     }
@@ -322,6 +333,7 @@ export default function ProfilePage() {
       title: "Preferences",
       items: [
         { icon: Palette, label: "Theme & Appearance" },
+        ...(!isInstalled ? [{ icon: Download, label: "Install App", sub: isIOS ? "Add to Home Screen" : "Get the native experience" }] : []),
         { icon: Lock, label: "Privacy & Security" },
         { icon: HelpCircle, label: "Help & Support" },
       ],
