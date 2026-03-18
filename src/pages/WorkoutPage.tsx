@@ -431,7 +431,7 @@ export default function WorkoutPage() {
 
   return (
     <PageTransition>
-      <div className="flex flex-col h-screen max-w-lg mx-auto bg-background relative">
+      <div className="flex flex-col h-[100dvh] max-w-lg mx-auto bg-background relative">
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div className="px-5 pt-10 pb-3 shrink-0">
