@@ -285,7 +285,7 @@ export default function ChatPage() {
                     }`}
                   >
                     <img src={aiAssistantIcon} alt="AI" className="w-5 h-5" />
-                    <span>Your AI</span>
+                    <span>{t("chat.yourAI")}</span>
                   </button>
                 </div>
 
