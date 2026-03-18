@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, forwardRef, useRef } from "react";
-import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users, ArrowDownAZ, CheckCheck, Trash } from "lucide-react";
+import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users, ArrowDownAZ, CheckCheck, Trash, Pencil, Save } from "lucide-react";
 import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -101,6 +101,13 @@ export default function ChoresPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [sortBy, setSortBy] = useState<"created" | "due">("created");
   const settingsRef = useRef<HTMLDivElement>(null);
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editFrequency, setEditFrequency] = useState("");
+  const [editAssign, setEditAssign] = useState("");
+  const [editDueDate, setEditDueDate] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // Close settings on outside click
   useEffect(() => {
@@ -294,9 +301,44 @@ export default function ChoresPage() {
     }
   };
 
+  const startEditing = (chore: ChoreRow) => {
+    setEditingId(chore.id);
+    setEditTitle(chore.title);
+    setEditFrequency(chore.recurrence || "");
+    setEditAssign(
+      chore.assigned_to === userId ? "me" : chore.assigned_to ? "partner" : ""
+    );
+    setEditDueDate(chore.due_date || "");
+  };
+
+  const saveEdit = async (choreId: string) => {
+    if (!editTitle.trim()) return;
+    setSavingEdit(true);
+    let assignedTo: string | null = null;
+    if (editAssign === "me" && userId) assignedTo = userId;
+    else if (editAssign === "partner" && partnerProfile) assignedTo = partnerProfile.user_id;
+
+    const { error } = await supabase.from("chores").update({
+      title: editTitle.trim(),
+      recurrence: editFrequency || null,
+      assigned_to: assignedTo,
+      due_date: editDueDate || null,
+    }).eq("id", choreId);
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Chore updated ✏️" });
+      setEditingId(null);
+      fetchChores();
+    }
+    setSavingEdit(false);
+  };
+
   const handleToggleExpand = (chore: ChoreRow) => {
     if (expandedId === chore.id) {
       setExpandedId(null);
+      setEditingId(null);
     } else {
       setExpandedId(chore.id);
       fetchSteps(chore);
@@ -557,6 +599,64 @@ export default function ChoresPage() {
                               <p className="text-xs text-muted-foreground">No steps available.</p>
                             )}
                           </div>
+
+                          {/* Edit form */}
+                          {editingId === chore.id && (
+                            <div className="mx-4 mb-3 rounded-xl bg-muted/60 p-4 space-y-3">
+                              <p className="text-xs font-bold text-foreground flex items-center gap-1.5 mb-1">
+                                <Pencil size={12} className="text-primary" /> Edit Chore
+                              </p>
+                              <input
+                                value={editTitle}
+                                onChange={e => setEditTitle(e.target.value)}
+                                className="w-full bg-card border border-border rounded-xl px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                                placeholder="Chore title"
+                              />
+                              <div className="flex gap-2">
+                                <select
+                                  value={editFrequency}
+                                  onChange={e => setEditFrequency(e.target.value)}
+                                  className="flex-1 bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                                >
+                                  <option value="">One-time</option>
+                                  <option value="daily">Daily</option>
+                                  <option value="weekly">Weekly</option>
+                                  <option value="monthly">Monthly</option>
+                                </select>
+                                <select
+                                  value={editAssign}
+                                  onChange={e => setEditAssign(e.target.value)}
+                                  className="flex-1 bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                                >
+                                  <option value="">Both</option>
+                                  <option value="me">Me</option>
+                                  <option value="partner">Partner</option>
+                                </select>
+                              </div>
+                              <input
+                                type="date"
+                                value={editDueDate}
+                                onChange={e => setEditDueDate(e.target.value)}
+                                className="w-full bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                              />
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  onClick={() => setEditingId(null)}
+                                  className="px-4 py-2 rounded-full bg-muted text-xs font-medium text-muted-foreground"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={() => saveEdit(chore.id)}
+                                  disabled={savingEdit || !editTitle.trim()}
+                                  className="px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-1.5 disabled:opacity-50"
+                                >
+                                  {savingEdit ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+                                  Save
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -595,6 +695,12 @@ export default function ChoresPage() {
                         )}
                         {isExpanded && (
                           <>
+                            <button
+                              onClick={() => startEditing(chore)}
+                              className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
+                            >
+                              <Pencil size={14} className="text-primary" />
+                            </button>
                             <button
                               onClick={() => deleteChore(chore.id)}
                               className="w-8 h-8 rounded-full bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors"
