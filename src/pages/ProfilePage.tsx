@@ -324,6 +324,7 @@ export default function ProfilePage() {
       title: "Preferences",
       items: [
         { icon: Palette, label: "Theme & Appearance" },
+        ...(!isInstalled ? [{ icon: Download, label: "Install App", sub: isIOS ? "Add to Home Screen" : "Get the native experience" }] : []),
         { icon: Lock, label: "Privacy & Security" },
         { icon: HelpCircle, label: "Help & Support" },
       ],
