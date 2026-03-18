@@ -461,11 +461,11 @@ export default function ProfilePage() {
         break;
       case "Install App":
         if (isIOS) {
-          toast({ title: "Install LoveLists", description: "Tap Share → Add to Home Screen in Safari" });
+          toast({ title: t("profile.installLoveLists"), description: t("profile.installSafari") });
         } else if (canInstall) {
           promptInstall();
         } else {
-          toast({ title: "Already available", description: "Use your browser menu to install the app" });
+          toast({ title: t("profile.alreadyAvailable"), description: t("profile.useBrowserMenu") });
         }
         break;
       case "Fullscreen Mode":
