@@ -5,17 +5,23 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+function langSuffix(language?: string) {
+  return language === "hi"
+    ? "\n\nIMPORTANT: The user's language is Hindi. You MUST respond entirely in Hindi (Devanagari script). Use natural Hindi, not transliteration."
+    : "";
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { type, messages, workoutHistory, stats, context } = await req.json();
+    const { type, messages, workoutHistory, stats, context, language } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     // === GENERATE WORKOUT PLAN (structured) ===
     if (type === "generate-plan") {
-      const systemPrompt = `You are FitBot, an expert AI fitness coach. Generate a complete workout plan. Consider the user's fitness level and goals. Always provide safe, effective exercises with proper form cues.`;
+      const systemPrompt = `You are FitBot, an expert AI fitness coach. Generate a complete workout plan. Consider the user's fitness level and goals. Always provide safe, effective exercises with proper form cues.${langSuffix(language)}`;
 
       const userPrompt = `Generate a ${context?.focus || "full body"} workout plan for ${context?.level || "intermediate"} level. ${context?.duration ? `Target duration: ${context.duration} minutes.` : ""} ${context?.equipment || "Standard gym equipment available."}`;
 
@@ -94,7 +100,7 @@ serve(async (req) => {
 
     // === AI RECOMMENDATION ===
     if (type === "recommend") {
-      const systemPrompt = `You are FitBot. Based on the user's recent workout history, suggest what they should focus on next. Be concise (2 sentences max). Include an emoji.`;
+      const systemPrompt = `You are FitBot. Based on the user's recent workout history, suggest what they should focus on next. Be concise (2 sentences max). Include an emoji.${langSuffix(language)}`;
       const userPrompt = `Recent workouts: ${JSON.stringify(workoutHistory?.slice(0, 5) || [])}. Stats: ${JSON.stringify(stats || {})}. What should they do next?`;
 
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -122,7 +128,7 @@ serve(async (req) => {
     const chatSystemPrompt = `You are FitBot 🤖💪 — a friendly AI fitness coach inside LoveList. Help with workouts, form tips, nutrition, and couple fitness challenges. Be concise, energetic, and supportive. Format with markdown.
 
 ${stats ? `User stats: ${JSON.stringify(stats)}` : ""}
-${workoutHistory ? `Recent: ${JSON.stringify(workoutHistory.slice(0, 5))}` : ""}`;
+${workoutHistory ? `Recent: ${JSON.stringify(workoutHistory.slice(0, 5))}` : ""}${langSuffix(language)}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

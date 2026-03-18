@@ -9,9 +9,13 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const { messages, language } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const langInstruction = language === "hi"
+      ? "\n\nIMPORTANT: The user's language is Hindi. You MUST respond entirely in Hindi (Devanagari script). Use natural Hindi, not transliteration."
+      : "";
 
     const systemPrompt = `You are LoveBot 💕, a warm and supportive AI assistant for a couples app called LoveList. You help partners with:
 - Relationship advice and communication tips
@@ -22,7 +26,7 @@ serve(async (req) => {
 - Grocery and meal planning help
 - Memory and milestone celebration ideas
 
-Keep responses concise, warm, and encouraging. Use emojis sparingly but naturally. Always be supportive and non-judgmental. If asked about something outside relationship/couples context, gently redirect to how you can help with their relationship.`;
+Keep responses concise, warm, and encouraging. Use emojis sparingly but naturally. Always be supportive and non-judgmental. If asked about something outside relationship/couples context, gently redirect to how you can help with their relationship.${langInstruction}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

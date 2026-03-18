@@ -18,13 +18,14 @@ async function streamChat({
   onDone: () => void;
   onError: (err: string) => void;
 }) {
+  const language = localStorage.getItem("lovelist-language") || "en";
   const resp = await fetch(CHAT_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
     },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, language }),
   });
 
   if (!resp.ok) {

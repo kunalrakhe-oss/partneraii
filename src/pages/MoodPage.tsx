@@ -64,7 +64,7 @@ function AiMoodTip({ myMood, partnerMood, weekHistory }: { myMood: string | null
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("mood-tip", {
-        body: { myMood, partnerMood, weekHistory },
+        body: { myMood, partnerMood, weekHistory, language: localStorage.getItem("lovelist-language") || "en" },
       });
       if (error) throw error;
       if (data?.tip) setTip(data.tip);

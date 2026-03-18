@@ -9,9 +9,13 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { myMood, partnerMood, weekHistory } = await req.json();
+    const { myMood, partnerMood, weekHistory, language } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const langInstruction = language === "hi"
+      ? "\n\nIMPORTANT: The user's language is Hindi. You MUST respond entirely in Hindi (Devanagari script). Use natural Hindi, not transliteration."
+      : "";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -24,7 +28,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a warm relationship wellness advisor for a couple's app. Based on the couple's mood data, give ONE short actionable relationship tip (1-2 sentences max). Be specific to their moods. Use one emoji. Never be generic.`,
+            content: `You are a warm relationship wellness advisor for a couple's app. Based on the couple's mood data, give ONE short actionable relationship tip (1-2 sentences max). Be specific to their moods. Use one emoji. Never be generic.${langInstruction}`,
           },
           {
             role: "user",

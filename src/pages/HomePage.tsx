@@ -174,6 +174,7 @@ export default function HomePage() {
 
       const { data, error } = await supabase.functions.invoke("daily-insight", {
         body: {
+          language: localStorage.getItem("lovelist-language") || "en",
           stats: {
             daysTogether,
             pendingChores,
