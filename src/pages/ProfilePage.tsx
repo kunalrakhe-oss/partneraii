@@ -298,7 +298,7 @@ export default function ProfilePage() {
   const { t } = useLanguage();
 
   // Prompt-disable toggles
-  const [installPromptDisabled, setInstallPromptDisabled] = useState(() => localStorage.getItem("lovelist-install-prompt-disabled") === "true");
+  
   const [fullscreenPromptDisabled, setFullscreenPromptDisabled] = useState(() => localStorage.getItem("lovelist-fullscreen-prompt-disabled") === "true");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [displayName, setDisplayName] = useState("");
