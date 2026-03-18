@@ -150,6 +150,8 @@ export default function PartnerConnectPage() {
     const result = data as { success: boolean; error?: string };
 
     if (result.success) {
+      // Switch to couple mode when partner connects
+      await supabase.from("profiles").update({ app_mode: "couple" }).eq("user_id", user!.id);
       toast({ title: "Connected! 💕", description: "You and your partner are now linked." });
       setTimeout(() => navigate("/"), 1000);
     } else {
