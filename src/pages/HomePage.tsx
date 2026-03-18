@@ -474,8 +474,8 @@ export default function HomePage() {
                 return (
                   <motion.div key="today-agenda" variants={item} className="bg-primary/25 rounded-card p-5 shadow-soft">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs font-medium text-foreground/70">Today's Agenda</p>
-                      <Link to="/calendar" className="text-xs font-medium bg-card/80 text-foreground px-3 py-1 rounded-full">View All</Link>
+                       <p className="text-xs font-medium text-foreground/70">{t("home.todayAgenda")}</p>
+                       <Link to="/calendar" className="text-xs font-medium bg-card/80 text-foreground px-3 py-1 rounded-full">{t("common.viewAll")}</Link>
                     </div>
                     <p className="text-xl font-bold text-foreground mb-4">{todayEvents.length} Shared Events</p>
                     <div className="space-y-2">
