@@ -234,17 +234,16 @@ export default function GroceryPage() {
 
   const uncheckedCount = items.filter(i => !i.is_checked).length;
 
-  // Group by display category (only for grocery)
+  // Group by display category for all list types
+  const catMap = CATEGORY_DISPLAY[activeList] || {};
   const grouped: Record<string, GroceryRow[]> = {};
-  if (activeList === "grocery") {
-    items.forEach(item => {
-      const display = CATEGORY_DISPLAY[item.category ?? "other"] || "OTHER";
-      (grouped[display] = grouped[display] || []).push(item);
-    });
-    Object.keys(grouped).forEach(key => {
-      grouped[key].sort((a, b) => Number(a.is_checked) - Number(b.is_checked) || ((a as any).sort_order ?? 0) - ((b as any).sort_order ?? 0));
-    });
-  }
+  items.forEach(item => {
+    const display = catMap[item.category ?? "other"] || catMap["other"] || catMap["general"] || catMap["misc"] || catMap["other_gifts"] || catMap["other_ideas"] || "OTHER";
+    (grouped[display] = grouped[display] || []).push(item);
+  });
+  Object.keys(grouped).forEach(key => {
+    grouped[key].sort((a, b) => Number(a.is_checked) - Number(b.is_checked) || ((a as any).sort_order ?? 0) - ((b as any).sort_order ?? 0));
+  });
 
   if (pairLoading || loading) {
     return (
