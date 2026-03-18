@@ -85,7 +85,7 @@ export default function UpgradePage() {
 
   return (
     <PageTransition>
-      <div className="px-5 pt-10 pb-28">
+      <div className="pb-28">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
