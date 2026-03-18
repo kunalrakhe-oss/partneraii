@@ -308,6 +308,7 @@ export default function ProfilePage() {
   const [partnerId, setPartnerId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [activeSheet, setActiveSheet] = useState<SheetType>(null);
+  const [appMode, setAppMode] = useState<string>("couple");
 
   // Personal info edit state
   const [editName, setEditName] = useState("");
