@@ -461,7 +461,7 @@ export default function HomePage() {
                               <p className="text-xs text-foreground/50 mt-0.5">"{partnerMood.note}"</p>
                             )}
                             {!partnerMood && (
-                              <p className="text-xs text-muted-foreground mt-0.5">Nudge them to check in ❤️</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{t("home.nudgePartner")}</p>
                             )}
                           </div>
                         </div>
