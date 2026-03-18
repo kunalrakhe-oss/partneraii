@@ -52,17 +52,16 @@ Deno.serve(async (req) => {
       ...(todayPastEvents || []),
     ];
 
-    // Get existing overdue notifications (including deleted/read ones today) to deduplicate
-    // Check last 7 days to avoid re-creating recently deleted notifications
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+    // Use link field to encode source item ID for dedup.
+    // Check ALL existing overdue notifications (not just today's) to prevent 
+    // re-creating deleted ones. We use the link+message combo as a unique key.
     const { data: existingNotifs } = await supabase
       .from("notifications")
-      .select("title, user_id")
-      .eq("type", "overdue")
-      .gte("created_at", sevenDaysAgo + "T00:00:00Z");
+      .select("link, message, user_id")
+      .eq("type", "overdue");
 
     const existingSet = new Set(
-      (existingNotifs || []).map((n) => `${n.user_id}:${n.title}`)
+      (existingNotifs || []).map((n) => `${n.user_id}:${n.link}:${n.message}`)
     );
 
     const notifications: Array<{
@@ -81,7 +80,7 @@ Deno.serve(async (req) => {
       message: string,
       link: string
     ) => {
-      const key = `${userId}:${title}`;
+      const key = `${userId}:${link}:${message}`;
       if (!existingSet.has(key)) {
         existingSet.add(key);
         notifications.push({
@@ -99,9 +98,11 @@ Deno.serve(async (req) => {
     for (const chore of overdueChores || []) {
       const title = `⏰ Overdue: ${chore.title}`;
       const msg = `Due ${chore.due_date}`;
-      addNotif(chore.user_id, chore.partner_pair, title, msg, "/chores");
+      // Include chore ID in link for unique dedup
+      const link = `/chores#${chore.id}`;
+      addNotif(chore.user_id, chore.partner_pair, title, msg, link);
       if (chore.assigned_to && chore.assigned_to !== chore.user_id) {
-        addNotif(chore.assigned_to, chore.partner_pair, title, msg, "/chores");
+        addNotif(chore.assigned_to, chore.partner_pair, title, msg, link);
       }
     }
 
@@ -109,7 +110,8 @@ Deno.serve(async (req) => {
     for (const evt of allOverdueEvents) {
       const title = `⏰ Overdue: ${evt.title}`;
       const msg = `Scheduled ${evt.event_date}${evt.event_time ? " at " + evt.event_time : ""}`;
-      addNotif(evt.user_id, evt.partner_pair, title, msg, "/calendar");
+      const link = `/calendar#${evt.id}`;
+      addNotif(evt.user_id, evt.partner_pair, title, msg, link);
     }
 
     // Insert all notifications
