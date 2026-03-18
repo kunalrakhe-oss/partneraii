@@ -9,9 +9,9 @@ export default function InstallPrompt() {
   const { canInstall, isIOS, isInstalled, promptInstall, dismiss, isFirstView } = usePWAInstall();
   const [visible, setVisible] = useState(false);
 
-  // Show immediately — no delay
+  // Show immediately — no delay (unless user disabled via settings)
   useEffect(() => {
-    if (canInstall && !isInstalled) setVisible(true);
+    if (canInstall && !isInstalled && localStorage.getItem("lovelist-install-prompt-disabled") !== "true") setVisible(true);
   }, [canInstall]);
 
   useEffect(() => {

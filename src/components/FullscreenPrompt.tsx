@@ -11,6 +11,7 @@ export default function FullscreenPrompt() {
 
   useEffect(() => {
     if (!isSupported || isFullscreen) return;
+    if (localStorage.getItem("lovelist-fullscreen-prompt-disabled") === "true") return;
     const dismissed = localStorage.getItem(LS_KEY);
     if (!dismissed) {
       // Delay longer to avoid overlapping with the PWA install prompt

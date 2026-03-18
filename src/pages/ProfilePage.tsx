@@ -295,6 +295,10 @@ export default function ProfilePage() {
   const { isSupported: fullscreenSupported, isFullscreen, toggleFullscreen } = useFullscreen();
   const { isSupported: voiceSupported, enabled: voiceEnabled, toggleEnabled: toggleVoice } = useWakeWord();
   const navigate = useNavigate();
+
+  // Prompt-disable toggles
+  const [installPromptDisabled, setInstallPromptDisabled] = useState(() => localStorage.getItem("lovelist-install-prompt-disabled") === "true");
+  const [fullscreenPromptDisabled, setFullscreenPromptDisabled] = useState(() => localStorage.getItem("lovelist-fullscreen-prompt-disabled") === "true");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
@@ -536,8 +540,8 @@ export default function ProfilePage() {
         { icon: LayoutGrid, label: "Customize Layout", sub: "Home widgets & nav bar tabs" },
         { icon: Globe, label: "Language", sub: localStorage.getItem("lovelist-language") === "hi" ? "हिन्दी" : "English" },
         ...(voiceSupported ? [{ icon: Mic, label: "Voice Assistant", sub: voiceEnabled ? '"Hey Love" is active' : 'Say "Hey Love" to activate AI' }] : []),
-        ...(fullscreenSupported ? [{ icon: Maximize, label: "Fullscreen Mode", sub: isFullscreen ? "Currently fullscreen — tap to exit" : "Hide browser bar for app-like feel" }] : []),
-        ...(!isInstalled ? [{ icon: Download, label: "Install App", sub: isIOS ? "Add to Home Screen" : "Get the native experience" }] : []),
+        ...(fullscreenSupported ? [{ icon: Maximize, label: "Fullscreen Mode", sub: isFullscreen ? "Currently fullscreen — tap to exit" : "Hide browser bar for app-like feel", toggle: true, toggleKey: "fullscreen" as const }] : []),
+        ...(!isInstalled ? [{ icon: Download, label: "Install App", sub: isIOS ? "Add to Home Screen" : "Get the native experience", toggle: true, toggleKey: "install" as const }] : []),
         { icon: Lock, label: "Privacy & Security" },
         { icon: HelpCircle, label: "Help & Support" },
       ],
@@ -601,6 +605,30 @@ export default function ProfilePage() {
                   <div className="flex-1 text-left">
                     <p className="text-sm font-medium text-foreground">{item.label}</p>
                     {item.sub && <p className="text-[10px] text-muted-foreground">{item.sub}</p>}
+                    {(item as any).toggle && (
+                      <div className="flex items-center gap-2 mt-1.5" onClick={(e) => e.stopPropagation()}>
+                        <Switch
+                          checked={
+                            (item as any).toggleKey === "install" ? !installPromptDisabled
+                            : !fullscreenPromptDisabled
+                          }
+                          onCheckedChange={(checked) => {
+                            if ((item as any).toggleKey === "install") {
+                              localStorage.setItem("lovelist-install-prompt-disabled", checked ? "false" : "true");
+                              setInstallPromptDisabled(!checked);
+                            } else {
+                              localStorage.setItem("lovelist-fullscreen-prompt-disabled", checked ? "false" : "true");
+                              setFullscreenPromptDisabled(!checked);
+                            }
+                            toast({ title: checked ? "Pop-up enabled" : "Pop-up disabled" });
+                          }}
+                        />
+                        <span className="text-[10px] text-muted-foreground">
+                          {((item as any).toggleKey === "install" ? !installPromptDisabled : !fullscreenPromptDisabled)
+                            ? "Pop-up enabled" : "Pop-up disabled"}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <ChevronRight size={16} className="text-muted-foreground" />
                 </button>

@@ -17,6 +17,7 @@ export default function PostAuthInstallPrompt() {
   useEffect(() => {
     if (!canInstall || isIOS) return;
     if (localStorage.getItem(POST_AUTH_PROMPT_KEY)) return;
+    if (localStorage.getItem("lovelist-install-prompt-disabled") === "true") return;
 
     // Show after a brief delay once the user lands on a protected page
     const timer = setTimeout(() => {
