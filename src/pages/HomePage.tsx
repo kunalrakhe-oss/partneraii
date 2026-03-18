@@ -33,6 +33,7 @@ export default function HomePage() {
   const { canAccess } = useSubscriptionContext();
   const { partnerPair } = usePartnerPair();
   const { isDemoMode } = useDemo();
+  const { t } = useLanguage();
   const [firstName, setFirstName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [partnerProfile, setPartnerProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
