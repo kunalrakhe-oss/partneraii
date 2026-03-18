@@ -325,10 +325,10 @@ export default function MoodPage() {
         {/* Weekly Harmony */}
         <div className="bg-card rounded-2xl p-5 shadow-card border border-border mb-5">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-bold text-foreground">Weekly Harmony</p>
+            <p className="text-sm font-bold text-foreground">{t("mood.weeklyHarmony")}</p>
             <Sparkles size={16} className="text-muted-foreground" />
           </div>
-          <p className="text-xs text-muted-foreground mb-4">Your mood over the last 7 days</p>
+          <p className="text-xs text-muted-foreground mb-4">{t("mood.moodOverWeek")}</p>
           <div className="flex items-end justify-between h-24 gap-1 px-1">
             {last7.map((day, i) => {
               const h = day.me ? moodToHeight[day.me.mood] || 50 : 30;
