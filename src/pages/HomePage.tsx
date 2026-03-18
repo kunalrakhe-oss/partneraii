@@ -568,7 +568,7 @@ export default function HomePage() {
                       <div className="bg-card rounded-2xl p-4 border border-border shadow-card">
                         <div className="flex items-center gap-2 mb-2">
                           <Brain size={14} className="text-primary" />
-                          <span className="text-xs font-semibold text-primary">AI Check-in</span>
+                          <span className="text-xs font-semibold text-primary">{t("home.aiCheckin")}</span>
                         </div>
                         {aiMoodLoading ? (
                           <div className="flex items-center gap-2 py-1">
