@@ -37,8 +37,6 @@ import NotFound from "@/pages/NotFound";
 import OnboardingFlow from "@/pages/OnboardingFlow";
 import UpgradePage from "@/pages/UpgradePage";
 import PostAuthSetup from "@/pages/PostAuthSetup";
-import InstallPrompt from "@/components/InstallPrompt";
-import FullscreenPrompt from "@/components/FullscreenPrompt";
 import FeatureGate from "@/components/FeatureGate";
 import FullscreenExitButton from "@/components/FullscreenExitButton";
 
@@ -169,8 +167,6 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <InstallPrompt />
-            <FullscreenPrompt />
             <FullscreenExitButton />
             <BrowserRouter>
               <AppRoutes />

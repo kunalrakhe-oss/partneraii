@@ -3,7 +3,7 @@ import { Home, CalendarDays, ShoppingCart, MessageCircle, ClipboardList } from "
 import { motion } from "framer-motion";
 import PartnerNotifications from "@/components/PartnerNotifications";
 import DemoBanner from "@/components/DemoBanner";
-import PostAuthInstallPrompt from "@/components/PostAuthInstallPrompt";
+
 import VoiceAssistant from "@/components/VoiceAssistant";
 import CompletedTasksCleanup from "@/components/CompletedTasksCleanup";
 import { getNavTabs, type NavTabId } from "@/hooks/useLayoutPreferences";
@@ -65,7 +65,7 @@ export default function AppLayout() {
     <div className="flex flex-col min-h-[100dvh] bg-background relative">
       <DemoBanner />
       {!isSingle && <PartnerNotifications />}
-      <PostAuthInstallPrompt />
+      
       <GatedVoiceAssistant />
       <CompletedTasksCleanup />
       <div className="flex-1 overflow-y-auto pb-nav">

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download, Mic, LayoutGrid, GripVertical, Crown, CreditCard, KeyRound, Globe, Users } from "lucide-react";
-import { usePWAInstall } from "@/hooks/usePWAInstall";
+import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Mic, LayoutGrid, GripVertical, Crown, CreditCard, KeyRound, Globe, Users } from "lucide-react";
+
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
@@ -291,14 +291,14 @@ export default function ProfilePage() {
   const [accessCodeInput, setAccessCodeInput] = useState("");
   const { user, signOut } = useAuth();
   const { toast } = useToast();
-  const { canInstall, isInstalled, isIOS, promptInstall } = usePWAInstall();
+  
   const { isSupported: fullscreenSupported, isFullscreen, toggleFullscreen } = useFullscreen();
   const { isSupported: voiceSupported, enabled: voiceEnabled, toggleEnabled: toggleVoice } = useWakeWord();
   const navigate = useNavigate();
   const { t } = useLanguage();
 
   // Prompt-disable toggles
-  const [installPromptDisabled, setInstallPromptDisabled] = useState(() => localStorage.getItem("lovelist-install-prompt-disabled") === "true");
+  
   const [fullscreenPromptDisabled, setFullscreenPromptDisabled] = useState(() => localStorage.getItem("lovelist-fullscreen-prompt-disabled") === "true");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [displayName, setDisplayName] = useState("");
@@ -475,15 +475,6 @@ export default function ProfilePage() {
       case "theme":
         setActiveSheet("theme");
         break;
-      case "install-app":
-        if (isIOS) {
-          toast({ title: t("profile.installLoveLists"), description: t("profile.installSafari") });
-        } else if (canInstall) {
-          promptInstall();
-        } else {
-          toast({ title: t("profile.alreadyAvailable"), description: t("profile.useBrowserMenu") });
-        }
-        break;
       case "fullscreen":
         toggleFullscreen();
         break;
@@ -564,7 +555,7 @@ export default function ProfilePage() {
         { key: "language", icon: Globe, label: t("profile.language"), sub: localStorage.getItem("lovelist-language") === "hi" ? "हिन्दी" : "English" },
         ...(voiceSupported ? [{ key: "voice-assistant", icon: Mic, label: t("profile.voiceAssistant"), sub: voiceEnabled ? t("profile.heyLoveActive") : t("profile.sayHeyLove") }] : []),
         ...(fullscreenSupported ? [{ key: "fullscreen", icon: Maximize, label: t("profile.fullscreenMode"), sub: isFullscreen ? t("profile.currentlyFullscreen") : t("profile.hideBrowserBar"), toggle: true, toggleKey: "fullscreen" as const }] : []),
-        ...(!isInstalled ? [{ key: "install-app", icon: Download, label: t("profile.installApp"), sub: isIOS ? t("profile.addToHomeScreen") : t("profile.nativeExperience"), toggle: true, toggleKey: "install" as const }] : []),
+        
         { key: "privacy", icon: Lock, label: t("profile.privacySecurity") },
         { key: "help", icon: HelpCircle, label: t("profile.helpSupport") },
       ],
@@ -631,24 +622,15 @@ export default function ProfilePage() {
                     {(item as any).toggle && (
                       <div className="flex items-center gap-2 mt-1.5" onClick={(e) => e.stopPropagation()}>
                         <Switch
-                          checked={
-                            (item as any).toggleKey === "install" ? !installPromptDisabled
-                            : !fullscreenPromptDisabled
-                          }
+                          checked={!fullscreenPromptDisabled}
                           onCheckedChange={(checked) => {
-                            if ((item as any).toggleKey === "install") {
-                              localStorage.setItem("lovelist-install-prompt-disabled", checked ? "false" : "true");
-                              setInstallPromptDisabled(!checked);
-                            } else {
-                              localStorage.setItem("lovelist-fullscreen-prompt-disabled", checked ? "false" : "true");
-                              setFullscreenPromptDisabled(!checked);
-                            }
+                            localStorage.setItem("lovelist-fullscreen-prompt-disabled", checked ? "false" : "true");
+                            setFullscreenPromptDisabled(!checked);
                             toast({ title: checked ? "Pop-up enabled" : "Pop-up disabled" });
                           }}
                         />
                         <span className="text-[10px] text-muted-foreground">
-                          {((item as any).toggleKey === "install" ? !installPromptDisabled : !fullscreenPromptDisabled)
-                            ? "Pop-up enabled" : "Pop-up disabled"}
+                          {!fullscreenPromptDisabled ? "Pop-up enabled" : "Pop-up disabled"}
                         </span>
                       </div>
                     )}
