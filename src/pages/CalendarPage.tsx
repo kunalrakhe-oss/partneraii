@@ -208,7 +208,7 @@ function CalendarDietForm({ defaultDate, onClose, onSave, t }: {
             </div>
           </div>
 
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Frequency</label>
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">{t("calendar.frequency")}</label>
           <div className="grid grid-cols-3 gap-2 mb-3">
             {(["once", "daily", "weekly"] as const).map(r => (
               <button key={r} onClick={() => setRecurrence(r)}
