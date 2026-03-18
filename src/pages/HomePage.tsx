@@ -323,9 +323,9 @@ export default function HomePage() {
 
                 <div className="space-y-3 mb-5">
                   {[
-                    { step: 1, label: "Connect with your partner", icon: Users, done: false },
-                    { step: 2, label: "Add your first memory", icon: Camera, done: false },
-                    { step: 3, label: "Start your love journey", icon: Rocket, done: false },
+                    { step: 1, label: t("home.connectWithPartner"), icon: Users, done: false },
+                    { step: 2, label: t("home.addFirstMemory"), icon: Camera, done: false },
+                    { step: 3, label: t("home.startLoveJourney"), icon: Rocket, done: false },
                   ].map(s => (
                     <div key={s.step} className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
