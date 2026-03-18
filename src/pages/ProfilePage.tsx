@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download, Mic, LayoutGrid } from "lucide-react";
+import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download, Mic, LayoutGrid, GripVertical } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,7 +13,7 @@ import { Monitor, Volume2, Vibrate, Maximize } from "lucide-react";
 import { getNotificationPrefs, setNotificationPrefs, playNotificationSound } from "@/lib/notificationSound";
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { useWakeWord } from "@/hooks/useWakeWord";
-import { useLayoutPreferences, ALL_NAV_TABS, ALL_HOME_WIDGETS } from "@/hooks/useLayoutPreferences";
+import { useLayoutPreferences, ALL_NAV_TABS, ALL_HOME_WIDGETS, type NavTabId, type HomeWidgetId } from "@/hooks/useLayoutPreferences";
 
 type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | "customize" | null;
 
@@ -145,7 +145,34 @@ function NotificationSettingsContent() {
 }
 
 function CustomizeLayoutSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { navTabs, homeWidgets, toggleNavTab, toggleHomeWidget, resetDefaults } = useLayoutPreferences();
+  const { navTabs, homeWidgets, toggleNavTab, toggleHomeWidget, setNavTabs, setHomeWidgets, resetDefaults } = useLayoutPreferences();
+
+  // Local ordered lists for reorder (includes all items, active or not, in display order)
+  const allNavIds = ALL_NAV_TABS.map(t => t.id);
+  const allWidgetIds = ALL_HOME_WIDGETS.map(w => w.id);
+
+  // Build ordered list: active items in current order, then inactive items
+  const navOrder = [
+    ...navTabs.filter(id => allNavIds.includes(id)),
+    ...allNavIds.filter(id => !navTabs.includes(id)),
+  ];
+  const widgetOrder = [
+    ...homeWidgets.filter(id => allWidgetIds.includes(id)),
+    ...allWidgetIds.filter(id => !homeWidgets.includes(id)),
+  ];
+
+  const navLabel = (id: string) => ALL_NAV_TABS.find(t => t.id === id)?.label || id;
+  const widgetLabel = (id: string) => ALL_HOME_WIDGETS.find(w => w.id === id)?.label || id;
+
+  const handleNavReorder = (newOrder: string[]) => {
+    const activeInOrder = newOrder.filter(id => navTabs.includes(id as any)) as NavTabId[];
+    setNavTabs(activeInOrder);
+  };
+
+  const handleWidgetReorder = (newOrder: string[]) => {
+    const activeInOrder = newOrder.filter(id => homeWidgets.includes(id as any)) as HomeWidgetId[];
+    setHomeWidgets(activeInOrder);
+  };
 
   return (
     <BottomSheet open={open} onClose={onClose} title="Customize Layout">
@@ -153,57 +180,66 @@ function CustomizeLayoutSheet({ open, onClose }: { open: boolean; onClose: () =>
         {/* Nav Bar Tabs */}
         <div>
           <p className="text-xs font-semibold text-muted-foreground mb-2">Navigation Bar</p>
-          <p className="text-[10px] text-muted-foreground mb-3">Choose which tabs appear in your bottom nav (Home is always shown)</p>
-          <div className="space-y-1.5">
-            {ALL_NAV_TABS.map(tab => {
-              const isActive = navTabs.includes(tab.id);
-              const isHome = tab.id === "home";
+          <p className="text-[10px] text-muted-foreground mb-3">Drag to reorder • Toggle to show/hide (Home is always shown)</p>
+          <Reorder.Group axis="y" values={navOrder} onReorder={handleNavReorder} className="space-y-1.5">
+            {navOrder.map(id => {
+              const isActive = navTabs.includes(id);
+              const isHome = id === "home";
               return (
-                <button
-                  key={tab.id}
-                  onClick={() => !isHome && toggleNavTab(tab.id)}
-                  disabled={isHome}
-                  className={`w-full flex items-center justify-between bg-muted rounded-xl px-4 py-3 border transition-colors ${
+                <Reorder.Item
+                  key={id}
+                  value={id}
+                  dragListener={!isHome}
+                  className={`flex items-center gap-2 bg-muted rounded-xl px-3 py-3 border transition-colors cursor-grab active:cursor-grabbing ${
                     isActive ? "border-primary" : "border-border"
-                  } ${isHome ? "opacity-60" : ""}`}
+                  } ${isHome ? "opacity-60 cursor-default" : ""}`}
                 >
-                  <p className="text-sm font-medium text-foreground">{tab.label}</p>
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                    isActive ? "bg-primary" : "bg-border"
-                  }`}>
+                  <GripVertical size={14} className="text-muted-foreground shrink-0" />
+                  <p className="text-sm font-medium text-foreground flex-1">{navLabel(id)}</p>
+                  <button
+                    onClick={() => !isHome && toggleNavTab(id)}
+                    disabled={isHome}
+                    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                      isActive ? "bg-primary" : "bg-border"
+                    }`}
+                  >
                     {isActive && <Check size={12} className="text-primary-foreground" />}
-                  </div>
-                </button>
+                  </button>
+                </Reorder.Item>
               );
             })}
-          </div>
+          </Reorder.Group>
         </div>
 
         {/* Home Screen Widgets */}
         <div>
           <p className="text-xs font-semibold text-muted-foreground mb-2">Home Screen Widgets</p>
-          <p className="text-[10px] text-muted-foreground mb-3">Toggle which sections appear on your home page</p>
-          <div className="space-y-1.5">
-            {ALL_HOME_WIDGETS.map(widget => {
-              const isActive = homeWidgets.includes(widget.id);
+          <p className="text-[10px] text-muted-foreground mb-3">Drag to reorder • Toggle to show/hide</p>
+          <Reorder.Group axis="y" values={widgetOrder} onReorder={handleWidgetReorder} className="space-y-1.5">
+            {widgetOrder.map(id => {
+              const isActive = homeWidgets.includes(id);
               return (
-                <button
-                  key={widget.id}
-                  onClick={() => toggleHomeWidget(widget.id)}
-                  className={`w-full flex items-center justify-between bg-muted rounded-xl px-4 py-3 border transition-colors ${
+                <Reorder.Item
+                  key={id}
+                  value={id}
+                  className={`flex items-center gap-2 bg-muted rounded-xl px-3 py-3 border transition-colors cursor-grab active:cursor-grabbing ${
                     isActive ? "border-primary" : "border-border"
                   }`}
                 >
-                  <p className="text-sm font-medium text-foreground">{widget.label}</p>
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                    isActive ? "bg-primary" : "bg-border"
-                  }`}>
+                  <GripVertical size={14} className="text-muted-foreground shrink-0" />
+                  <p className="text-sm font-medium text-foreground flex-1">{widgetLabel(id)}</p>
+                  <button
+                    onClick={() => toggleHomeWidget(id)}
+                    className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                      isActive ? "bg-primary" : "bg-border"
+                    }`}
+                  >
                     {isActive && <Check size={12} className="text-primary-foreground" />}
-                  </div>
-                </button>
+                  </button>
+                </Reorder.Item>
               );
             })}
-          </div>
+          </Reorder.Group>
         </div>
 
         {/* Reset */}
