@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Check, Crown, Sparkles, Star, ChevronLeft, Loader2 } from "lucide-react";
+import { Check, Crown, Sparkles, Star, ChevronLeft, Loader2, Gift, KeyRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
