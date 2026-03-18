@@ -9,8 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Monitor, Volume2, Vibrate } from "lucide-react";
+import { Monitor, Volume2, Vibrate, Maximize } from "lucide-react";
 import { getNotificationPrefs, setNotificationPrefs, playNotificationSound } from "@/lib/notificationSound";
+import { useFullscreen } from "@/hooks/useFullscreen";
 
 type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | null;
 
@@ -145,6 +146,7 @@ export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const { canInstall, isInstalled, isIOS, promptInstall } = usePWAInstall();
+  const { isSupported: fullscreenSupported, isFullscreen, toggleFullscreen } = useFullscreen();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [displayName, setDisplayName] = useState("");
@@ -314,6 +316,9 @@ export default function ProfilePage() {
           toast({ title: "Already available", description: "Use your browser menu to install the app" });
         }
         break;
+      case "Fullscreen Mode":
+        toggleFullscreen();
+        break;
       default:
         toast({ title: "Coming soon", description: `${label} will be available in a future update` });
     }
@@ -333,6 +338,7 @@ export default function ProfilePage() {
       title: "Preferences",
       items: [
         { icon: Palette, label: "Theme & Appearance" },
+        ...(fullscreenSupported ? [{ icon: Maximize, label: "Fullscreen Mode", sub: isFullscreen ? "Currently fullscreen — tap to exit" : "Hide browser bar for app-like feel" }] : []),
         ...(!isInstalled ? [{ icon: Download, label: "Install App", sub: isIOS ? "Add to Home Screen" : "Get the native experience" }] : []),
         { icon: Lock, label: "Privacy & Security" },
         { icon: HelpCircle, label: "Help & Support" },
