@@ -1,10 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, Loader2, FileText, MessageCircle, ClipboardList, ChevronRight, Heart, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Send, Loader2, FileText, MessageCircle, ClipboardList, ChevronRight, Heart, AlertTriangle, Save, CalendarCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import PlanPhaseSection from "@/components/PlanPhaseSection";
+import RecoveryTracker from "@/components/RecoveryTracker";
 import { type Exercise } from "@/components/RecoveryPlanCard";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePartnerPair } from "@/hooks/usePartnerPair";
+import { toast } from "sonner";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -67,10 +72,12 @@ async function streamChat(body: Record<string, unknown>, onDelta: (t: string) =>
   onDone();
 }
 
-type Tab = "assess" | "plan" | "chat";
+type Tab = "assess" | "plan" | "chat" | "myplan";
 
 export default function PostpartumPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { partnerPair } = usePartnerPair();
   const [tab, setTab] = useState<Tab>("assess");
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
@@ -80,12 +87,56 @@ export default function PostpartumPage() {
   const [planLoading, setPlanLoading] = useState(false);
   const [planError, setPlanError] = useState("");
 
+  const [hasSavedPlan, setHasSavedPlan] = useState(false);
+  const [savingPlan, setSavingPlan] = useState(false);
+
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, chatLoading, plan]);
+
+  // Check for existing saved plan on mount
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("recovery_plans")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("plan_type", "postpartum")
+      .eq("is_active", true)
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setHasSavedPlan(true);
+          setTab("myplan");
+        }
+      });
+  }, [user]);
+
+  const savePlan = async () => {
+    if (!plan || !user || !partnerPair || savingPlan) return;
+    setSavingPlan(true);
+    const title = plan.summary?.slice(0, 60) || "Postpartum Recovery Plan";
+    const { error } = await supabase.from("recovery_plans").insert({
+      user_id: user.id,
+      partner_pair: partnerPair,
+      plan_type: "postpartum",
+      title,
+      assessment_answers: answers,
+      plan_data: plan,
+    });
+    if (error) {
+      toast.error("Failed to save plan");
+    } else {
+      toast.success("Plan saved! Track your progress daily.");
+      setHasSavedPlan(true);
+      setTab("myplan");
+    }
+    setSavingPlan(false);
+  };
 
   const currentQ = QUESTIONS[step];
   const isMulti = currentQ?.type === "multi";
@@ -178,6 +229,7 @@ export default function PostpartumPage() {
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: "assess", label: "Assessment", icon: <ClipboardList size={16} /> },
     { id: "plan", label: "Recovery Plan", icon: <FileText size={16} /> },
+    ...(hasSavedPlan ? [{ id: "myplan" as Tab, label: "My Plan", icon: <CalendarCheck size={16} /> }] : []),
     { id: "chat", label: "Ask AI", icon: <MessageCircle size={16} /> },
   ];
 
@@ -322,12 +374,28 @@ export default function PostpartumPage() {
 
                   <div className="flex gap-2">
                     <button onClick={resetAssessment} className="flex-1 bg-muted text-foreground rounded-xl py-2.5 text-sm font-medium">Retake</button>
-                    <button onClick={() => setTab("chat")} className={`flex-1 ${accentSolid} text-white rounded-xl py-2.5 text-sm font-semibold`}>Ask Follow-up</button>
+                    {!hasSavedPlan && (
+                      <button onClick={savePlan} disabled={savingPlan}
+                        className={`flex-1 ${accentSolid} text-white rounded-xl py-2.5 text-sm font-semibold flex items-center justify-center gap-1.5 disabled:opacity-50`}>
+                        {savingPlan ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                        Save & Track
+                      </button>
+                    )}
+                    <button onClick={() => setTab("chat")} className="flex-1 bg-muted text-foreground rounded-xl py-2.5 text-sm font-medium">Ask Follow-up</button>
                   </div>
                 </div>
               )}
               <div ref={bottomRef} />
             </motion.div>
+          )}
+
+          {/* MY PLAN - Recovery Tracker */}
+          {tab === "myplan" && (
+            <RecoveryTracker
+              planType="postpartum"
+              accentColor="pink"
+              onAskAI={(ctx) => { sendChat(ctx); setTab("chat"); }}
+            />
           )}
 
           {tab === "chat" && (

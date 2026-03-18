@@ -1,4 +1,4 @@
-import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send, Bell, Users, BookOpen, Rocket, BookHeart, Dumbbell, Apple, Baby, Shield, Activity, HeartPulse, MapPin, Wallet, PartyPopper } from "lucide-react";
+import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send, Bell, Users, BookOpen, Rocket, BookHeart, Dumbbell, Apple, Baby, Shield, Activity, HeartPulse, MapPin, Wallet, PartyPopper, Flame } from "lucide-react";
 import ProfileButton from "@/components/ProfileButton";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -55,7 +55,7 @@ export default function HomePage() {
   const [newChoreTitle, setNewChoreTitle] = useState("");
   const unreadCount = useNotificationCount();
   const [visibleWidgets, setVisibleWidgets] = useState<HomeWidgetId[]>(getHomeWidgets);
-
+  const [activePlan, setActivePlan] = useState<{ plan_type: string; title: string; started_at: string } | null>(null);
   useEffect(() => {
     const onUpdate = () => setVisibleWidgets(getHomeWidgets());
     window.addEventListener("layout-prefs-changed", onUpdate);
@@ -163,6 +163,22 @@ export default function HomePage() {
 
     return () => { supabase.removeChannel(moodChannel); };
   }, [partnerPair, user, today]);
+
+  // Fetch active recovery plan
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("recovery_plans")
+      .select("plan_type, title, started_at")
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        setActivePlan(data as any);
+      });
+  }, [user]);
 
   // Fetch AI insight
   const fetchInsight = useCallback(async () => {
@@ -359,6 +375,34 @@ export default function HomePage() {
                   </Link>
                 </div>
               </div>
+            </motion.div>
+          )}
+
+          {/* Active Recovery Plan Card */}
+          {activePlan && (
+            <motion.div variants={item}>
+              <Link
+                to={activePlan.plan_type === "postpartum" ? "/postpartum" : "/physio"}
+                className="block bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent rounded-2xl p-4 border border-emerald-500/20"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
+                    <Activity size={22} className="text-emerald-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold text-foreground truncate">{activePlan.title}</p>
+                      <div className="flex items-center gap-0.5 bg-orange-500/10 px-1.5 py-0.5 rounded-full shrink-0">
+                        <Flame size={10} className="text-orange-500" />
+                        <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400">
+                          Day {Math.max(1, Math.floor((Date.now() - new Date(activePlan.started_at).getTime()) / (1000 * 60 * 60 * 24)) + 1)}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">Tap to continue your recovery →</p>
+                  </div>
+                </div>
+              </Link>
             </motion.div>
           )}
 

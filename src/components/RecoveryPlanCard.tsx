@@ -21,6 +21,9 @@ type Props = {
   exercise: Exercise;
   accentColor?: string;
   onGenerateImage?: (exercise: Exercise) => Promise<string | null>;
+  completable?: boolean;
+  completed?: boolean;
+  onToggleComplete?: (name: string) => void;
 };
 
 const difficultyColors: Record<string, string> = {
@@ -30,7 +33,7 @@ const difficultyColors: Record<string, string> = {
   Challenging: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
 };
 
-export default function RecoveryPlanCard({ exercise, accentColor = "emerald", onGenerateImage }: Props) {
+export default function RecoveryPlanCard({ exercise, accentColor = "emerald", onGenerateImage, completable, completed, onToggleComplete }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
@@ -58,6 +61,16 @@ export default function RecoveryPlanCard({ exercise, accentColor = "emerald", on
         onClick={() => setExpanded(!expanded)}
         className="w-full text-left px-4 py-3 flex items-start gap-3"
       >
+        {completable && (
+          <div
+            onClick={(e) => { e.stopPropagation(); onToggleComplete?.(exercise.name); }}
+            className={`w-5 h-5 mt-0.5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
+              completed ? "bg-primary border-transparent" : "border-border"
+            }`}
+          >
+            {completed && <span className="text-primary-foreground text-xs">✓</span>}
+          </div>
+        )}
         <span className="text-xl mt-0.5">{exercise.icon || "🏋️"}</span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground">{exercise.name}</p>
