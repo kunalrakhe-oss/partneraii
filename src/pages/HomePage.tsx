@@ -56,6 +56,7 @@ export default function HomePage() {
   const unreadCount = useNotificationCount();
   const [visibleWidgets, setVisibleWidgets] = useState<HomeWidgetId[]>(getHomeWidgets);
   const [activePlan, setActivePlan] = useState<{ plan_type: string; title: string; started_at: string } | null>(null);
+  const [activeDietPlan, setActiveDietPlan] = useState<{ title: string; goal: string; started_at: string } | null>(null);
   useEffect(() => {
     const onUpdate = () => setVisibleWidgets(getHomeWidgets());
     window.addEventListener("layout-prefs-changed", onUpdate);
