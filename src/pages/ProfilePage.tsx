@@ -661,6 +661,9 @@ export default function ProfilePage() {
       {/* Customize Layout Sheet */}
       <CustomizeLayoutSheet open={activeSheet === "customize"} onClose={() => setActiveSheet(null)} />
 
+      {/* Language Sheet */}
+      <LanguageSheet open={activeSheet === "language"} onClose={() => setActiveSheet(null)} />
+
       {/* Remove Partner Confirmation */}
       <BottomSheet open={activeSheet === "remove-partner"} onClose={() => setActiveSheet(null)} title="Remove Partner">
         <div className="flex flex-col items-center py-4 gap-3">
