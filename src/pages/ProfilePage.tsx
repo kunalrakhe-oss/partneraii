@@ -746,7 +746,7 @@ export default function ProfilePage() {
       {/* App Mode Sheet */}
       <BottomSheet open={activeSheet === "app-mode"} onClose={() => setActiveSheet(null)} title="App Mode">
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground mb-1">Choose how you want to use LoveList</p>
+          <p className="text-xs text-muted-foreground mb-1">Choose how you want to use PartnerAI</p>
           {([
             { value: "single", label: "Me Mode", desc: "Personal productivity & wellness", icon: User },
             { value: "couple", label: "We Mode", desc: "Shared with your partner", icon: Users },
