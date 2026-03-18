@@ -309,7 +309,7 @@ export default function MoodPage() {
               </div>
               <div className="flex gap-2">
                 <input value={reactionMessage} onChange={e => setReactionMessage(e.target.value)}
-                  placeholder="Add a message..."
+                  placeholder={t("mood.addMessage")}
                   className="flex-1 bg-muted rounded-xl px-3 h-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                 <button onClick={sendPartnerReaction}
                   disabled={(!moodReaction && !reactionMessage.trim()) || sendingReaction}
