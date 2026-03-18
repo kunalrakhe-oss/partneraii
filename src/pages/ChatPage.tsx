@@ -44,6 +44,7 @@ const QUICK_REACTIONS = ["❤️", "😂", "😮", "😢", "🔥", "👍"];
 
 export default function ChatPage() {
   const { user } = useAuth();
+  const { canAccess } = useSubscriptionContext();
   const { partnerPair, loading: ppLoading, userId } = usePartnerPair();
   const { isDemoMode } = useDemo();
   const navigate = useNavigate();
