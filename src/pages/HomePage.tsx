@@ -240,8 +240,8 @@ export default function HomePage() {
 
   const formatEventDate = (dateStr: string) => {
     const d = parseISO(dateStr);
-    if (isToday(d)) return "Today";
-    if (isTomorrow(d)) return "Tomorrow";
+    if (isToday(d)) return t("common.today");
+    if (isTomorrow(d)) return t("common.tomorrow");
     return format(d, "MMM d");
   };
 
@@ -317,15 +317,15 @@ export default function HomePage() {
               <div className="bg-gradient-to-br from-primary/10 via-secondary/5 to-primary/10 rounded-2xl p-5 border border-primary/20 shadow-soft">
                 <div className="flex items-center gap-2 mb-1">
                   <Heart size={16} className="text-primary" fill="currentColor" />
-                  <p className="text-sm font-bold text-foreground">Make it real</p>
-                </div>
-                <p className="text-xs text-muted-foreground mb-4">Start your love journey in 3 simple steps</p>
+                   <p className="text-sm font-bold text-foreground">{t("home.makeItReal")}</p>
+                 </div>
+                 <p className="text-xs text-muted-foreground mb-4">{t("home.startJourney")}</p>
 
                 <div className="space-y-3 mb-5">
                   {[
-                    { step: 1, label: "Connect with your partner", icon: Users, done: false },
-                    { step: 2, label: "Add your first memory", icon: Camera, done: false },
-                    { step: 3, label: "Start your love journey", icon: Rocket, done: false },
+                    { step: 1, label: t("home.connectWithPartner"), icon: Users, done: false },
+                    { step: 2, label: t("home.addFirstMemory"), icon: Camera, done: false },
+                    { step: 3, label: t("home.startLoveJourney"), icon: Rocket, done: false },
                   ].map(s => (
                     <div key={s.step} className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
@@ -348,14 +348,14 @@ export default function HomePage() {
                     className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 shadow-soft"
                   >
                     <Users size={13} />
-                    Connect Partner
-                  </Link>
-                  <Link
-                    to="/memories"
-                    className="flex-1 h-10 rounded-xl bg-card border border-border text-foreground text-xs font-bold flex items-center justify-center gap-1.5 shadow-card"
-                  >
-                    <Camera size={13} />
-                    Add Memory
+                     {t("home.connectPartner")}
+                   </Link>
+                   <Link
+                     to="/memories"
+                     className="flex-1 h-10 rounded-xl bg-card border border-border text-foreground text-xs font-bold flex items-center justify-center gap-1.5 shadow-card"
+                   >
+                     <Camera size={13} />
+                     {t("home.addMemory")}
                   </Link>
                 </div>
               </div>
@@ -371,7 +371,7 @@ export default function HomePage() {
                     <Link to="/calendar" className="block love-gradient rounded-2xl p-4 shadow-elevated relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-primary-foreground/10 rounded-full -translate-y-8 translate-x-8" />
                       <div className="flex items-center justify-between mb-1">
-                        <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">Next Up</p>
+                        <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">{t("home.nextUp")}</p>
                         {getCountdownBadge(nextEvent) && (
                           <span className="text-[10px] font-bold bg-primary-foreground/20 text-primary-foreground px-2 py-0.5 rounded-full">
                             {getCountdownBadge(nextEvent)}
@@ -398,13 +398,13 @@ export default function HomePage() {
               case "partnership-stats":
                 return (
                   <motion.div key="partnership-stats" variants={item}>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Partnership Stats</p>
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        { label: "Days Together", value: daysTogether, icon: Heart, gradient: "from-secondary/20 to-secondary/5", iconBg: "bg-secondary/20", iconColor: "text-secondary", link: "/memories" },
-                        { label: "Events", value: totalEvents, icon: CalendarDays, gradient: "from-primary/20 to-primary/5", iconBg: "bg-primary/20", iconColor: "text-primary", link: "/calendar" },
-                        { label: "Memories", value: totalMemories, icon: Image, gradient: "from-accent/20 to-accent/5", iconBg: "bg-accent/20", iconColor: "text-accent-foreground", link: "/memories" },
-                        { label: "Tasks Done", value: completedChores, icon: Trophy, gradient: "from-success/20 to-success/5", iconBg: "bg-success/20", iconColor: "text-success", link: "/chores" },
+                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t("home.partnershipStats")}</p>
+                     <div className="grid grid-cols-2 gap-3">
+                       {[
+                         { label: t("home.daysTogether"), value: daysTogether, icon: Heart, gradient: "from-secondary/20 to-secondary/5", iconBg: "bg-secondary/20", iconColor: "text-secondary", link: "/memories" },
+                         { label: t("home.events"), value: totalEvents, icon: CalendarDays, gradient: "from-primary/20 to-primary/5", iconBg: "bg-primary/20", iconColor: "text-primary", link: "/calendar" },
+                         { label: t("home.memories"), value: totalMemories, icon: Image, gradient: "from-accent/20 to-accent/5", iconBg: "bg-accent/20", iconColor: "text-accent-foreground", link: "/memories" },
+                         { label: t("home.tasksDone"), value: completedChores, icon: Trophy, gradient: "from-success/20 to-success/5", iconBg: "bg-success/20", iconColor: "text-success", link: "/chores" },
                       ].map(stat => (
                         <button
                           key={stat.label}
@@ -433,8 +433,8 @@ export default function HomePage() {
                           <span className="text-2xl">🌤️</span>
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-bold text-foreground">How are you feeling today?</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">Tap to log your mood & connect with your partner</p>
+                          <p className="text-sm font-bold text-foreground">{t("home.howFeeling")}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{t("home.tapToLogMood")}</p>
                         </div>
                         <Heart size={16} className="text-secondary shrink-0" />
                       </div>
@@ -445,7 +445,7 @@ export default function HomePage() {
               case "partner-mood":
                 return (
                   <motion.div key="partner-mood" variants={item}>
-                    <p className="text-sm font-semibold text-foreground mb-2">Partner's Mood</p>
+                    <p className="text-sm font-semibold text-foreground mb-2">{t("home.partnerMood")}</p>
                     <button onClick={() => partnerMood ? setShowMoodPopup(true) : navigate("/mood")} className="w-full text-left">
                       <div className="flex items-center gap-3">
                         <div className="flex-1 bg-primary/20 rounded-2xl px-4 py-3 flex items-center gap-3">
@@ -453,15 +453,15 @@ export default function HomePage() {
                             {partnerMood ? ({ happy: "😊", excited: "🤩", neutral: "🥰", calm: "😌", grateful: "🙏", silly: "🤪", tired: "😵‍💫", sad: "😢", stressed: "😫", anxious: "😰", angry: "😠", furious: "🤬", lonely: "🥺", hopeful: "🌟", confused: "😕" }[partnerMood.mood] || "✨") : "✨"}
                           </span>
                           <div>
-                            <p className="text-xs text-foreground/70">Your partner is feeling</p>
-                            <p className="text-sm font-bold text-foreground">
-                              {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : "No mood yet today"}
+                             <p className="text-xs text-foreground/70">{t("home.partnerFeeling")}</p>
+                             <p className="text-sm font-bold text-foreground">
+                               {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : t("home.noMoodYet")}
                             </p>
                             {partnerMood?.note && (
                               <p className="text-xs text-foreground/50 mt-0.5">"{partnerMood.note}"</p>
                             )}
                             {!partnerMood && (
-                              <p className="text-xs text-muted-foreground mt-0.5">Nudge them to check in ❤️</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{t("home.nudgePartner")}</p>
                             )}
                           </div>
                         </div>
@@ -474,19 +474,19 @@ export default function HomePage() {
                 return (
                   <motion.div key="today-agenda" variants={item} className="bg-primary/25 rounded-card p-5 shadow-soft">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs font-medium text-foreground/70">Today's Agenda</p>
-                      <Link to="/calendar" className="text-xs font-medium bg-card/80 text-foreground px-3 py-1 rounded-full">View All</Link>
+                       <p className="text-xs font-medium text-foreground/70">{t("home.todayAgenda")}</p>
+                       <Link to="/calendar" className="text-xs font-medium bg-card/80 text-foreground px-3 py-1 rounded-full">{t("common.viewAll")}</Link>
                     </div>
-                    <p className="text-xl font-bold text-foreground mb-4">{todayEvents.length} Shared Events</p>
+                    <p className="text-xl font-bold text-foreground mb-4">{todayEvents.length} {t("home.sharedEvents")}</p>
                     <div className="space-y-2">
                       {todayEvents.length === 0 ? (
-                        <p className="text-sm text-foreground/60">No events scheduled for today</p>
+                        <p className="text-sm text-foreground/60">{t("home.noEventsToday")}</p>
                       ) : (
                         todayEvents.slice(0, 3).map(event => (
                           <div key={event.id} className="flex items-center gap-3">
                             <div className="w-0.5 h-8 bg-foreground/30 rounded-full" />
                             <div>
-                              <p className="text-[10px] text-foreground/60">{event.event_time || "All day"}</p>
+                              <p className="text-[10px] text-foreground/60">{event.event_time || t("common.allDay")}</p>
                               <p className="text-sm font-semibold text-foreground">{event.title}</p>
                             </div>
                           </div>
@@ -508,8 +508,8 @@ export default function HomePage() {
                           <BookHeart size={22} className="text-accent-foreground" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-bold text-foreground">Add a Memory or Note</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">Capture a special moment together 💕</p>
+                           <p className="text-sm font-bold text-foreground">{t("home.addMemoryNote")}</p>
+                           <p className="text-xs text-muted-foreground mt-0.5">{t("home.captureSpecial")}</p>
                         </div>
                         <Plus size={18} className="text-muted-foreground shrink-0" />
                       </div>
@@ -524,36 +524,36 @@ export default function HomePage() {
                       <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
                         <ShoppingCart size={18} className="text-foreground" />
                       </div>
-                      <p className="text-sm font-bold text-foreground">Groceries</p>
-                      <p className="text-xs text-muted-foreground">{uncheckedGroceries} items</p>
-                    </Link>
-                    <Link to="/chat" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                        <MessageSquare size={18} className="text-primary" />
-                      </div>
-                      <p className="text-sm font-bold text-foreground">Chat</p>
-                      <p className="text-xs text-muted-foreground">{messageCount} msgs</p>
-                    </Link>
-                    <Link to="/memories" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
-                        <Camera size={18} className="text-accent-foreground" />
-                      </div>
-                      <p className="text-sm font-bold text-foreground">Memories</p>
-                      <p className="text-xs text-muted-foreground">Timeline</p>
-                    </Link>
-                    <Link to="/workout" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-destructive/15 flex items-center justify-center">
-                        <Dumbbell size={18} className="text-destructive" />
-                      </div>
-                      <p className="text-sm font-bold text-foreground">Workout</p>
-                      <p className="text-xs text-muted-foreground">Stay fit</p>
-                    </Link>
-                    <Link to="/diet" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-secondary/15 flex items-center justify-center">
-                        <Apple size={18} className="text-secondary" />
-                      </div>
-                      <p className="text-sm font-bold text-foreground">Diet</p>
-                      <p className="text-xs text-muted-foreground">Eat well</p>
+                       <p className="text-sm font-bold text-foreground">{t("home.groceries")}</p>
+                       <p className="text-xs text-muted-foreground">{uncheckedGroceries} {t("common.items")}</p>
+                     </Link>
+                     <Link to="/chat" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                       <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+                         <MessageSquare size={18} className="text-primary" />
+                       </div>
+                       <p className="text-sm font-bold text-foreground">{t("nav.chat")}</p>
+                       <p className="text-xs text-muted-foreground">{messageCount} {t("common.msgs")}</p>
+                     </Link>
+                     <Link to="/memories" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                       <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
+                         <Camera size={18} className="text-accent-foreground" />
+                       </div>
+                       <p className="text-sm font-bold text-foreground">{t("home.memories")}</p>
+                       <p className="text-xs text-muted-foreground">{t("home.timeline")}</p>
+                     </Link>
+                     <Link to="/workout" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                       <div className="w-10 h-10 rounded-xl bg-destructive/15 flex items-center justify-center">
+                         <Dumbbell size={18} className="text-destructive" />
+                       </div>
+                       <p className="text-sm font-bold text-foreground">{t("home.workout")}</p>
+                       <p className="text-xs text-muted-foreground">{t("home.stayFit")}</p>
+                     </Link>
+                     <Link to="/diet" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                       <div className="w-10 h-10 rounded-xl bg-secondary/15 flex items-center justify-center">
+                         <Apple size={18} className="text-secondary" />
+                       </div>
+                       <p className="text-sm font-bold text-foreground">{t("home.diet")}</p>
+                       <p className="text-xs text-muted-foreground">{t("home.eatWell")}</p>
                     </Link>
                   </motion.div>
                 );
@@ -562,18 +562,18 @@ export default function HomePage() {
                 return (
                   <motion.div key="urgent-chores" variants={item}>
                     <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-base font-bold text-foreground">Urgent Chores</h2>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => setShowAddChore(true)} className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
-                          <Plus size={14} className="text-primary" />
-                        </button>
-                        <Link to="/chores" className="text-sm text-muted-foreground font-medium">Manage</Link>
+                       <h2 className="text-base font-bold text-foreground">{t("home.urgentChores")}</h2>
+                       <div className="flex items-center gap-2">
+                         <button onClick={() => setShowAddChore(true)} className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
+                           <Plus size={14} className="text-primary" />
+                         </button>
+                         <Link to="/chores" className="text-sm text-muted-foreground font-medium">{t("common.manage")}</Link>
                       </div>
                     </div>
                     <div className="space-y-2">
                       {urgentChores.length === 0 ? (
                         <div className="bg-card rounded-2xl p-4 shadow-card text-center">
-                          <p className="text-sm text-muted-foreground">No pending chores 🎉</p>
+                          <p className="text-sm text-muted-foreground">{t("home.noPendingChores")}</p>
                         </div>
                       ) : (
                         urgentChores.map(chore => (
@@ -588,7 +588,7 @@ export default function HomePage() {
                             </button>
                             <div className="flex-1 min-w-0">
                               <p className={`text-sm font-medium ${chore.is_completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{chore.title}</p>
-                              <p className="text-xs text-muted-foreground capitalize">{chore.recurrence === "daily" ? "Due now" : chore.recurrence || "Once"}</p>
+                              <p className="text-xs text-muted-foreground capitalize">{chore.recurrence === "daily" ? t("home.dueNow") : chore.recurrence || t("home.once")}</p>
                             </div>
                           </div>
                         ))
@@ -610,7 +610,7 @@ export default function HomePage() {
                                     setNewChoreTitle(""); setShowAddChore(false);
                                   }
                                 })()}
-                                placeholder="Quick add chore..."
+                                placeholder={t("home.quickAddChore")}
                                 autoFocus
                                 className="flex-1 h-10 bg-card rounded-xl px-3 text-sm text-foreground placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
                               />
@@ -627,7 +627,7 @@ export default function HomePage() {
                                 }}
                                 disabled={!newChoreTitle.trim()}
                                 className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40"
-                              >Add</button>
+                              >{t("common.add")}</button>
                             </div>
                           </motion.div>
                         )}
@@ -644,9 +644,9 @@ export default function HomePage() {
                         <Sparkles size={16} className="text-muted-foreground" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-foreground">LoveList AI Insight</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Upgrade to Pro for daily AI-powered insights.</p>
-                        <button onClick={() => navigate("/upgrade")} className="text-xs font-semibold text-primary mt-1.5">Upgrade →</button>
+                         <p className="text-xs font-bold text-foreground">{t("home.aiInsight")}</p>
+                         <p className="text-xs text-muted-foreground mt-0.5">{t("home.upgradeForInsight")}</p>
+                         <button onClick={() => navigate("/upgrade")} className="text-xs font-semibold text-primary mt-1.5">{t("home.upgradeNow")}</button>
                       </div>
                     </motion.div>
                   );
@@ -659,7 +659,7 @@ export default function HomePage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
-                        <p className="text-xs font-bold text-foreground">LoveList AI Insight</p>
+                        <p className="text-xs font-bold text-foreground">{t("home.aiInsight")}</p>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={(e) => { e.stopPropagation(); fetchInsight(); setInsightDismissed(false); }}
@@ -723,7 +723,7 @@ export default function HomePage() {
                 className="fixed inset-x-5 top-1/3 max-w-sm mx-auto bg-card rounded-3xl shadow-elevated z-[60] p-5"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <p className="text-sm font-bold text-foreground">Partner's Mood</p>
+                  <p className="text-sm font-bold text-foreground">{t("home.partnerMood")}</p>
                   <button onClick={() => setShowMoodPopup(false)} className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                     <X size={14} className="text-muted-foreground" />
                   </button>
@@ -742,7 +742,7 @@ export default function HomePage() {
                 </div>
 
                 {/* Quick reactions - select, don't auto-send */}
-                <p className="text-xs text-muted-foreground text-center mb-2">React to their mood</p>
+                <p className="text-xs text-muted-foreground text-center mb-2">{t("mood.reactToMood")}</p>
                 <div className="flex justify-center gap-3 mb-4 relative">
                   {["❤️", "🤗", "💪", "😘"].map(emoji => (
                     <button
@@ -793,7 +793,7 @@ export default function HomePage() {
                   <input
                     value={reactionMessage}
                     onChange={e => setReactionMessage(e.target.value)}
-                    placeholder="Add a personal message..."
+                    placeholder={t("mood.addMessage")}
                     className="w-full bg-muted rounded-xl px-4 h-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
@@ -823,7 +823,7 @@ export default function HomePage() {
                   className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-40"
                 >
                   <Send size={14} />
-                  {sendingReaction ? "Sending..." : "Send"}
+                  {sendingReaction ? t("common.loading") : t("common.send")}
                 </button>
 
                 <div className="flex gap-2 mt-3">

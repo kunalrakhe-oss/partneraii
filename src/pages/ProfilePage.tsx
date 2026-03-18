@@ -295,6 +295,7 @@ export default function ProfilePage() {
   const { isSupported: fullscreenSupported, isFullscreen, toggleFullscreen } = useFullscreen();
   const { isSupported: voiceSupported, enabled: voiceEnabled, toggleEnabled: toggleVoice } = useWakeWord();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   // Prompt-disable toggles
   const [installPromptDisabled, setInstallPromptDisabled] = useState(() => localStorage.getItem("lovelist-install-prompt-disabled") === "true");
@@ -438,51 +439,48 @@ export default function ProfilePage() {
     setRemovingPartner(false);
   };
 
-  const handleSettingTap = (label: string) => {
-    switch (label) {
-      case "Personal Information":
+  const handleSettingTap = (key: string) => {
+    switch (key) {
+      case "personal-info":
         openPersonalInfo();
         break;
-      case "Notifications":
+      case "notifications":
         setActiveSheet("notifications");
         break;
-      case "Partner Profile":
+      case "partner-profile":
+      case "couple-connection":
         navigate("/couple");
         break;
-      case "Couple Connection":
-        navigate("/couple");
-        break;
-      case "Remove Partner":
+      case "remove-partner":
         setActiveSheet("remove-partner");
         break;
-      case "Theme & Appearance":
+      case "theme":
         setActiveSheet("theme");
         break;
-      case "Install App":
+      case "install-app":
         if (isIOS) {
-          toast({ title: "Install LoveLists", description: "Tap Share → Add to Home Screen in Safari" });
+          toast({ title: t("profile.installLoveLists"), description: t("profile.installSafari") });
         } else if (canInstall) {
           promptInstall();
         } else {
-          toast({ title: "Already available", description: "Use your browser menu to install the app" });
+          toast({ title: t("profile.alreadyAvailable"), description: t("profile.useBrowserMenu") });
         }
         break;
-      case "Fullscreen Mode":
+      case "fullscreen":
         toggleFullscreen();
         break;
-      case "Voice Assistant":
+      case "voice-assistant":
         toggleVoice(!voiceEnabled);
-        toast({ title: !voiceEnabled ? 'Voice assistant enabled 🎙️' : 'Voice assistant disabled', description: !voiceEnabled ? 'Say "Hey Love" to activate' : undefined });
+        toast({ title: !voiceEnabled ? t("profile.voiceEnabled") : t("profile.voiceDisabled"), description: !voiceEnabled ? t("profile.sayHeyLove") : undefined });
         break;
-      case "Customize Layout":
+      case "customize-layout":
         setActiveSheet("customize");
         break;
-      case "Language":
+      case "language":
         setActiveSheet("language");
         break;
-      case "Subscription & Billing":
+      case "subscription":
         if (subscribed) {
-          // Open customer portal
           (async () => {
             try {
               const { data, error } = await supabase.functions.invoke("customer-portal");
@@ -496,54 +494,54 @@ export default function ProfilePage() {
           navigate("/upgrade");
         }
         break;
-      case "Enter Access Code":
+      case "enter-access-code":
         setShowAccessCode(true);
         break;
-      case "Remove Access Code":
+      case "remove-access-code":
         clearAccessCode();
         refreshSubscription();
-        toast({ title: "Access code removed" });
+        toast({ title: t("profile.accessCodeRemoved") });
         break;
       default:
-        toast({ title: "Coming soon", description: `${label} will be available in a future update` });
+        toast({ title: t("common.comingSoon") });
     }
   };
 
-  const tierLabel = tier === "premium" ? "Premium" : tier === "pro" ? "Pro" : "Free";
+  const tierLabel = tier === "premium" ? t("upgrade.premium") : tier === "pro" ? t("upgrade.pro") : t("upgrade.free");
   const tierSub = accessCodeActive
-    ? "Premium (access code)"
+    ? t("profile.premiumAccessCode")
     : subscribed
-      ? `${tierLabel} plan active`
-      : "Free plan — upgrade anytime";
+      ? `${tierLabel} ${t("profile.planActive")}`
+      : t("profile.freePlan");
 
   const settingsSections = [
     {
-      title: "Account Settings",
+      title: t("profile.accountSettings"),
       items: [
-        { icon: User, label: "Personal Information", sub: "Name, Phone" },
-        { icon: Bell, label: "Notifications", sub: "Reminders & Alerts" },
-        { icon: Heart, label: "Partner Profile", sub: partnerName ? `Connected to ${partnerName}` : "Invite your partner" },
-        ...(partnerId ? [{ icon: UserMinus, label: "Remove Partner", sub: `Disconnect from ${partnerName || "partner"}` }] : []),
+        { key: "personal-info", icon: User, label: t("profile.personalInfo"), sub: t("profile.namePhone") },
+        { key: "notifications", icon: Bell, label: t("profile.notifications"), sub: t("profile.remindersAlerts") },
+        { key: "partner-profile", icon: Heart, label: t("profile.partnerProfile"), sub: partnerName ? `${t("profile.connectedTo")} ${partnerName}` : t("profile.invitePartner") },
+        ...(partnerId ? [{ key: "remove-partner", icon: UserMinus, label: t("profile.removePartner"), sub: `${t("profile.disconnectFrom")} ${partnerName || "partner"}` }] : []),
       ],
     },
     {
-      title: "Subscription",
+      title: t("profile.subscription"),
      items: [
-        { icon: Crown, label: "Subscription & Billing", sub: tierSub },
-        { icon: KeyRound, label: accessCodeActive ? "Remove Access Code" : "Enter Access Code", sub: accessCodeActive ? "Premium unlocked via code" : "Have a code? Unlock premium" },
+        { key: "subscription", icon: Crown, label: t("profile.subscriptionBilling"), sub: tierSub },
+        { key: accessCodeActive ? "remove-access-code" : "enter-access-code", icon: KeyRound, label: accessCodeActive ? t("profile.removeAccessCode") : t("profile.enterAccessCode"), sub: accessCodeActive ? t("profile.premiumUnlocked") : t("profile.haveCode") },
       ],
     },
     {
-      title: "Preferences",
+      title: t("profile.preferences"),
       items: [
-        { icon: Palette, label: "Theme & Appearance" },
-        { icon: LayoutGrid, label: "Customize Layout", sub: "Home widgets & nav bar tabs" },
-        { icon: Globe, label: "Language", sub: localStorage.getItem("lovelist-language") === "hi" ? "हिन्दी" : "English" },
-        ...(voiceSupported ? [{ icon: Mic, label: "Voice Assistant", sub: voiceEnabled ? '"Hey Love" is active' : 'Say "Hey Love" to activate AI' }] : []),
-        ...(fullscreenSupported ? [{ icon: Maximize, label: "Fullscreen Mode", sub: isFullscreen ? "Currently fullscreen — tap to exit" : "Hide browser bar for app-like feel", toggle: true, toggleKey: "fullscreen" as const }] : []),
-        ...(!isInstalled ? [{ icon: Download, label: "Install App", sub: isIOS ? "Add to Home Screen" : "Get the native experience", toggle: true, toggleKey: "install" as const }] : []),
-        { icon: Lock, label: "Privacy & Security" },
-        { icon: HelpCircle, label: "Help & Support" },
+        { key: "theme", icon: Palette, label: t("profile.themeAppearance") },
+        { key: "customize-layout", icon: LayoutGrid, label: t("profile.customizeLayout"), sub: t("profile.homeWidgetsNav") },
+        { key: "language", icon: Globe, label: t("profile.language"), sub: localStorage.getItem("lovelist-language") === "hi" ? "हिन्दी" : "English" },
+        ...(voiceSupported ? [{ key: "voice-assistant", icon: Mic, label: t("profile.voiceAssistant"), sub: voiceEnabled ? t("profile.heyLoveActive") : t("profile.sayHeyLove") }] : []),
+        ...(fullscreenSupported ? [{ key: "fullscreen", icon: Maximize, label: t("profile.fullscreenMode"), sub: isFullscreen ? t("profile.currentlyFullscreen") : t("profile.hideBrowserBar"), toggle: true, toggleKey: "fullscreen" as const }] : []),
+        ...(!isInstalled ? [{ key: "install-app", icon: Download, label: t("profile.installApp"), sub: isIOS ? t("profile.addToHomeScreen") : t("profile.nativeExperience"), toggle: true, toggleKey: "install" as const }] : []),
+        { key: "privacy", icon: Lock, label: t("profile.privacySecurity") },
+        { key: "help", icon: HelpCircle, label: t("profile.helpSupport") },
       ],
     },
   ];
@@ -555,7 +553,7 @@ export default function ProfilePage() {
           <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
             <ChevronLeft size={18} className="text-foreground" />
           </button>
-          <h1 className="text-base font-bold text-foreground">Profile</h1>
+          <h1 className="text-base font-bold text-foreground">{t("profile.profile")}</h1>
           <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
             <X size={16} className="text-muted-foreground" />
           </button>
@@ -585,7 +583,7 @@ export default function ProfilePage() {
           <h2 className="text-base font-bold text-foreground">{displayName.toUpperCase()}</h2>
           {partnerName && (
             <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Link2 size={10} /> Connected to {partnerName}
+              <Link2 size={10} /> {t("profile.connectedTo")} {partnerName}
             </p>
           )}
           <p className="text-[10px] text-muted-foreground mt-0.5">{user?.email}</p>
@@ -596,8 +594,8 @@ export default function ProfilePage() {
           <div key={section.title} className="mb-5">
             <p className="text-xs font-semibold text-muted-foreground mb-2">{section.title}</p>
             <div className="space-y-1">
-              {section.items.map(item => (
-                <button key={item.label} onClick={() => handleSettingTap(item.label)}
+               {section.items.map(item => (
+                <button key={(item as any).key || item.label} onClick={() => handleSettingTap((item as any).key)}
                   className="w-full bg-card rounded-2xl px-4 py-3.5 shadow-card border border-border flex items-center gap-3 active:scale-[0.98] transition-transform">
                   <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0">
                     <item.icon size={16} className="text-foreground" />
@@ -643,34 +641,34 @@ export default function ProfilePage() {
           <div className="w-9 h-9 rounded-xl bg-destructive/10 flex items-center justify-center shrink-0">
             <LogOut size={16} className="text-destructive" />
           </div>
-          <p className="text-sm font-medium text-destructive">Sign Out</p>
+          <p className="text-sm font-medium text-destructive">{t("profile.signOut")}</p>
         </button>
 
         <p className="text-center text-[10px] text-muted-foreground mt-5 mb-2">
-          LoveList v1.0.4 • Made with Love
+          LoveList v1.0.4 • {t("profile.madeWithLove")}
         </p>
       </div>
 
       {/* Personal Information Sheet */}
-      <BottomSheet open={activeSheet === "personal"} onClose={() => setActiveSheet(null)} title="Personal Information">
+      <BottomSheet open={activeSheet === "personal"} onClose={() => setActiveSheet(null)} title={t("profile.personalInfo")}>
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Display Name</label>
-            <input
-              value={editName} onChange={e => setEditName(e.target.value)}
-              className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Your name"
-            />
+             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("profile.displayName")}</label>
+             <input
+               value={editName} onChange={e => setEditName(e.target.value)}
+               className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+               placeholder={t("profile.yourNamePlaceholder")}
+             />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Email</label>
-            <div className="w-full bg-muted/50 rounded-xl px-4 py-3 text-sm text-muted-foreground border border-border">
-              {user?.email}
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-1">Email cannot be changed here</p>
-          </div>
+             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("profile.emailLabel")}</label>
+             <div className="w-full bg-muted/50 rounded-xl px-4 py-3 text-sm text-muted-foreground border border-border">
+               {user?.email}
+             </div>
+             <p className="text-[10px] text-muted-foreground mt-1">{t("profile.emailCantChange")}</p>
+           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Phone</label>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("profile.phone")}</label>
             <input
               value={editPhone} onChange={e => setEditPhone(e.target.value)}
               className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
@@ -679,18 +677,18 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Gender</label>
-            <div className="flex gap-2">
-              {["Male", "Female", "Non-binary", "Other"].map(g => (
-                <button key={g} onClick={() => setEditGender(g.toLowerCase())}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-medium border transition-all ${editGender === g.toLowerCase() ? "bg-primary text-primary-foreground border-primary" : "bg-muted border-border text-foreground"}`}>
-                  {g}
-                </button>
-              ))}
+             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("profile.gender")}</label>
+             <div className="flex gap-2">
+               {([["male", t("profile.male")], ["female", t("profile.female")], ["non-binary", t("profile.nonBinary")], ["other", t("profile.other")]] as const).map(([val, label]) => (
+                 <button key={val} onClick={() => setEditGender(val)}
+                   className={`flex-1 py-2.5 rounded-xl text-xs font-medium border transition-all ${editGender === val ? "bg-primary text-primary-foreground border-primary" : "bg-muted border-border text-foreground"}`}>
+                   {label}
+                 </button>
+               ))}
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Birthday</label>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("profile.birthdayLabel")}</label>
             <input
               type="date" value={editBirthday} onChange={e => setEditBirthday(e.target.value)}
               className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
@@ -700,14 +698,14 @@ export default function ProfilePage() {
             onClick={savePersonalInfo} disabled={saving || !editName.trim()}
             className="w-full love-gradient text-primary-foreground font-semibold py-3 rounded-xl mt-2 disabled:opacity-50 flex items-center justify-center gap-2"
           >
-            {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-            Save Changes
+             {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+             {t("profile.saveChanges")}
           </button>
         </div>
       </BottomSheet>
 
       {/* Notifications Sheet */}
-      <BottomSheet open={activeSheet === "notifications"} onClose={() => setActiveSheet(null)} title="Notifications">
+      <BottomSheet open={activeSheet === "notifications"} onClose={() => setActiveSheet(null)} title={t("profile.notifications")}>
         <NotificationSettingsContent />
       </BottomSheet>
 
@@ -721,25 +719,25 @@ export default function ProfilePage() {
       <LanguageSheet open={activeSheet === "language"} onClose={() => setActiveSheet(null)} />
 
       {/* Remove Partner Confirmation */}
-      <BottomSheet open={activeSheet === "remove-partner"} onClose={() => setActiveSheet(null)} title="Remove Partner">
-        <div className="flex flex-col items-center py-4 gap-3">
-          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-            <UserMinus size={28} className="text-destructive" />
-          </div>
-          <p className="text-sm font-bold text-foreground">Disconnect from {partnerName}?</p>
-          <p className="text-xs text-muted-foreground text-center leading-relaxed max-w-xs">
-            This will unlink your accounts. Shared data (chores, lists, events) will remain but won't sync anymore. You can reconnect anytime with a new invite code.
-          </p>
-          <button
-            onClick={handleRemovePartner}
-            disabled={removingPartner}
-            className="w-full h-11 rounded-xl bg-destructive text-destructive-foreground font-semibold text-sm mt-2 flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {removingPartner ? <Loader2 size={16} className="animate-spin" /> : "Remove Partner"}
-          </button>
-          <button onClick={() => setActiveSheet(null)} className="text-xs text-muted-foreground font-medium">
-            Cancel
-          </button>
+       <BottomSheet open={activeSheet === "remove-partner"} onClose={() => setActiveSheet(null)} title={t("profile.removePartner")}>
+         <div className="flex flex-col items-center py-4 gap-3">
+           <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+             <UserMinus size={28} className="text-destructive" />
+           </div>
+           <p className="text-sm font-bold text-foreground">{t("profile.disconnectFrom")} {partnerName}?</p>
+           <p className="text-xs text-muted-foreground text-center leading-relaxed max-w-xs">
+             {t("profile.disconnectConfirm")}
+           </p>
+           <button
+             onClick={handleRemovePartner}
+             disabled={removingPartner}
+             className="w-full h-11 rounded-xl bg-destructive text-destructive-foreground font-semibold text-sm mt-2 flex items-center justify-center gap-2 disabled:opacity-50"
+           >
+             {removingPartner ? <Loader2 size={16} className="animate-spin" /> : t("profile.removePartner")}
+           </button>
+           <button onClick={() => setActiveSheet(null)} className="text-xs text-muted-foreground font-medium">
+             {t("common.cancel")}
+           </button>
         </div>
       </BottomSheet>
 
@@ -765,14 +763,14 @@ export default function ProfilePage() {
                   <KeyRound size={20} className="text-primary-foreground" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-foreground">Enter Access Code</h3>
-                  <p className="text-[10px] text-muted-foreground">Unlock all premium features</p>
+                   <h3 className="text-sm font-bold text-foreground">{t("profile.enterAccessCode")}</h3>
+                   <p className="text-[10px] text-muted-foreground">{t("profile.unlockAllFeatures")}</p>
                 </div>
               </div>
               <input
                 value={accessCodeInput}
                 onChange={e => setAccessCodeInput(e.target.value)}
-                placeholder="Enter your code"
+                placeholder={t("profile.enterCode")}
                 className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring mb-4"
                 autoFocus
               />
@@ -781,23 +779,23 @@ export default function ProfilePage() {
                   onClick={() => setShowAccessCode(false)}
                   className="flex-1 py-2.5 rounded-xl bg-muted text-foreground text-sm font-medium"
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </button>
                 <button
                   onClick={() => {
                     const success = applyAccessCode(accessCodeInput.trim());
-                    if (success) {
-                      toast({ title: "Premium unlocked! 🎉", description: "All features are now available." });
-                      setShowAccessCode(false);
-                      setAccessCodeInput("");
-                    } else {
-                      toast({ title: "Invalid code", description: "Please check your access code and try again.", variant: "destructive" });
+                     if (success) {
+                       toast({ title: t("profile.premiumUnlockedToast"), description: t("profile.allFeaturesAvailable") });
+                       setShowAccessCode(false);
+                       setAccessCodeInput("");
+                     } else {
+                       toast({ title: t("profile.invalidCode"), description: t("profile.checkCode"), variant: "destructive" });
                     }
                   }}
                   disabled={!accessCodeInput.trim()}
                   className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-primary-foreground text-sm font-semibold disabled:opacity-50"
                 >
-                  Activate
+                  {t("common.activate")}
                 </button>
               </div>
             </motion.div>
