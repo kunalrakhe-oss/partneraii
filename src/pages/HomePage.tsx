@@ -14,6 +14,7 @@ import NotificationsPanel, { useNotificationCount } from "@/components/Notificat
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_STATS, DEMO_PARTNER_MOOD, DEMO_MOOD_MESSAGE, DEMO_AI_INSIGHT, DEMO_TODAY_EVENTS, DEMO_PARTNER1, DEMO_PARTNER2, DEMO_CHORES } from "@/lib/demoData";
 import { getHomeWidgets, type HomeWidgetId } from "@/hooks/useLayoutPreferences";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const container = {
   hidden: { opacity: 0 },
@@ -32,6 +33,7 @@ export default function HomePage() {
   const { canAccess } = useSubscriptionContext();
   const { partnerPair } = usePartnerPair();
   const { isDemoMode } = useDemo();
+  const { t } = useLanguage();
   const [firstName, setFirstName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [partnerProfile, setPartnerProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
@@ -223,9 +225,9 @@ export default function HomePage() {
 
   const greeting = (() => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
+    if (hour < 12) return t("greeting.morning");
+    if (hour < 17) return t("greeting.afternoon");
+    return t("greeting.evening");
   })();
 
   const toggleChore = async (id: string) => {

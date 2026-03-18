@@ -10,13 +10,14 @@ import { getNavTabs, type NavTabId } from "@/hooks/useLayoutPreferences";
 import { useState, useEffect } from "react";
 import PullToRefresh from "@/components/PullToRefresh";
 import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const tabMeta: Record<string, { icon: typeof Home; label: string; to: string }> = {
-  home: { to: "/", icon: Home, label: "Home" },
-  calendar: { to: "/calendar", icon: CalendarDays, label: "Calendar" },
-  lists: { to: "/lists", icon: ShoppingCart, label: "Lists" },
-  chat: { to: "/chat", icon: MessageCircle, label: "Chat" },
-  chores: { to: "/chores", icon: ClipboardList, label: "Chores" },
+const tabMeta: Record<string, { icon: typeof Home; labelKey: string; to: string }> = {
+  home: { to: "/", icon: Home, labelKey: "nav.home" },
+  calendar: { to: "/calendar", icon: CalendarDays, labelKey: "nav.calendar" },
+  lists: { to: "/lists", icon: ShoppingCart, labelKey: "nav.lists" },
+  chat: { to: "/chat", icon: MessageCircle, labelKey: "nav.chat" },
+  chores: { to: "/chores", icon: ClipboardList, labelKey: "nav.chores" },
 };
 
 function GatedVoiceAssistant() {
@@ -26,6 +27,7 @@ function GatedVoiceAssistant() {
 }
 
 export default function AppLayout() {
+  const { t } = useLanguage();
   const [visibleTabs, setVisibleTabs] = useState<NavTabId[]>(getNavTabs);
 
   // Listen for localStorage changes (when user updates prefs in settings)
@@ -59,7 +61,7 @@ export default function AppLayout() {
       </PullToRefresh>
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border safe-bottom z-50">
         <div className="flex items-center justify-around" style={{ height: 'var(--nav-h)' }}>
-          {tabs.map(({ to, icon: Icon, label }) => (
+          {tabs.map(({ to, icon: Icon, labelKey }) => (
             <NavLink
               key={to}
               to={to}
@@ -84,7 +86,7 @@ export default function AppLayout() {
                       isActive ? "text-primary" : "text-muted-foreground"
                     }`}
                   >
-                    {label}
+                    {t(labelKey)}
                   </span>
                 </>
               )}

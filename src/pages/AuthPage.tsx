@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useToast } from "@/hooks/use-toast";
 import onboardingHero from "@/assets/onboarding-hero.jpg";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function AuthPage() {
   const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
@@ -14,6 +15,7 @@ export default function AuthPage() {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +30,7 @@ export default function AuthPage() {
           },
         });
         if (error) throw error;
-        toast({ title: "Account created! 🎉", description: "Check your email to confirm your account." });
+        toast({ title: t("auth.accountCreated"), description: t("auth.checkEmail") });
       } else if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -37,10 +39,10 @@ export default function AuthPage() {
           redirectTo: `${window.location.origin}/reset-password`,
         });
         if (error) throw error;
-        toast({ title: "Reset link sent! 📧", description: "Check your email for the password reset link." });
+        toast({ title: t("auth.resetLinkSent"), description: t("auth.checkEmailReset") });
       }
     } catch (err: any) {
-      toast({ title: "Oops!", description: err.message || "Something went wrong", variant: "destructive" });
+      toast({ title: t("auth.oops"), description: err.message || t("auth.somethingWrong"), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -52,7 +54,7 @@ export default function AuthPage() {
       const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
       if (error) throw error;
     } catch (err: any) {
-      toast({ title: "Oops!", description: err.message || "Google sign-in failed", variant: "destructive" });
+      toast({ title: t("auth.oops"), description: err.message || t("auth.googleFailed"), variant: "destructive" });
       setLoading(false);
     }
   };
@@ -72,9 +74,9 @@ export default function AuthPage() {
           <img src={onboardingHero} alt="Couple" className="w-full h-full object-cover" />
         </motion.div>
 
-        <h1 className="text-2xl font-bold text-foreground text-center mb-1">Welcome to LoveList</h1>
+        <h1 className="text-2xl font-bold text-foreground text-center mb-1">{t("auth.welcomeTo")}</h1>
         <p className="text-sm text-muted-foreground text-center mb-6">
-          {mode === "login" ? "Sign in to your account" : mode === "signup" ? "Create your account" : "Reset your password"}
+          {mode === "login" ? t("auth.signInToAccount") : mode === "signup" ? t("auth.createAccount") : t("auth.resetPassword")}
         </p>
 
         {/* Mode tabs */}
@@ -82,7 +84,7 @@ export default function AuthPage() {
           {(["login", "signup"] as const).map((m) => (
             <button key={m} onClick={() => setMode(m)}
               className={`flex-1 text-xs font-medium py-2 rounded-lg transition-colors ${mode === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
-              {m === "login" ? "Sign In" : "Sign Up"}
+              {m === "login" ? t("auth.signIn") : t("auth.signUp")}
             </button>
           ))}
         </div>
@@ -93,37 +95,37 @@ export default function AuthPage() {
               <div className="relative">
                 <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Your name" required className={inputClass} />
+                  placeholder={t("auth.yourName")} required className={inputClass} />
               </div>
               <div className="relative">
                 <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Phone number (optional)" className={inputClass} />
+                  placeholder={t("auth.phoneOptional")} className={inputClass} />
               </div>
             </>
           )}
           <div className="relative">
             <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email address" required className={inputClass} />
+              placeholder={t("auth.email")} required className={inputClass} />
           </div>
           {mode !== "forgot" && (
             <div className="relative">
               <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password" required minLength={6} className={inputClass} />
+                placeholder={t("auth.password")} required minLength={6} className={inputClass} />
             </div>
           )}
           {mode === "login" && (
             <button type="button" onClick={() => setMode("forgot")}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-              Forgot password?
+              {t("auth.forgotPassword")}
             </button>
           )}
           <button type="submit" disabled={loading}
             className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-soft disabled:opacity-60">
             {loading ? <Loader2 size={18} className="animate-spin" /> : (
-              <>{mode === "login" ? "Sign In" : mode === "signup" ? "Create Account" : "Send Reset Link"} <ArrowRight size={16} /></>
+              <>{mode === "login" ? t("auth.signIn") : mode === "signup" ? t("auth.createAccountBtn") : t("auth.sendResetLink")} <ArrowRight size={16} /></>
             )}
           </button>
         </form>
@@ -131,7 +133,7 @@ export default function AuthPage() {
         {/* Divider */}
         <div className="flex items-center gap-3 my-5 w-full">
           <div className="flex-1 h-px bg-border" />
-          <span className="text-xs text-muted-foreground">or continue with</span>
+          <span className="text-xs text-muted-foreground">{t("auth.orContinueWith")}</span>
           <div className="flex-1 h-px bg-border" />
         </div>
 
@@ -144,13 +146,13 @@ export default function AuthPage() {
             <path d="M3.964 10.706A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.038l3.007-2.332z" fill="#FBBC05"/>
             <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.962L3.964 7.294C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
           </svg>
-          Continue with Google
+          {t("auth.continueWithGoogle")}
         </button>
       </div>
 
       <div className="px-6 pb-8 pt-4">
         <p className="text-[10px] text-muted-foreground text-center">
-          By continuing, you agree to our <span className="underline">Terms of Service</span>{" & "}<span className="underline">Privacy Policy</span>
+          {t("auth.termsText")} <span className="underline">{t("auth.termsOfService")}</span>{" & "}<span className="underline">{t("auth.privacyPolicy")}</span>
         </p>
       </div>
     </div>

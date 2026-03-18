@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download, Mic, LayoutGrid, GripVertical, Crown, CreditCard, KeyRound } from "lucide-react";
+import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download, Mic, LayoutGrid, GripVertical, Crown, CreditCard, KeyRound, Globe } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -15,8 +15,10 @@ import { useFullscreen } from "@/hooks/useFullscreen";
 import { useWakeWord } from "@/hooks/useWakeWord";
 import { useLayoutPreferences, ALL_NAV_TABS, ALL_HOME_WIDGETS, type NavTabId, type HomeWidgetId } from "@/hooks/useLayoutPreferences";
 import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { LANGUAGE_OPTIONS } from "@/lib/translations";
 
-type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | "customize" | null;
+type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | "customize" | "language" | null;
 
 function BottomSheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   return (
@@ -255,6 +257,33 @@ function CustomizeLayoutSheet({ open, onClose }: { open: boolean; onClose: () =>
   );
 }
 
+function LanguageSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { language, setLanguage } = useLanguage();
+  return (
+    <BottomSheet open={open} onClose={onClose} title="Language / भाषा">
+      <div className="space-y-2">
+        <p className="text-xs text-muted-foreground mb-1">Choose your preferred language</p>
+        {LANGUAGE_OPTIONS.map(opt => (
+          <button key={opt.value} onClick={() => { setLanguage(opt.value); onClose(); }}
+            className={`w-full flex items-center gap-3 bg-muted rounded-xl px-4 py-3 border transition-colors ${language === opt.value ? "border-primary" : "border-border"}`}>
+            <div className="w-9 h-9 rounded-xl bg-card flex items-center justify-center">
+              <Globe size={16} className="text-foreground" />
+            </div>
+            <div className="text-left flex-1">
+              <p className="text-sm font-medium text-foreground">{opt.nativeLabel}</p>
+              <p className="text-[10px] text-muted-foreground">{opt.label}</p>
+            </div>
+            {language === opt.value && (
+              <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                <Check size={12} className="text-primary-foreground" />
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    </BottomSheet>
+  );
+
 export default function ProfilePage() {
   const { tier, subscribed, accessCodeActive, applyAccessCode, clearAccessCode, refreshSubscription } = useSubscriptionContext();
   const [showAccessCode, setShowAccessCode] = useState(false);
@@ -443,6 +472,9 @@ export default function ProfilePage() {
       case "Customize Layout":
         setActiveSheet("customize");
         break;
+      case "Language":
+        setActiveSheet("language");
+        break;
       case "Subscription & Billing":
         if (subscribed) {
           // Open customer portal
@@ -501,6 +533,7 @@ export default function ProfilePage() {
       items: [
         { icon: Palette, label: "Theme & Appearance" },
         { icon: LayoutGrid, label: "Customize Layout", sub: "Home widgets & nav bar tabs" },
+        { icon: Globe, label: "Language", sub: localStorage.getItem("lovelist-language") === "hi" ? "हिन्दी" : "English" },
         ...(voiceSupported ? [{ icon: Mic, label: "Voice Assistant", sub: voiceEnabled ? '"Hey Love" is active' : 'Say "Hey Love" to activate AI' }] : []),
         ...(fullscreenSupported ? [{ icon: Maximize, label: "Fullscreen Mode", sub: isFullscreen ? "Currently fullscreen — tap to exit" : "Hide browser bar for app-like feel" }] : []),
         ...(!isInstalled ? [{ icon: Download, label: "Install App", sub: isIOS ? "Add to Home Screen" : "Get the native experience" }] : []),
@@ -654,6 +687,9 @@ export default function ProfilePage() {
 
       {/* Customize Layout Sheet */}
       <CustomizeLayoutSheet open={activeSheet === "customize"} onClose={() => setActiveSheet(null)} />
+
+      {/* Language Sheet */}
+      <LanguageSheet open={activeSheet === "language"} onClose={() => setActiveSheet(null)} />
 
       {/* Remove Partner Confirmation */}
       <BottomSheet open={activeSheet === "remove-partner"} onClose={() => setActiveSheet(null)} title="Remove Partner">
