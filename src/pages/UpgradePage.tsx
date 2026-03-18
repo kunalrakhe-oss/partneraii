@@ -265,38 +265,45 @@ export default function UpgradePage() {
         </div>
 
         {/* Access Code Section */}
-        {!accessCodeActive && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="mt-6 bg-card border border-border rounded-2xl p-5"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <KeyRound size={16} className="text-muted-foreground" />
-              <h3 className="text-sm font-semibold text-foreground">Have an access code?</h3>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mt-6 bg-card border border-border rounded-2xl p-5"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <KeyRound size={16} className="text-muted-foreground" />
+            <h3 className="text-sm font-semibold text-foreground">Have an access code?</h3>
+          </div>
+          {accessCodeActive ? (
+            <div className="flex items-center gap-2 text-sm text-success">
+              <Check size={16} />
+              <span className="font-medium">Access code active — Premium unlocked!</span>
             </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={accessCode}
-                onChange={(e) => { setAccessCode(e.target.value); setCodeError(false); }}
-                placeholder="Enter code"
-                className={`flex-1 px-4 py-2.5 rounded-xl text-sm bg-muted text-foreground border ${codeError ? "border-destructive" : "border-border"} outline-none focus:ring-2 focus:ring-primary/30`}
-              />
-              <button
-                onClick={handleApplyCode}
-                disabled={!accessCode.trim()}
-                className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40"
-              >
-                Apply
-              </button>
-            </div>
-            {codeError && (
-              <p className="text-xs text-destructive mt-2">Invalid access code. Please try again.</p>
-            )}
-          </motion.div>
-        )}
+          ) : (
+            <>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={accessCode}
+                  onChange={(e) => { setAccessCode(e.target.value); setCodeError(false); }}
+                  placeholder="Enter code"
+                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm bg-muted text-foreground border ${codeError ? "border-destructive" : "border-border"} outline-none focus:ring-2 focus:ring-primary/30`}
+                />
+                <button
+                  onClick={handleApplyCode}
+                  disabled={!accessCode.trim()}
+                  className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40"
+                >
+                  Apply
+                </button>
+              </div>
+              {codeError && (
+                <p className="text-xs text-destructive mt-2">Invalid access code. Please try again.</p>
+              )}
+            </>
+          )}
+        </motion.div>
 
         <p className="text-center text-[10px] text-muted-foreground mt-6">
           {t("upgrade.cancelAnytime")}
