@@ -604,6 +604,13 @@ export default function HomePage() {
                         <p className="text-sm font-bold text-foreground">Health</p>
                         <p className="text-xs text-muted-foreground">AI Analytics</p>
                       </Link>
+                      <Link to="/event-planner" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                        <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center">
+                          <PartyPopper size={18} className="text-pink-500" />
+                        </div>
+                        <p className="text-sm font-bold text-foreground">Events</p>
+                        <p className="text-xs text-muted-foreground">AI Planner</p>
+                      </Link>
                    </motion.div>
                  );
 
