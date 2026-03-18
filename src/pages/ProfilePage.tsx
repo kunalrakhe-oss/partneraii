@@ -13,6 +13,9 @@ import { Monitor, Volume2, Vibrate, Maximize } from "lucide-react";
 import { getNotificationPrefs, setNotificationPrefs, playNotificationSound } from "@/lib/notificationSound";
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { useWakeWord } from "@/hooks/useWakeWord";
+import { useLayoutPreferences, ALL_NAV_TABS, ALL_HOME_WIDGETS } from "@/hooks/useLayoutPreferences";
+import { useFullscreen } from "@/hooks/useFullscreen";
+import { useWakeWord } from "@/hooks/useWakeWord";
 
 type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | null;
 
