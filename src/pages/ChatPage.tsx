@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Send, Search, ShoppingCart, CheckSquare, SmilePlus, Image as ImageIcon, X, Plus, Camera, FileText, MapPin, MessageCircleHeart, Reply, Smile } from "lucide-react";
+import { Send, Search, ShoppingCart, CheckSquare, SmilePlus, Image as ImageIcon, X, Plus, Camera, FileText, MapPin, MessageCircleHeart, Reply, Smile, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { uploadAttachment } from "@/components/MediaPicker";
@@ -43,6 +44,7 @@ const QUICK_REACTIONS = ["❤️", "😂", "😮", "😢", "🔥", "👍"];
 
 export default function ChatPage() {
   const { user } = useAuth();
+  const { canAccess } = useSubscriptionContext();
   const { partnerPair, loading: ppLoading, userId } = usePartnerPair();
   const { isDemoMode } = useDemo();
   const navigate = useNavigate();
@@ -297,7 +299,22 @@ export default function ChatPage() {
         </div>
 
         {activeTab === "ai" ? (
-          <AIChatbot embedded />
+          canAccess("lovebot") ? (
+            <AIChatbot embedded />
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center p-8">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mx-auto mb-4">
+                  <Lock size={28} className="text-primary-foreground" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-1">LoveBot is Premium</h3>
+                <p className="text-sm text-muted-foreground mb-5">Upgrade to Premium to chat with your AI relationship assistant.</p>
+                <button onClick={() => navigate("/upgrade")} className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-primary-foreground font-semibold text-sm">
+                  Upgrade to Premium
+                </button>
+              </div>
+            </div>
+          )
         ) : (
         <>
         {/* Messages */}

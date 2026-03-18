@@ -6,6 +6,7 @@ import PageTransition from "@/components/PageTransition";
 import AddEventModal from "@/components/AddEventModal";
 import { format, formatDistanceToNowStrict, isPast, isToday, isTomorrow, parseISO } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
@@ -28,6 +29,7 @@ type NextEvent = { id: string; title: string; event_date: string; event_time: st
 export default function HomePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { canAccess } = useSubscriptionContext();
   const { partnerPair } = usePartnerPair();
   const { isDemoMode } = useDemo();
   const [firstName, setFirstName] = useState("");
@@ -199,7 +201,7 @@ export default function HomePage() {
       setAiInsight(DEMO_AI_INSIGHT);
       return;
     }
-    if (partnerPair && !aiInsight && !insightLoading && daysTogether > 0) {
+    if (canAccess("daily-insight") && partnerPair && !aiInsight && !insightLoading && daysTogether > 0) {
       fetchInsight();
     }
   }, [partnerPair, daysTogether, fetchInsight, aiInsight, insightLoading, isDemoMode]);
@@ -632,6 +634,20 @@ export default function HomePage() {
                 );
 
               case "ai-insight":
+                if (!canAccess("daily-insight")) {
+                  return (
+                    <motion.div key="ai-insight" variants={item} className="border border-border rounded-2xl p-4 flex items-start gap-3 bg-muted/50">
+                      <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+                        <Sparkles size={16} className="text-muted-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-foreground">LoveList AI Insight</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Upgrade to Pro for daily AI-powered insights.</p>
+                        <button onClick={() => navigate("/upgrade")} className="text-xs font-semibold text-primary mt-1.5">Upgrade →</button>
+                      </div>
+                    </motion.div>
+                  );
+                }
                 return !insightDismissed ? (
                   <motion.div key="ai-insight" variants={item} className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3 cursor-pointer"
                     onClick={() => setInsightDismissed(true)}>

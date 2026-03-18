@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, forwardRef, useRef } from "react";
-import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users, ArrowDownAZ, CheckCheck, Trash, Pencil, Save } from "lucide-react";
+import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users, ArrowDownAZ, CheckCheck, Trash, Pencil, Save, Lock } from "lucide-react";
 import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useToast } from "@/hooks/use-toast";
+import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import PageTransition from "@/components/PageTransition";
 import ProfileButton from "@/components/ProfileButton";
 import { Calendar } from "@/components/ui/calendar";
@@ -13,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import type { Tables } from "@/integrations/supabase/types";
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_CHORES, DEMO_PARTNER1, DEMO_PARTNER2 } from "@/lib/demoData";
+import { useNavigate } from "react-router-dom";
 
 type ChoreRow = Tables<"chores">;
 
@@ -335,7 +337,14 @@ export default function ChoresPage() {
     setSavingEdit(false);
   };
 
+  const { canAccess } = useSubscriptionContext();
+  const choreNavigate = useNavigate();
+
   const handleToggleExpand = (chore: ChoreRow) => {
+    if (!canAccess("ai-chore-steps")) {
+      choreNavigate("/upgrade");
+      return;
+    }
     if (expandedId === chore.id) {
       setExpandedId(null);
       setEditingId(null);
