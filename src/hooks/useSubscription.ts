@@ -98,10 +98,21 @@ export function useSubscription(): SubscriptionState {
       return;
     }
 
-    if (!session?.access_token) {
-      setTier("free");
-      setSubscribed(false);
+    // Trial overrides free tier
+    if (isTrialActive(user?.created_at)) {
+      setTier("premium");
+      setSubscribed(true);
       setSubscriptionEnd(null);
+      setLoading(false);
+      // Still check Stripe in case they also have a paid sub — but trial grants premium meanwhile
+    }
+
+    if (!session?.access_token) {
+      if (!isTrialActive(user?.created_at)) {
+        setTier("free");
+        setSubscribed(false);
+        setSubscriptionEnd(null);
+      }
       setLoading(false);
       return;
     }
