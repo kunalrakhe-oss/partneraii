@@ -355,6 +355,8 @@ export default function DietPage() {
   const { user } = useAuth();
   const { partnerPair } = usePartnerPair();
 
+  const { toast } = useToast();
+
   const [items, setItems] = useState<DietItem[]>([]);
   const [partnerName, setPartnerName] = useState("Partner");
   const [expandedCats, setExpandedCats] = useState<string[]>(["morning", "breakfast", "lunch"]);
@@ -363,6 +365,11 @@ export default function DietPage() {
   const [editingItem, setEditingItem] = useState<DietItem | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // AI Diet
+  const [aiSuggesting, setAiSuggesting] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<{ meal_type: string; description: string; calories: number; notes?: string; emoji: string }[] | null>(null);
+  const [aiTip, setAiTip] = useState("");
 
   const today = format(new Date(), "yyyy-MM-dd");
 
