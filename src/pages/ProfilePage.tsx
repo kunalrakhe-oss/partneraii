@@ -465,7 +465,11 @@ export default function ProfilePage() {
   };
 
   const tierLabel = tier === "premium" ? "Premium" : tier === "pro" ? "Pro" : "Free";
-  const tierSub = subscribed ? `${tierLabel} plan active` : "Free plan — upgrade anytime";
+  const tierSub = accessCodeActive
+    ? "Premium (access code)"
+    : subscribed
+      ? `${tierLabel} plan active`
+      : "Free plan — upgrade anytime";
 
   const settingsSections = [
     {
