@@ -274,6 +274,9 @@ export default function ChoresPage() {
     setShowCalendar(true);
     setNewFile(null);
     setNewFilePreview("");
+    setSelectedLinkedItems([]);
+    setShowListPicker(false);
+    setListPickerFilter("all");
   };
 
   const addChore = async () => {
@@ -310,7 +313,7 @@ export default function ChoresPage() {
       }
     }
 
-    const { error } = await supabase.from("chores").insert({
+    const { data: newChore, error } = await supabase.from("chores").insert({
       title,
       recurrence: newFrequency || null,
       assigned_to: assignedTo,
@@ -318,10 +321,21 @@ export default function ChoresPage() {
       partner_pair: partnerPair,
       due_date: hasDueDate && newDueDate ? format(newDueDate, "yyyy-MM-dd") : null,
       image_url: imageUrl,
-    } as any);
+    } as any).select().single();
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
+      // Save linked list items
+      if (selectedLinkedItems.length > 0 && newChore) {
+        await supabase.from("chore_linked_items" as any).insert(
+          selectedLinkedItems.map(itemId => ({
+            chore_id: (newChore as any).id,
+            grocery_item_id: itemId,
+            partner_pair: partnerPair,
+          }))
+        );
+        fetchLinkedItems();
+      }
       setShowAdd(false);
       resetForm();
       fetchChores();
