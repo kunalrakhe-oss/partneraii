@@ -27,6 +27,7 @@ function GatedVoiceAssistant() {
 }
 
 export default function AppLayout() {
+  const { t } = useLanguage();
   const [visibleTabs, setVisibleTabs] = useState<NavTabId[]>(getNavTabs);
 
   // Listen for localStorage changes (when user updates prefs in settings)
@@ -60,7 +61,7 @@ export default function AppLayout() {
       </PullToRefresh>
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border safe-bottom z-50">
         <div className="flex items-center justify-around" style={{ height: 'var(--nav-h)' }}>
-          {tabs.map(({ to, icon: Icon, label }) => (
+          {tabs.map(({ to, icon: Icon, labelKey }) => (
             <NavLink
               key={to}
               to={to}
@@ -85,7 +86,7 @@ export default function AppLayout() {
                       isActive ? "text-primary" : "text-muted-foreground"
                     }`}
                   >
-                    {label}
+                    {t(labelKey)}
                   </span>
                 </>
               )}
