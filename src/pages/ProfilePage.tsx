@@ -473,7 +473,7 @@ export default function ProfilePage() {
         break;
       case "Voice Assistant":
         toggleVoice(!voiceEnabled);
-        toast({ title: !voiceEnabled ? 'Voice assistant enabled 🎙️' : 'Voice assistant disabled', description: !voiceEnabled ? 'Say "Hey Love" to activate' : undefined });
+        toast({ title: !voiceEnabled ? t("profile.voiceEnabled") : t("profile.voiceDisabled"), description: !voiceEnabled ? t("profile.sayHeyLove") : undefined });
         break;
       case "Customize Layout":
         setActiveSheet("customize");
