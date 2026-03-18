@@ -627,7 +627,7 @@ export default function HomePage() {
                                 }}
                                 disabled={!newChoreTitle.trim()}
                                 className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40"
-                              >Add</button>
+                              >{t("common.add")}</button>
                             </div>
                           </motion.div>
                         )}
