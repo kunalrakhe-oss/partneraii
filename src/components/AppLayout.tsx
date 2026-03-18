@@ -3,7 +3,6 @@ import { Home, CalendarDays, ShoppingCart, MessageCircle, ClipboardList } from "
 import { motion } from "framer-motion";
 import PartnerNotifications from "@/components/PartnerNotifications";
 import DemoBanner from "@/components/DemoBanner";
-import InstallPrompt from "@/components/InstallPrompt";
 
 const tabs = [
   { to: "/", icon: Home, label: "Home" },
@@ -21,7 +20,6 @@ export default function AppLayout() {
       <main className="flex-1 overflow-y-auto pb-20">
         <Outlet />
       </main>
-      <InstallPrompt />
       <nav className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-card border-t border-border safe-bottom z-50">
         <div className="flex items-center justify-around h-16">
           {tabs.map(({ to, icon: Icon, label }) => (
