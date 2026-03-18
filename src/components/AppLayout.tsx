@@ -3,6 +3,7 @@ import { Home, CalendarDays, ShoppingCart, MessageCircle, ClipboardList } from "
 import { motion } from "framer-motion";
 import PartnerNotifications from "@/components/PartnerNotifications";
 import DemoBanner from "@/components/DemoBanner";
+import PostAuthInstallPrompt from "@/components/PostAuthInstallPrompt";
 
 const tabs = [
   { to: "/", icon: Home, label: "Home" },
@@ -17,6 +18,7 @@ export default function AppLayout() {
     <div className="flex flex-col min-h-[100dvh] bg-background relative">
       <DemoBanner />
       <PartnerNotifications />
+      <PostAuthInstallPrompt />
       <main className="flex-1 overflow-y-auto pb-20">
         <Outlet />
       </main>
