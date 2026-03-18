@@ -21,6 +21,9 @@ type Props = {
   exercise: Exercise;
   accentColor?: string;
   onGenerateImage?: (exercise: Exercise) => Promise<string | null>;
+  completable?: boolean;
+  completed?: boolean;
+  onToggleComplete?: (name: string) => void;
 };
 
 const difficultyColors: Record<string, string> = {
