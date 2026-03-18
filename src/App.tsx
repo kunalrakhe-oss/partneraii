@@ -22,6 +22,7 @@ import WorkoutPage from "@/pages/WorkoutPage";
 import DietPage from "@/pages/DietPage";
 import BabyPlanPage from "@/pages/BabyPlanPage";
 import MensHealthPage from "@/pages/MensHealthPage";
+import PhysioPage from "@/pages/PhysioPage";
 import PartnerConnectPage from "@/pages/PartnerConnectPage";
 import CoupleProfilePage from "@/pages/CoupleProfilePage";
 import AuthPage from "@/pages/AuthPage";
