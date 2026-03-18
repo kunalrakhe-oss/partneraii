@@ -459,7 +459,7 @@ export default function HomePage() {
           </motion.div>}
 
           {/* Today's Agenda Card */}
-          <motion.div variants={item} className="bg-primary/25 rounded-card p-5 shadow-soft">
+          {showWidget("today-agenda") && <motion.div variants={item} className="bg-primary/25 rounded-card p-5 shadow-soft">
             <div className="flex items-center justify-between mb-1">
               <p className="text-xs font-medium text-foreground/70">Today's Agenda</p>
               <Link to="/calendar" className="text-xs font-medium bg-card/80 text-foreground px-3 py-1 rounded-full">View All</Link>
