@@ -306,7 +306,7 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <ProfileButton />
               <div>
-                <h1 className="text-2xl font-bold text-foreground">{greeting}, {firstName}</h1>
+                <h1 className="text-2xl font-bold text-foreground">{greeting}, {firstName} <span className="text-base">✨</span></h1>
                 <p className="text-sm text-muted-foreground">{format(new Date(), "EEEE, MMMM d")}</p>
               </div>
             </div>
