@@ -441,6 +441,22 @@ export default function ProfilePage() {
       case "Customize Layout":
         setActiveSheet("customize");
         break;
+      case "Subscription & Billing":
+        if (subscribed) {
+          // Open customer portal
+          (async () => {
+            try {
+              const { data, error } = await supabase.functions.invoke("customer-portal");
+              if (error) throw error;
+              if (data?.url) window.open(data.url, "_blank");
+            } catch (e: any) {
+              toast({ title: "Error", description: e.message, variant: "destructive" });
+            }
+          })();
+        } else {
+          navigate("/upgrade");
+        }
+        break;
       default:
         toast({ title: "Coming soon", description: `${label} will be available in a future update` });
     }
