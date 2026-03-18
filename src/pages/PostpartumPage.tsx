@@ -229,6 +229,7 @@ export default function PostpartumPage() {
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: "assess", label: "Assessment", icon: <ClipboardList size={16} /> },
     { id: "plan", label: "Recovery Plan", icon: <FileText size={16} /> },
+    ...(hasSavedPlan ? [{ id: "myplan" as Tab, label: "My Plan", icon: <CalendarCheck size={16} /> }] : []),
     { id: "chat", label: "Ask AI", icon: <MessageCircle size={16} /> },
   ];
 
