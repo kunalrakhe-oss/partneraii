@@ -12,7 +12,10 @@ const COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 function isStandalone() {
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
-    (navigator as any).standalone === true
+    (navigator as any).standalone === true ||
+    window.matchMedia("(display-mode: fullscreen)").matches ||
+    document.referrer.includes("android-app://") ||
+    window.location.search.includes("homescreen=1")
   );
 }
 
