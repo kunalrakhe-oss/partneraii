@@ -480,7 +480,7 @@ export default function HomePage() {
                 ))
               )}
             </div>
-          </motion.div>
+          </motion.div>}
 
           {/* Add Memory/Note Quick Action */}
           <motion.div variants={item}>
