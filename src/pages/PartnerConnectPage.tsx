@@ -200,7 +200,7 @@ export default function PartnerConnectPage() {
 
     return (
       <PageTransition>
-        <div className="min-h-screen bg-background max-w-lg mx-auto px-5 pb-24">
+        <div className="min-h-screen bg-background max-w-lg mx-auto px-5 pb-nav">
           {/* Header */}
           <div className="sticky top-0 z-10 bg-background pt-4 pb-2 flex items-center justify-between">
             <button onClick={() => navigate(-1)} className="flex h-9 w-9 items-center justify-center rounded-full bg-muted">
