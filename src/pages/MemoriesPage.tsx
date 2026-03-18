@@ -274,7 +274,7 @@ export default function MemoriesPage() {
     <PageTransition>
       <div className="pb-24">
         {/* Header */}
-        <div className="flex items-center justify-between mb-1">
+        <div className="sticky top-0 z-20 bg-background px-5 pt-10 pb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ProfileButton />
             <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">

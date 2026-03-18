@@ -211,7 +211,7 @@ export default function HealthPage() {
   return (
     <PageTransition>
       <div className="max-w-lg mx-auto pb-28 space-y-5">
-        <div className="flex items-center gap-3">
+        <div className="sticky top-0 z-20 bg-background px-4 pt-6 pb-3 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
             <Activity size={20} className="text-primary" />
           </div>

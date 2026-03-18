@@ -174,7 +174,7 @@ export default function CoupleProfilePage() {
     <PageTransition>
       <div className="pb-6">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="sticky top-0 z-20 bg-background px-5 pt-10 pb-3 flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
             <ChevronLeft size={18} className="text-foreground" />
           </button>

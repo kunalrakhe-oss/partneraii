@@ -246,7 +246,7 @@ export default function GroceryPage() {
     <PageTransition>
       <div className="pb-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-1">
+        <div className="sticky top-0 z-20 bg-background px-5 pt-10 pb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ProfileButton />
             <div>

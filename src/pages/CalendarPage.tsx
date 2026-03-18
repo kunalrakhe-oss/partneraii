@@ -551,7 +551,7 @@ export default function CalendarPage() {
     <PageTransition>
       <div className="flex flex-col h-full">
         {/* Sticky header */}
-        <div className="px-5 pt-10 pb-3 bg-background">
+        <div className="sticky top-0 z-20 px-5 pt-10 pb-3 bg-background">
           {/* Title row with inline view picker — Apple Calendar style */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

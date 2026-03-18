@@ -1004,7 +1004,7 @@ export default function DietPage() {
     <PageTransition>
       <div className="pb-28">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-5">
+        <div className="sticky top-0 z-20 bg-background px-5 pt-10 pb-3 flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
             <ArrowLeft size={18} className="text-foreground" />
           </button>

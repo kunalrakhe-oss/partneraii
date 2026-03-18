@@ -302,7 +302,7 @@ export default function HomePage() {
       <div className="pb-6">
         <motion.div variants={container} initial="hidden" animate="show" className="space-y-5">
           {/* Header */}
-          <motion.div variants={item} className="flex items-center justify-between">
+          <motion.div variants={item} className="sticky top-0 z-20 bg-background px-5 pt-10 pb-3 -mx-0 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <ProfileButton />
               <div>

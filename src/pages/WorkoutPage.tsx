@@ -440,7 +440,7 @@ export default function WorkoutPage() {
       <div className="flex flex-col h-[100dvh] max-w-lg mx-auto bg-background relative">
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
-        <div className="px-5 pt-10 pb-3 shrink-0">
+        <div className="sticky top-0 z-20 bg-background px-5 pt-10 pb-3 shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
