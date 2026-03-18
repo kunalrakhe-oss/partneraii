@@ -167,8 +167,6 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <InstallPrompt />
-            <FullscreenPrompt />
             <FullscreenExitButton />
             <BrowserRouter>
               <AppRoutes />

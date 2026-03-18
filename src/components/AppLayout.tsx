@@ -3,7 +3,7 @@ import { Home, CalendarDays, ShoppingCart, MessageCircle, ClipboardList } from "
 import { motion } from "framer-motion";
 import PartnerNotifications from "@/components/PartnerNotifications";
 import DemoBanner from "@/components/DemoBanner";
-import PostAuthInstallPrompt from "@/components/PostAuthInstallPrompt";
+
 import VoiceAssistant from "@/components/VoiceAssistant";
 import CompletedTasksCleanup from "@/components/CompletedTasksCleanup";
 import { getNavTabs, type NavTabId } from "@/hooks/useLayoutPreferences";
