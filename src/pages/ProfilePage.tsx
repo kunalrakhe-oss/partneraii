@@ -18,7 +18,7 @@ import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LANGUAGE_OPTIONS } from "@/lib/translations";
 
-type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | "customize" | "language" | null;
+type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | "customize" | "language" | "app-mode" | null;
 
 function BottomSheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   return (
