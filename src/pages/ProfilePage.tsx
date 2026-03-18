@@ -668,7 +668,7 @@ export default function ProfilePage() {
              <p className="text-[10px] text-muted-foreground mt-1">{t("profile.emailCantChange")}</p>
            </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Phone</label>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("profile.phone")}</label>
             <input
               value={editPhone} onChange={e => setEditPhone(e.target.value)}
               className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
