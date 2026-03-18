@@ -261,6 +261,7 @@ export default function GroceryPage() {
           )}
         </div>
 
+        <div className="px-5">
         {/* List Tabs */}
         <div className="flex gap-2 mt-4 overflow-x-auto pb-1">
           {LIST_TABS.map(tab => (
