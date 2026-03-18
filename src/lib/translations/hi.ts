@@ -53,7 +53,7 @@ export const hi: TranslationKeys = {
 
   // Auth Page
   auth: {
-    welcomeTo: "LoveList में आपका स्वागत है",
+    welcomeTo: "PartnerAI में आपका स्वागत है",
     signIn: "साइन इन",
     signUp: "साइन अप",
     signInToAccount: "अपने अकाउंट में साइन इन करें",
