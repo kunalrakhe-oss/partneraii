@@ -486,7 +486,7 @@ export default function HomePage() {
                           <div key={event.id} className="flex items-center gap-3">
                             <div className="w-0.5 h-8 bg-foreground/30 rounded-full" />
                             <div>
-                              <p className="text-[10px] text-foreground/60">{event.event_time || "All day"}</p>
+                              <p className="text-[10px] text-foreground/60">{event.event_time || t("common.allDay")}</p>
                               <p className="text-sm font-semibold text-foreground">{event.title}</p>
                             </div>
                           </div>
