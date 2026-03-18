@@ -19,26 +19,13 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    // === GENERATE POSTPARTUM PLAN ===
+    // === GENERATE STRUCTURED POSTPARTUM PLAN ===
     if (type === "generate-plan") {
       const systemPrompt = `You are a warm, knowledgeable AI postpartum recovery advisor. Based on the mother's assessment answers, generate a COMPREHENSIVE postpartum recovery plan.
 
 IMPORTANT: You are NOT a doctor or midwife. Always recommend consulting a healthcare provider. Be especially sensitive — postpartum is an emotional and physically demanding time.
 
-The plan should be compassionate, realistic, and phased. Cover:
-1. 🌸 Recovery Summary — personalized overview based on their answers
-2. 📅 Week-by-Week Recovery Timeline (Weeks 1-2, 3-4, 5-8, 8-12+)
-3. 🧘 Gentle Exercises by Phase:
-   - Early: breathing exercises, gentle walks, pelvic floor activation
-   - Mid: core restoration (NO crunches), posture correction, light stretching
-   - Later: progressive strengthening, diastasis recti safe exercises
-4. 🍽️ Postpartum Nutrition — breastfeeding-friendly, iron-rich foods, hydration, energy-boosting meals
-5. 😴 Sleep & Rest Strategies — realistic tips for sleep-deprived new moms
-6. 💜 Mental Health & Emotional Wellness — baby blues vs postpartum depression signs, self-care practices, partner support tips
-7. 🤱 Breastfeeding Support — posture, nutrition for milk supply, common challenges
-8. ⚠️ Red Flags — when to call your doctor immediately (fever, heavy bleeding, severe mood changes, etc.)
-
-For exercises: include name, description, reps/hold time, and modifications. Be encouraging and normalize the recovery journey. Use emojis and clear markdown.${langSuffix(language)}`;
+Generate a structured plan with weekly timeline phases, exercises, nutrition, mental health tips, and red flags.${langSuffix(language)}`;
 
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -52,7 +39,81 @@ For exercises: include name, description, reps/hold time, and modifications. Be 
             { role: "system", content: systemPrompt },
             { role: "user", content: `Here are the mother's postpartum assessment answers:\n${JSON.stringify(answers, null, 2)}\n\nPlease generate a comprehensive, personalized postpartum recovery plan.` },
           ],
-          stream: true,
+          tools: [{
+            type: "function",
+            function: {
+              name: "create_postpartum_plan",
+              description: "Create a structured postpartum recovery plan",
+              parameters: {
+                type: "object",
+                properties: {
+                  summary: { type: "string", description: "Personalized recovery overview (2-3 sentences)" },
+                  timeline: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        week: { type: "string", description: "e.g. 'Weeks 1-2'" },
+                        title: { type: "string", description: "Phase title e.g. 'Gentle Beginnings'" },
+                        icon: { type: "string" },
+                        exercises: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              name: { type: "string" },
+                              description: { type: "string" },
+                              sets: { type: "number" },
+                              reps: { type: "string" },
+                              holdTime: { type: "string" },
+                              difficulty: { type: "string", enum: ["Gentle", "Easy", "Moderate"] },
+                              formTips: { type: "string" },
+                              icon: { type: "string" },
+                              imagePrompt: { type: "string" },
+                              modification: { type: "string", description: "C-section or vaginal delivery modification" },
+                            },
+                            required: ["name", "description", "sets", "reps", "difficulty", "icon", "imagePrompt"],
+                            additionalProperties: false,
+                          },
+                        },
+                        nutritionTips: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              tip: { type: "string" },
+                              icon: { type: "string" },
+                            },
+                            required: ["tip", "icon"],
+                            additionalProperties: false,
+                          },
+                        },
+                        mentalHealth: {
+                          type: "object",
+                          properties: {
+                            tip: { type: "string" },
+                            icon: { type: "string" },
+                          },
+                          required: ["tip", "icon"],
+                          additionalProperties: false,
+                        },
+                      },
+                      required: ["week", "title", "icon", "exercises", "nutritionTips", "mentalHealth"],
+                      additionalProperties: false,
+                    },
+                  },
+                  redFlags: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Warning signs requiring immediate medical attention",
+                  },
+                },
+                required: ["summary", "timeline", "redFlags"],
+                additionalProperties: false,
+              },
+            },
+          }],
+          tool_choice: { type: "function", function: { name: "create_postpartum_plan" } },
         }),
       });
 
@@ -65,8 +126,13 @@ For exercises: include name, description, reps/hold time, and modifications. Be 
         throw new Error("AI gateway error");
       }
 
-      return new Response(response.body, {
-        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      const data = await response.json();
+      const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+      if (!toolCall) throw new Error("No tool call in response");
+
+      const plan = JSON.parse(toolCall.function.arguments);
+      return new Response(JSON.stringify({ plan }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 

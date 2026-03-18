@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { Activity, Heart, Moon, Flame, Scale, Droplets, Footprints, TrendingUp, Bot, Send, Loader2, Plus, Trash2 } from "lucide-react";
+import { Activity, Heart, Moon, Flame, Scale, Droplets, Footprints, TrendingUp, TrendingDown, Bot, Send, Loader2, Plus, ArrowUp, ArrowDown, Minus, Target } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +30,15 @@ type HealthMetric = {
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
 
+type HealthAnalysis = {
+  healthScore: number;
+  summary: string;
+  trends: Array<{ metric: string; direction: string; insight: string; icon: string }>;
+  recommendations: Array<{ title: string; description: string; icon: string; priority: string }>;
+  predictions: Array<{ prediction: string; icon: string }>;
+  partnerTips: Array<{ tip: string; icon: string }>;
+};
+
 export default function HealthPage() {
   const { user } = useAuth();
   const { partnerPair } = usePartnerPair();
@@ -35,13 +46,11 @@ export default function HealthPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Today's entry
   const today = format(new Date(), "yyyy-MM-dd");
   const [form, setForm] = useState({ steps: "", heart_rate: "", sleep_hours: "", calories_burned: "", weight: "", water_glasses: "", notes: "" });
 
-  // AI
   const [aiTab, setAiTab] = useState<"analytics" | "chat">("analytics");
-  const [analysisText, setAnalysisText] = useState("");
+  const [analysis, setAnalysis] = useState<HealthAnalysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMsg[]>([]);
   const [chatInput, setChatInput] = useState("");
@@ -98,7 +107,7 @@ export default function HealthPage() {
     setSaving(false);
   };
 
-  // Streaming helper
+  // Streaming helper for chat
   const streamResponse = async (body: object, onDelta: (t: string) => void, onDone: () => void) => {
     const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/health-analytics`, {
       method: "POST",
@@ -128,15 +137,18 @@ export default function HealthPage() {
 
   const runAnalysis = async () => {
     setAnalyzing(true);
-    setAnalysisText("");
+    setAnalysis(null);
     try {
-      let text = "";
-      await streamResponse(
-        { type: "analyze", metrics },
-        (d) => { text += d; setAnalysisText(text); },
-        () => setAnalyzing(false),
-      );
-    } catch (e: any) { toast.error(e.message); setAnalyzing(false); }
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/health-analytics`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        body: JSON.stringify({ type: "analyze", metrics }),
+      });
+      if (!resp.ok) { const e = await resp.json().catch(() => ({})); throw new Error(e.error || "AI error"); }
+      const data = await resp.json();
+      setAnalysis(data.analysis);
+    } catch (e: any) { toast.error(e.message); }
+    setAnalyzing(false);
   };
 
   const sendChat = async () => {
@@ -183,6 +195,18 @@ export default function HealthPage() {
     { key: "weight", label: "Weight", icon: Scale, color: "text-emerald-500", unit: "kg" },
     { key: "water_glasses", label: "Water", icon: Droplets, color: "text-cyan-500", unit: "glasses" },
   ] as const;
+
+  const directionIcon = (dir: string) => {
+    if (dir === "up") return <ArrowUp size={14} className="text-green-500" />;
+    if (dir === "down") return <ArrowDown size={14} className="text-red-500" />;
+    return <Minus size={14} className="text-muted-foreground" />;
+  };
+
+  const priorityColors: Record<string, string> = {
+    High: "bg-red-500/10 text-red-600 border-red-500/20",
+    Medium: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+    Low: "bg-green-500/10 text-green-600 border-green-500/20",
+  };
 
   return (
     <PageTransition>
@@ -249,7 +273,6 @@ export default function HealthPage() {
               <p className="text-center text-muted-foreground py-8">No data yet. Start logging!</p>
             ) : (
               <>
-                {/* Steps chart */}
                 <Card className="p-4">
                   <p className="text-sm font-semibold mb-2 flex items-center gap-2"><Footprints size={14} className="text-blue-500" /> Steps</p>
                   <div className="h-40">
@@ -266,7 +289,6 @@ export default function HealthPage() {
                   </div>
                 </Card>
 
-                {/* Heart Rate & Sleep */}
                 <Card className="p-4">
                   <p className="text-sm font-semibold mb-2 flex items-center gap-2"><Heart size={14} className="text-red-500" /> Heart Rate & <Moon size={14} className="text-indigo-500" /> Sleep</p>
                   <div className="h-40">
@@ -283,7 +305,6 @@ export default function HealthPage() {
                   </div>
                 </Card>
 
-                {/* Weight & Calories */}
                 <Card className="p-4">
                   <p className="text-sm font-semibold mb-2 flex items-center gap-2"><Scale size={14} className="text-emerald-500" /> Weight & <Flame size={14} className="text-orange-500" /> Calories</p>
                   <div className="h-40">
@@ -301,7 +322,6 @@ export default function HealthPage() {
                   </div>
                 </Card>
 
-                {/* Summary cards */}
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { label: "Avg Steps", val: Math.round(myMetrics.reduce((s, m) => s + (m.steps || 0), 0) / (myMetrics.filter(m => m.steps).length || 1)), color: "text-blue-500" },
@@ -318,7 +338,7 @@ export default function HealthPage() {
             )}
           </TabsContent>
 
-          {/* AI TAB */}
+          {/* AI TAB — structured cards */}
           <TabsContent value="ai" className="space-y-4 mt-4">
             <div className="flex gap-2">
               <Button variant={aiTab === "analytics" ? "default" : "outline"} size="sm" onClick={() => setAiTab("analytics")}>
@@ -330,15 +350,83 @@ export default function HealthPage() {
             </div>
 
             {aiTab === "analytics" ? (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <Button onClick={runAnalysis} disabled={analyzing || metrics.length === 0} className="w-full">
                   {analyzing ? <Loader2 className="animate-spin mr-2" size={16} /> : <TrendingUp size={16} className="mr-2" />}
                   {metrics.length === 0 ? "Log data first" : "Generate AI Analysis"}
                 </Button>
-                {analysisText && (
-                  <Card className="p-4 prose prose-sm dark:prose-invert max-w-none">
-                    <ReactMarkdown>{analysisText}</ReactMarkdown>
-                  </Card>
+
+                {analysis && (
+                  <div className="space-y-4">
+                    {/* Health Score */}
+                    <Card className="p-4 text-center">
+                      <p className="text-xs font-bold text-primary mb-2">💚 Health Score</p>
+                      <div className="text-4xl font-black text-foreground mb-1">{analysis.healthScore}<span className="text-lg text-muted-foreground">/10</span></div>
+                      <Progress value={analysis.healthScore * 10} className="h-2 mt-2" />
+                      <p className="text-xs text-muted-foreground mt-3 leading-relaxed">{analysis.summary}</p>
+                    </Card>
+
+                    {/* Trends */}
+                    {analysis.trends.length > 0 && (
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-bold text-foreground">📈 Key Trends</h3>
+                        {analysis.trends.map((t, i) => (
+                          <Card key={i} className="p-3 flex items-start gap-3">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-sm">{t.icon}</span>
+                              {directionIcon(t.direction)}
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-xs font-semibold text-foreground">{t.metric}</p>
+                              <p className="text-[11px] text-muted-foreground leading-relaxed">{t.insight}</p>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Recommendations */}
+                    {analysis.recommendations.length > 0 && (
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><Target size={14} /> Recommendations</h3>
+                        {analysis.recommendations.map((r, i) => (
+                          <Card key={i} className="p-3">
+                            <div className="flex items-start justify-between mb-1">
+                              <p className="text-xs font-semibold text-foreground">{r.icon} {r.title}</p>
+                              <Badge variant="outline" className={`text-[10px] ${priorityColors[r.priority] || ""}`}>{r.priority}</Badge>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">{r.description}</p>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Predictions */}
+                    {analysis.predictions.length > 0 && (
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-bold text-foreground">🔮 Predictions</h3>
+                        {analysis.predictions.map((p, i) => (
+                          <Card key={i} className="p-3 flex items-start gap-2">
+                            <span>{p.icon}</span>
+                            <p className="text-xs text-foreground leading-relaxed">{p.prediction}</p>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Partner Tips */}
+                    {analysis.partnerTips.length > 0 && (
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-bold text-foreground">💕 Partner Support Tips</h3>
+                        {analysis.partnerTips.map((pt, i) => (
+                          <Card key={i} className="p-3 flex items-start gap-2">
+                            <span>{pt.icon}</span>
+                            <p className="text-xs text-foreground leading-relaxed">{pt.tip}</p>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             ) : (

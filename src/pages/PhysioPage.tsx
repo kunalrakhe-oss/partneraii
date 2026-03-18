@@ -1,12 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, Loader2, FileText, MessageCircle, ClipboardList, ChevronRight, Activity } from "lucide-react";
+import { ArrowLeft, Send, Loader2, FileText, MessageCircle, ClipboardList, ChevronRight, Activity, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import PlanPhaseSection from "@/components/PlanPhaseSection";
+import { type Exercise } from "@/components/RecoveryPlanCard";
+import { supabase } from "@/integrations/supabase/client";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/physio-chat`;
+const IMAGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-exercise-image`;
 
 const QUESTIONS = [
   { id: "injury_type", label: "What type of injury or condition are you recovering from?", type: "select" as const, options: ["Muscle strain/pull", "Joint sprain (ankle, wrist, etc.)", "Back/spine injury", "Knee injury (ACL, meniscus, etc.)", "Shoulder injury (rotator cuff, etc.)", "Post-surgery recovery", "Chronic pain condition", "Other"] },
@@ -18,6 +22,20 @@ const QUESTIONS = [
   { id: "activity_level", label: "What was your activity level before the injury?", type: "select" as const, options: ["Sedentary", "Lightly active", "Moderately active", "Very active / athlete", "Manual labor job"] },
   { id: "goals", label: "What are your recovery goals?", type: "multi" as const, options: ["Reduce pain", "Restore mobility", "Return to sports", "Return to daily activities", "Prevent re-injury", "Build strength", "Improve flexibility"] },
 ];
+
+type RecoveryPlan = {
+  summary: string;
+  phases: Array<{
+    title: string;
+    description: string;
+    durationWeeks: string;
+    icon: string;
+    exercises: Exercise[];
+  }>;
+  painManagement: Array<{ tip: string; icon: string }>;
+  nutrition: Array<{ tip: string; icon: string }>;
+  redFlags: string[];
+};
 
 async function streamChat(body: Record<string, unknown>, onDelta: (t: string) => void, onDone: () => void, onError: (e: string) => void) {
   const language = localStorage.getItem("lovelist-language") || "en";
@@ -58,8 +76,9 @@ export default function PhysioPage() {
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [multiSelections, setMultiSelections] = useState<string[]>([]);
 
-  const [plan, setPlan] = useState("");
+  const [plan, setPlan] = useState<RecoveryPlan | null>(null);
   const [planLoading, setPlanLoading] = useState(false);
+  const [planError, setPlanError] = useState("");
 
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -94,16 +113,33 @@ export default function PhysioPage() {
   const generatePlan = async (ans: Record<string, string | string[]>) => {
     setTab("plan");
     setPlanLoading(true);
-    setPlan("");
-    let soFar = "";
+    setPlan(null);
+    setPlanError("");
+    const language = localStorage.getItem("lovelist-language") || "en";
     try {
-      await streamChat(
-        { type: "generate-plan", answers: ans },
-        (chunk) => { soFar += chunk; setPlan(soFar); },
-        () => setPlanLoading(false),
-        (err) => { setPlan(`⚠️ ${err}`); setPlanLoading(false); },
-      );
-    } catch { setPlan("⚠️ Something went wrong."); setPlanLoading(false); }
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        body: JSON.stringify({ type: "generate-plan", answers: ans, language }),
+      });
+      if (!resp.ok) { const d = await resp.json().catch(() => ({})); throw new Error(d.error || `Error ${resp.status}`); }
+      const data = await resp.json();
+      setPlan(data.plan);
+    } catch (e: any) { setPlanError(e.message || "Something went wrong"); }
+    setPlanLoading(false);
+  };
+
+  const generateImage = async (exercise: Exercise): Promise<string | null> => {
+    try {
+      const resp = await fetch(IMAGE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        body: JSON.stringify({ exerciseName: exercise.name, exerciseDescription: exercise.imagePrompt || exercise.description }),
+      });
+      if (!resp.ok) return null;
+      const data = await resp.json();
+      return data.imageUrl || null;
+    } catch { return null; }
   };
 
   const sendChat = async (text?: string) => {
@@ -130,7 +166,7 @@ export default function PhysioPage() {
     } catch { setMessages(prev => [...prev, { role: "assistant", content: "⚠️ Something went wrong." }]); setChatLoading(false); }
   };
 
-  const resetAssessment = () => { setStep(0); setAnswers({}); setMultiSelections([]); setPlan(""); setTab("assess"); };
+  const resetAssessment = () => { setStep(0); setAnswers({}); setMultiSelections([]); setPlan(null); setPlanError(""); setTab("assess"); };
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: "assess", label: "Assessment", icon: <ClipboardList size={16} /> },
@@ -178,9 +214,7 @@ export default function PhysioPage() {
                     </div>
                     <span className="text-xs text-muted-foreground">{step + 1}/{QUESTIONS.length}</span>
                   </div>
-
                   <p className="text-sm font-semibold text-foreground mb-4">{currentQ.label}</p>
-
                   <div className="space-y-2">
                     {currentQ.options.map(opt => {
                       const selected = isMulti ? multiSelections.includes(opt) : answers[currentQ.id] === opt;
@@ -188,24 +222,19 @@ export default function PhysioPage() {
                         <button key={opt} onClick={() => selectOption(opt)}
                           className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all border ${
                             selected ? "bg-emerald-500/10 border-emerald-500 text-emerald-600 dark:text-emerald-400" : "bg-card border-border text-foreground hover:border-emerald-300"
-                          }`}>
-                          {opt}
-                        </button>
+                          }`}>{opt}</button>
                       );
                     })}
                   </div>
-
                   {isMulti && (
                     <button onClick={confirmMulti} disabled={multiSelections.length === 0}
                       className="mt-4 w-full bg-emerald-500 text-white rounded-xl py-2.5 text-sm font-semibold disabled:opacity-40 flex items-center justify-center gap-2">
                       Continue <ChevronRight size={16} />
                     </button>
                   )}
-
                   {step > 0 && (
                     <button onClick={() => setStep(step - 1)} className="mt-3 text-xs text-muted-foreground hover:text-foreground">← Back</button>
                   )}
-
                   <div className="mt-6 p-3 bg-muted/50 rounded-xl">
                     <p className="text-[11px] text-muted-foreground leading-relaxed">⚕️ This AI is not a substitute for professional medical advice. Always consult your doctor or physical therapist before starting a recovery program.</p>
                   </div>
@@ -219,27 +248,90 @@ export default function PhysioPage() {
             </motion.div>
           )}
 
-          {/* RECOVERY PLAN */}
+          {/* RECOVERY PLAN — structured cards */}
           {tab === "plan" && (
             <motion.div key="plan" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="px-4 py-4">
-              {!plan && !planLoading ? (
+              {planLoading ? (
+                <div className="text-center py-12">
+                  <Loader2 className="animate-spin mx-auto text-emerald-500 mb-3" size={32} />
+                  <p className="text-sm text-muted-foreground">Creating your personalized recovery plan...</p>
+                </div>
+              ) : planError ? (
+                <div className="text-center py-12">
+                  <p className="text-sm text-destructive mb-4">⚠️ {planError}</p>
+                  <button onClick={resetAssessment} className="bg-emerald-500 text-white px-5 py-2 rounded-xl text-sm font-semibold">Retry Assessment</button>
+                </div>
+              ) : !plan ? (
                 <div className="text-center py-12">
                   <FileText size={40} className="mx-auto text-muted-foreground/40 mb-3" />
                   <p className="text-sm text-muted-foreground mb-4">Complete the injury assessment to get your personalized recovery plan.</p>
                   <button onClick={() => setTab("assess")} className="bg-emerald-500 text-white px-5 py-2 rounded-xl text-sm font-semibold">Start Assessment</button>
                 </div>
               ) : (
-                <div>
-                  <div className="prose prose-sm dark:prose-invert max-w-none [&_h1]:text-lg [&_h2]:text-base [&_h3]:text-sm [&_p]:text-sm [&_li]:text-sm leading-relaxed">
-                    <ReactMarkdown>{plan}</ReactMarkdown>
+                <div className="space-y-6">
+                  {/* Summary */}
+                  <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4">
+                    <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-1">📋 Recovery Summary</p>
+                    <p className="text-sm text-foreground leading-relaxed">{plan.summary}</p>
                   </div>
-                  {planLoading && <Loader2 className="animate-spin text-emerald-500 mt-4" size={20} />}
-                  {!planLoading && plan && (
-                    <div className="mt-6 flex gap-2">
-                      <button onClick={resetAssessment} className="flex-1 bg-muted text-foreground rounded-xl py-2.5 text-sm font-medium">Retake</button>
-                      <button onClick={() => setTab("chat")} className="flex-1 bg-emerald-500 text-white rounded-xl py-2.5 text-sm font-semibold">Ask Follow-up</button>
+
+                  {/* Phases */}
+                  {plan.phases.map((phase, i) => (
+                    <PlanPhaseSection
+                      key={i}
+                      title={phase.title}
+                      description={phase.description}
+                      icon={phase.icon}
+                      duration={phase.durationWeeks}
+                      exercises={phase.exercises}
+                      accentColor="emerald"
+                      onGenerateImage={generateImage}
+                    />
+                  ))}
+
+                  {/* Pain Management */}
+                  {plan.painManagement && plan.painManagement.length > 0 && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-bold text-foreground flex items-center gap-2">🧊 Pain Management</h3>
+                      {plan.painManagement.map((pm, i) => (
+                        <div key={i} className="bg-card border border-border rounded-xl px-3 py-2.5 flex items-start gap-2">
+                          <span>{pm.icon}</span>
+                          <p className="text-xs text-foreground leading-relaxed">{pm.tip}</p>
+                        </div>
+                      ))}
                     </div>
                   )}
+
+                  {/* Nutrition */}
+                  {plan.nutrition && plan.nutrition.length > 0 && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-bold text-foreground flex items-center gap-2">🥗 Nutrition for Recovery</h3>
+                      {plan.nutrition.map((n, i) => (
+                        <div key={i} className="bg-card border border-border rounded-xl px-3 py-2.5 flex items-start gap-2">
+                          <span>{n.icon}</span>
+                          <p className="text-xs text-foreground leading-relaxed">{n.tip}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Red Flags */}
+                  {plan.redFlags && plan.redFlags.length > 0 && (
+                    <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-4 space-y-2">
+                      <h3 className="text-sm font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
+                        <AlertTriangle size={14} /> Red Flags — See a Doctor If...
+                      </h3>
+                      {plan.redFlags.map((flag, i) => (
+                        <p key={i} className="text-xs text-foreground leading-relaxed">⚠️ {flag}</p>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <button onClick={resetAssessment} className="flex-1 bg-muted text-foreground rounded-xl py-2.5 text-sm font-medium">Retake</button>
+                    <button onClick={() => setTab("chat")} className="flex-1 bg-emerald-500 text-white rounded-xl py-2.5 text-sm font-semibold">Ask Follow-up</button>
+                  </div>
                 </div>
               )}
               <div ref={bottomRef} />
