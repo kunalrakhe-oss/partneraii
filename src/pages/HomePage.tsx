@@ -348,14 +348,14 @@ export default function HomePage() {
                     className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 shadow-soft"
                   >
                     <Users size={13} />
-                    Connect Partner
-                  </Link>
-                  <Link
-                    to="/memories"
-                    className="flex-1 h-10 rounded-xl bg-card border border-border text-foreground text-xs font-bold flex items-center justify-center gap-1.5 shadow-card"
-                  >
-                    <Camera size={13} />
-                    Add Memory
+                     {t("home.connectPartner")}
+                   </Link>
+                   <Link
+                     to="/memories"
+                     className="flex-1 h-10 rounded-xl bg-card border border-border text-foreground text-xs font-bold flex items-center justify-center gap-1.5 shadow-card"
+                   >
+                     <Camera size={13} />
+                     {t("home.addMemory")}
                   </Link>
                 </div>
               </div>
