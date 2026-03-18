@@ -592,6 +592,11 @@ export default function DietPage() {
             <h1 className="text-2xl font-bold text-foreground">Diet Plan</h1>
             <p className="text-sm text-muted-foreground">Stay healthy together 💚</p>
           </div>
+          <button onClick={getAiDietSuggestions} disabled={aiSuggesting}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold disabled:opacity-50">
+            {aiSuggesting ? <Loader2 size={14} className="animate-spin" /> : <Bot size={14} />}
+            AI Diet
+          </button>
         </div>
 
         {/* Progress Card */}
