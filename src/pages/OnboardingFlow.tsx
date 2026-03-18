@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import onboardingHero from "@/assets/onboarding-hero.jpg";
 
-type Step = "entry" | "slides" | "mode" | "demo" | "setup-names" | "setup-relationship" | "setup-connect" | "setup-start" | "done";
+type Step = "language" | "entry" | "slides" | "mode" | "demo" | "setup-names" | "setup-relationship" | "setup-connect" | "setup-start" | "done";
 
 const slides = [
   {
