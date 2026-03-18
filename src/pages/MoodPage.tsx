@@ -248,8 +248,8 @@ export default function MoodPage() {
 
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">How are you, {displayName}?</h1>
-            <p className="text-sm text-muted-foreground">Share your vibe with your partner</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("mood.howAreYou")} {displayName}?</h1>
+            <p className="text-sm text-muted-foreground">{t("mood.shareVibe")}</p>
           </div>
           <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
             <X size={18} className="text-muted-foreground" />
