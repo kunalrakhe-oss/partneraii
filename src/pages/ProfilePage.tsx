@@ -420,6 +420,8 @@ export default function ProfilePage() {
 
   const handleSignOut = async () => {
     localStorage.removeItem("lovelist-setup-done");
+    localStorage.removeItem("lovelist-onboarding-done");
+    localStorage.removeItem("lovelist-app-mode");
     await signOut();
   };
 
