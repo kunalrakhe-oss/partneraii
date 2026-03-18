@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, forwardRef, useRef } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users, ArrowDownAZ, CheckCheck, Trash, Pencil, Save, Lock } from "lucide-react";
 import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 import { format } from "date-fns";
@@ -91,6 +92,7 @@ export default function ChoresPage() {
   const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
   const { toast } = useToast();
   const { isDemoMode } = useDemo();
+  const { t } = useLanguage();
   const [chores, setChores] = useState<ChoreRow[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -400,8 +402,8 @@ export default function ChoresPage() {
           <div className="flex items-center gap-3">
             <ProfileButton />
             <div>
-              <h1 className="text-2xl font-bold text-foreground font-heading">Chore Manager</h1>
-              <p className="text-xs text-muted-foreground">Keeping our home cozy, together</p>
+              <h1 className="text-2xl font-bold text-foreground font-heading">{t("chores.choreManager")}</h1>
+              <p className="text-xs text-muted-foreground">{t("chores.keepingCozy")}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

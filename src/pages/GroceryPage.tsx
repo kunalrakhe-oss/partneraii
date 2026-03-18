@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Plus, Sparkles, Check, Trash2, ShoppingCart, ClipboardList, Gift, Plane, Heart, ChevronUp, ChevronDown, X, CalendarIcon, Clock, Flag, AlertTriangle, FileText, ChevronRight } from "lucide-react";
 import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 import { format } from "date-fns";
@@ -63,6 +64,7 @@ export default function GroceryPage() {
   const { partnerPair, loading: pairLoading, userId } = usePartnerPair();
   const { toast } = useToast();
   const { isDemoMode } = useDemo();
+  const { t } = useLanguage();
   const [allItems, setAllItems] = useState<GroceryRow[]>([]);
   const [categorizingAnim, setCategorizingAnim] = useState(false);
   const [input, setInput] = useState("");
@@ -248,8 +250,8 @@ export default function GroceryPage() {
           <div className="flex items-center gap-3">
             <ProfileButton />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Love List</h1>
-              <p className="text-xs text-muted-foreground">Shared list • {uncheckedCount} items left</p>
+              <h1 className="text-2xl font-bold text-foreground">{t("lists.loveList")}</h1>
+              <p className="text-xs text-muted-foreground">{t("lists.sharedList")} • {uncheckedCount} {t("lists.itemsLeft")}</p>
             </div>
           </div>
           {activeList === "grocery" && (

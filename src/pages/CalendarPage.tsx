@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   format, addDays, subDays, startOfWeek, startOfMonth, endOfMonth,
   eachDayOfInterval, isSameDay, isToday, isSameMonth, addMonths, subMonths,
@@ -155,10 +156,11 @@ const DIET_ASSIGN = [
 ];
 const DIET_DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
-function CalendarDietForm({ defaultDate, onClose, onSave }: {
+function CalendarDietForm({ defaultDate, onClose, onSave, t }: {
   defaultDate: string;
   onClose: () => void;
   onSave: (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string; recurrence: string; recurrence_day: number | null }) => void;
+  t: (key: string) => string;
 }) {
   const [desc, setDesc] = useState("");
   const [notes, setNotes] = useState("");
@@ -182,13 +184,13 @@ function CalendarDietForm({ defaultDate, onClose, onSave }: {
         <div className="w-10 h-1 rounded-full bg-muted mx-auto mt-3 mb-2" />
         <div className="px-5 pb-8">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="text-lg font-bold text-foreground">Add Diet Item</h3>
+            <h3 className="text-lg font-bold text-foreground">{t("calendar.addDietItem")}</h3>
             <button onClick={onClose} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
               <X size={16} className="text-muted-foreground" />
             </button>
           </div>
 
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Food Name</label>
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">{t("calendar.foodName")}</label>
           <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="e.g. Warm lemon water"
             className="w-full h-11 bg-muted rounded-2xl px-4 text-sm text-foreground placeholder:text-muted-foreground border-none focus:outline-none focus:ring-2 focus:ring-ring mb-4" />
 
@@ -209,14 +211,14 @@ function CalendarDietForm({ defaultDate, onClose, onSave }: {
             </div>
           </div>
 
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Frequency</label>
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">{t("calendar.frequency")}</label>
           <div className="grid grid-cols-3 gap-2 mb-3">
             {(["once", "daily", "weekly"] as const).map(r => (
               <button key={r} onClick={() => setRecurrence(r)}
                 className={`px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                   recurrence === r ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
                 }`}>
-                {r === "once" ? "Once" : r === "daily" ? "🔁 Daily" : "🔁 Weekly"}
+                {r === "once" ? t("calendar.onceFreq") : r === "daily" ? t("calendar.dailyFreq") : t("calendar.weeklyFreq")}
               </button>
             ))}
           </div>
@@ -233,7 +235,7 @@ function CalendarDietForm({ defaultDate, onClose, onSave }: {
             </div>
           )}
 
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Category</label>
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">{t("calendar.category")}</label>
           <div className="grid grid-cols-3 gap-2 mb-4">
             {DIET_CATEGORIES.map(c => (
               <button key={c.key} onClick={() => setCat(c.key)}
@@ -246,7 +248,7 @@ function CalendarDietForm({ defaultDate, onClose, onSave }: {
             ))}
           </div>
 
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Assigned To</label>
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">{t("calendar.assignedTo")}</label>
           <div className="grid grid-cols-3 gap-2 mb-4">
             {DIET_ASSIGN.map(a => (
               <button key={a.value} onClick={() => setAssignedTo(a.value)}
@@ -272,7 +274,7 @@ function CalendarDietForm({ defaultDate, onClose, onSave }: {
           </div>
 
           <div className="flex gap-3">
-            <button onClick={onClose} className="flex-1 h-11 rounded-2xl bg-muted text-foreground text-sm font-semibold">Cancel</button>
+            <button onClick={onClose} className="flex-1 h-11 rounded-2xl bg-muted text-foreground text-sm font-semibold">{t("common.cancel")}</button>
             <button onClick={() => { if (desc.trim()) onSave({ description: desc.trim(), category: cat, notes: notes.trim() || "", assigned_to: assignedTo, calories: cal ? parseInt(cal) : null, log_date: logDate, event_time: eventTime, recurrence, recurrence_day: recurrence === "weekly" ? recurrenceDay : null }); }}
               disabled={!desc.trim()}
               className="flex-1 h-11 rounded-2xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40">
@@ -291,6 +293,7 @@ export default function CalendarPage() {
   const { partnerPair, loading: ppLoading } = usePartnerPair();
   const { canAccess } = useSubscriptionContext();
   const { isDemoMode } = useDemo();
+  const { t } = useLanguage();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -734,7 +737,7 @@ export default function CalendarPage() {
 
         {/* Diet Form Bottom Sheet */}
         <AnimatePresence>
-          {showDietForm && <CalendarDietForm
+          {showDietForm && <CalendarDietForm t={t}
             defaultDate={format(selectedDate, "yyyy-MM-dd")}
             onClose={() => setShowDietForm(false)}
             onSave={async (data) => {

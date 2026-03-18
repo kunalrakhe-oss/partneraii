@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import { format, subDays } from "date-fns";
@@ -125,6 +126,7 @@ export default function MoodPage() {
   const [logs, setLogs] = useState<MoodLog[]>([]);
   const [note, setNote] = useState("");
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [displayName, setDisplayName] = useState("there");
   const [reactionMessage, setReactionMessage] = useState("");
   const [moodReaction, setMoodReaction] = useState("");
@@ -246,15 +248,15 @@ export default function MoodPage() {
 
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">How are you, {displayName}?</h1>
-            <p className="text-sm text-muted-foreground">Share your vibe with your partner</p>
+            <h1 className="text-2xl font-bold text-foreground">{t("mood.howAreYou")} {displayName}?</h1>
+            <p className="text-sm text-muted-foreground">{t("mood.shareVibe")}</p>
           </div>
           <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
             <X size={18} className="text-muted-foreground" />
           </button>
         </div>
 
-        <p className="text-sm font-bold text-foreground mb-3">How are you feeling?</p>
+        <p className="text-sm font-bold text-foreground mb-3">{t("mood.howFeeling")}</p>
         {MOOD_GROUPS.map((group) => (
           <div key={group.label} className="mb-4">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">{group.label}</p>
@@ -270,15 +272,15 @@ export default function MoodPage() {
           </div>
         ))}
 
-        <p className="text-sm font-semibold text-foreground mb-2">Add a note (optional)</p>
-        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="What's on your mind?" rows={2}
+        <p className="text-sm font-semibold text-foreground mb-2">{t("mood.addNote")}</p>
+        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder={t("mood.whatsOnMind")} rows={2}
           className="w-full px-4 py-3 rounded-2xl bg-card shadow-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none border border-border mb-3" />
-        <button onClick={updateNote} className="w-full h-11 rounded-btn love-gradient text-primary-foreground font-semibold text-sm shadow-soft mb-6">Update My Mood</button>
+        <button onClick={updateNote} className="w-full h-11 rounded-btn love-gradient text-primary-foreground font-semibold text-sm shadow-soft mb-6">{t("mood.updateMood")}</button>
 
         {/* Partner's Status with Reaction */}
         <div className="flex items-center gap-2 mb-3">
           <Users size={16} className="text-foreground" />
-          <p className="text-sm font-bold text-foreground">{partnerName}'s Status</p>
+          <p className="text-sm font-bold text-foreground">{partnerName}{t("mood.partnerStatus")}</p>
         </div>
         <div className="bg-card rounded-2xl p-4 shadow-card border border-border mb-4">
           <div className="flex items-start gap-3 mb-3">
@@ -288,15 +290,15 @@ export default function MoodPage() {
             </div>
             <div>
               <p className="text-sm font-bold text-foreground">
-                {partnerName} is feeling {partnerLog ? (MOOD_EMOJI_MAP[partnerLog.mood] || "") + " " + partnerLog.mood.charAt(0).toUpperCase() + partnerLog.mood.slice(1) : "—"}
+                {partnerName} {t("mood.isFeeling")} {partnerLog ? (MOOD_EMOJI_MAP[partnerLog.mood] || "") + " " + partnerLog.mood.charAt(0).toUpperCase() + partnerLog.mood.slice(1) : "—"}
               </p>
-              <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{partnerLog?.note || "No mood logged yet today"}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{partnerLog?.note || t("mood.noMoodLoggedYet")}</p>
             </div>
           </div>
 
           {partnerLog && (
             <>
-              <p className="text-xs text-muted-foreground mb-2">React to their mood</p>
+              <p className="text-xs text-muted-foreground mb-2">{t("mood.reactToMood")}</p>
               <div className="flex gap-2 mb-3">
                 {["❤️", "🤗", "💪", "😘", "🥺", "🔥"].map(emoji => (
                   <button key={emoji} onClick={() => setMoodReaction(prev => prev === emoji ? "" : emoji)}
@@ -307,13 +309,13 @@ export default function MoodPage() {
               </div>
               <div className="flex gap-2">
                 <input value={reactionMessage} onChange={e => setReactionMessage(e.target.value)}
-                  placeholder="Add a message..."
+                  placeholder={t("mood.addMessage")}
                   className="flex-1 bg-muted rounded-xl px-3 h-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                 <button onClick={sendPartnerReaction}
                   disabled={(!moodReaction && !reactionMessage.trim()) || sendingReaction}
                   className="h-9 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold flex items-center gap-1.5 disabled:opacity-40">
                   <Send size={12} />
-                  Send
+                  {t("common.send")}
                 </button>
               </div>
             </>
@@ -323,10 +325,10 @@ export default function MoodPage() {
         {/* Weekly Harmony */}
         <div className="bg-card rounded-2xl p-5 shadow-card border border-border mb-5">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-bold text-foreground">Weekly Harmony</p>
+            <p className="text-sm font-bold text-foreground">{t("mood.weeklyHarmony")}</p>
             <Sparkles size={16} className="text-muted-foreground" />
           </div>
-          <p className="text-xs text-muted-foreground mb-4">Your mood over the last 7 days</p>
+          <p className="text-xs text-muted-foreground mb-4">{t("mood.moodOverWeek")}</p>
           <div className="flex items-end justify-between h-24 gap-1 px-1">
             {last7.map((day, i) => {
               const h = day.me ? moodToHeight[day.me.mood] || 50 : 30;

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Send, Search, ShoppingCart, CheckSquare, SmilePlus, Image as ImageIcon, X, Plus, Camera, FileText, MapPin, MessageCircleHeart, Reply, Smile, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
@@ -47,6 +48,7 @@ export default function ChatPage() {
   const { canAccess } = useSubscriptionContext();
   const { partnerPair, loading: ppLoading, userId } = usePartnerPair();
   const { isDemoMode } = useDemo();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [reactions, setReactions] = useState<Reaction[]>([]);
@@ -254,7 +256,7 @@ export default function ChatPage() {
             ) : (
               <motion.div key="tabs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 className="flex items-center justify-between w-full">
-                <h1 className="text-lg font-bold text-foreground shrink-0">Chat</h1>
+                <h1 className="text-lg font-bold text-foreground shrink-0">{t("chat.chat")}</h1>
 
                 <div className="flex bg-muted rounded-2xl p-1 gap-1">
                   <button
@@ -283,7 +285,7 @@ export default function ChatPage() {
                     }`}
                   >
                     <img src={aiAssistantIcon} alt="AI" className="w-5 h-5" />
-                    <span>Your AI</span>
+                    <span>{t("chat.yourAI")}</span>
                   </button>
                 </div>
 
@@ -307,10 +309,10 @@ export default function ChatPage() {
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mx-auto mb-4">
                   <Lock size={28} className="text-primary-foreground" />
                 </div>
-                <h3 className="text-lg font-bold text-foreground mb-1">LoveBot is Premium</h3>
-                <p className="text-sm text-muted-foreground mb-5">Upgrade to Premium to chat with your AI relationship assistant.</p>
+                <h3 className="text-lg font-bold text-foreground mb-1">{t("chat.loveBotPremium")}</h3>
+                <p className="text-sm text-muted-foreground mb-5">{t("chat.upgradeForLoveBot")}</p>
                 <button onClick={() => navigate("/upgrade")} className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-primary-foreground font-semibold text-sm">
-                  Upgrade to Premium
+                  {t("chat.upgradeToPremium")}
                 </button>
               </div>
             </div>
@@ -322,8 +324,8 @@ export default function ChatPage() {
           {messages.length === 0 && (
             <div className="text-center py-12">
               <p className="text-4xl mb-3">💬</p>
-              <p className="text-sm font-semibold text-foreground mb-1">Start your conversation</p>
-              <p className="text-xs text-muted-foreground">Messages are private between you and {partnerFirstName}</p>
+              <p className="text-sm font-semibold text-foreground mb-1">{t("chat.startConversation")}</p>
+              <p className="text-xs text-muted-foreground">{t("chat.messagesPrivate")} {partnerFirstName}</p>
             </div>
           )}
 

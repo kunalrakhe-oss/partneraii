@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Check, Crown, Sparkles, Star, ChevronLeft, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -43,6 +44,7 @@ export default function UpgradePage() {
   const navigate = useNavigate();
   const { tier, loading: subLoading } = useSubscriptionContext();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [checkingOut, setCheckingOut] = useState<string | null>(null);
 
@@ -77,7 +79,7 @@ export default function UpgradePage() {
           <button onClick={() => navigate(-1)} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
             <ChevronLeft size={18} className="text-foreground" />
           </button>
-          <h1 className="text-base font-bold text-foreground">Choose Your Plan</h1>
+          <h1 className="text-base font-bold text-foreground">{t("upgrade.chooseYourPlan")}</h1>
           <div className="w-9" />
         </div>
 
@@ -91,7 +93,7 @@ export default function UpgradePage() {
                 : "bg-muted text-muted-foreground"
             }`}
           >
-            Monthly
+            {t("upgrade.monthly")}
           </button>
           <button
             onClick={() => setInterval("yearly")}
@@ -101,9 +103,9 @@ export default function UpgradePage() {
                 : "bg-muted text-muted-foreground"
             }`}
           >
-            Yearly
+            {t("upgrade.yearly")}
             <span className="absolute -top-2 -right-2 bg-success text-success-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-              Save 33%
+              {t("upgrade.save33")}
             </span>
           </button>
         </div>
@@ -121,14 +123,14 @@ export default function UpgradePage() {
                 <Star size={20} className="text-muted-foreground" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-foreground">Free</h3>
-                <p className="text-xs text-muted-foreground">Basic features</p>
+                <h3 className="text-sm font-bold text-foreground">{t("upgrade.free")}</h3>
+                <p className="text-xs text-muted-foreground">{t("upgrade.basicFeatures")}</p>
               </div>
               {tier === "free" && (
-                <span className="ml-auto text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">Current Plan</span>
+                <span className="ml-auto text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">{t("upgrade.currentPlan")}</span>
               )}
             </div>
-            <p className="text-2xl font-bold text-foreground mb-4">$0<span className="text-xs text-muted-foreground font-normal">/forever</span></p>
+            <p className="text-2xl font-bold text-foreground mb-4">$0<span className="text-xs text-muted-foreground font-normal">/{t("upgrade.forever")}</span></p>
             <ul className="space-y-2">
               {FREE_FEATURES.map(f => (
                 <li key={f} className="flex items-start gap-2 text-xs text-foreground">
@@ -154,8 +156,8 @@ export default function UpgradePage() {
                 <Sparkles size={20} className="text-primary-foreground" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-foreground">Pro</h3>
-                <p className="text-xs text-muted-foreground">For active couples</p>
+                <h3 className="text-sm font-bold text-foreground">{t("upgrade.pro")}</h3>
+                <p className="text-xs text-muted-foreground">{t("upgrade.forActiveCouples")}</p>
               </div>
               {tier === "pro" && (
                 <span className="ml-auto text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">Current Plan</span>
@@ -182,7 +184,7 @@ export default function UpgradePage() {
                 disabled={!!checkingOut}
                 className="w-full py-3 rounded-xl love-gradient text-primary-foreground font-semibold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {checkingOut === "pro" ? <Loader2 size={16} className="animate-spin" /> : "Upgrade to Pro"}
+                {checkingOut === "pro" ? <Loader2 size={16} className="animate-spin" /> : t("upgrade.upgradeToPro")}
               </button>
             )}
           </motion.div>
@@ -199,8 +201,8 @@ export default function UpgradePage() {
                 <Crown size={20} className="text-primary-foreground" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-foreground">Premium</h3>
-                <p className="text-xs text-muted-foreground">The ultimate experience</p>
+                <h3 className="text-sm font-bold text-foreground">{t("upgrade.premium")}</h3>
+                <p className="text-xs text-muted-foreground">{t("upgrade.ultimateExperience")}</p>
               </div>
               {tier === "premium" && (
                 <span className="ml-auto text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-full">Current Plan</span>
@@ -227,14 +229,14 @@ export default function UpgradePage() {
                 disabled={!!checkingOut}
                 className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-primary-foreground font-semibold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {checkingOut === "premium" ? <Loader2 size={16} className="animate-spin" /> : "Upgrade to Premium"}
+                {checkingOut === "premium" ? <Loader2 size={16} className="animate-spin" /> : t("upgrade.upgradeToPremium")}
               </button>
             )}
           </motion.div>
         </div>
 
         <p className="text-center text-[10px] text-muted-foreground mt-6">
-          Cancel anytime • Secure payment via Stripe
+          {t("upgrade.cancelAnytime")}
         </p>
       </div>
     </PageTransition>

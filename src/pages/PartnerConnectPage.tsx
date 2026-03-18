@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Copy, Heart, ChevronLeft, Loader2, CheckCircle, Users, Share2, Shield, MessageCircle, Link2, Keyboard, User, Phone, Mail, Calendar, UserMinus, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +19,7 @@ export default function PartnerConnectPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [myCode, setMyCode] = useState<string | null>(null);
   const [partnerCode, setPartnerCode] = useState("");
   const [copied, setCopied] = useState(false);
@@ -302,9 +304,9 @@ export default function PartnerConnectPage() {
         </div>
 
         {/* Headline */}
-        <h1 className="text-2xl font-bold text-foreground text-center mb-2">Better Together</h1>
+        <h1 className="text-2xl font-bold text-foreground text-center mb-2">{t("partner.betterTogether")}</h1>
         <p className="text-sm text-muted-foreground text-center max-w-xs mx-auto leading-relaxed mb-6">
-          LoveList works best when shared. Connect with your partner to start syncing your life.
+          {t("partner.loveListWorksBest")}
         </p>
 
         {/* Step indicator */}

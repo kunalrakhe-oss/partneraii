@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Heart, ArrowRight, ArrowLeft, ChevronRight, ChevronLeft, Sparkles, Users, MessageCircle, Brain, Camera, ClipboardList, Smile, Send, Copy, Keyboard, Link2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -91,6 +92,7 @@ export default function OnboardingFlow() {
   const { user } = useAuth();
   const { exitDemo } = useDemo();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const [step, setStep] = useState<Step>(() => {
     if (user && localStorage.getItem("lovelist-demo-dismissed") === "true" && localStorage.getItem("lovelist-onboarding-done") !== "true") {
@@ -291,7 +293,7 @@ export default function OnboardingFlow() {
                 transition={{ delay: 0.2 }}
                 className="text-3xl font-bold text-foreground mb-2"
               >
-                LoveList
+                {t("onboarding.loveList")}
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
@@ -299,7 +301,7 @@ export default function OnboardingFlow() {
                 transition={{ delay: 0.3 }}
                 className="text-sm text-muted-foreground text-center max-w-[240px] leading-relaxed"
               >
-                Build your relationship, not just tasks
+                {t("onboarding.buildRelationship")}
               </motion.p>
 
               <motion.div
@@ -323,7 +325,7 @@ export default function OnboardingFlow() {
                 className="w-full h-14 rounded-2xl bg-primary text-primary-foreground font-semibold text-base flex items-center justify-center gap-2 shadow-elevated"
               >
                 <Heart size={18} fill="currentColor" />
-                Start Together
+                {t("onboarding.startTogether")}
               </button>
             </motion.div>
           </motion.div>
