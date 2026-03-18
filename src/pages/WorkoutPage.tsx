@@ -63,6 +63,12 @@ const FOCUS_OPTIONS = [
   { label: "Walking", emoji: "🚶", value: "walking and light movement" },
 ];
 
+const CALISTHENICS_PROGRAMS = [
+  { label: "Beginner", emoji: "🌱", value: "beginner", desc: "Foundations: push-ups, squats, planks, lunges. No equipment needed.", color: "from-green-500/15 to-green-500/5" },
+  { label: "Intermediate", emoji: "🔥", value: "intermediate", desc: "Dips, pull-ups, pistol squats, L-sits, muscle-up progressions.", color: "from-orange-500/15 to-orange-500/5" },
+  { label: "Advanced", emoji: "⚡", value: "advanced", desc: "Muscle-ups, handstand push-ups, planche, front lever, human flag.", color: "from-red-500/15 to-red-500/5" },
+];
+
 const MUSCLE_COLORS: Record<string, string> = {
   Chest: "bg-primary/20 text-primary",
   Back: "bg-secondary/20 text-secondary-foreground",
@@ -341,13 +347,13 @@ export default function WorkoutPage() {
 
   // ─── Actions ───────────────────────────────────────────────────────────────
 
-  const generatePlan = async (focus: string) => {
+  const generatePlan = async (focus: string, level = "intermediate", duration = 45) => {
     setGenerating(true);
     try {
       const { data, error } = await supabase.functions.invoke("fitbot-chat", {
         body: {
           type: "generate-plan",
-          context: { focus, level: "intermediate", duration: 45 },
+          context: { focus, level, duration, equipment: focus.includes("calisthenics") ? "No equipment — bodyweight only" : undefined },
           language: localStorage.getItem("lovelist-language") || "en",
         },
       });
@@ -584,6 +590,25 @@ export default function WorkoutPage() {
                         className="bg-card rounded-2xl p-4 border border-border/50 flex flex-col items-center gap-2 hover:border-primary/40 active:scale-[0.97] transition-all shadow-card disabled:opacity-50">
                         <span className="text-2xl">{f.emoji}</span>
                         <p className="text-xs font-semibold text-foreground">{f.label}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Calisthenics Programs */}
+                <div>
+                  <p className="text-sm font-bold text-foreground mb-1">🤸 Calisthenics Training</p>
+                  <p className="text-[11px] text-muted-foreground mb-3">Progressive bodyweight programs — no equipment needed</p>
+                  <div className="space-y-2.5">
+                    {CALISTHENICS_PROGRAMS.map(p => (
+                      <button key={p.value} onClick={() => generatePlan(`calisthenics ${p.value} level bodyweight training`, p.value, p.value === "beginner" ? 30 : p.value === "intermediate" ? 45 : 60)} disabled={generating}
+                        className={`w-full bg-gradient-to-r ${p.color} rounded-2xl p-4 border border-border/50 flex items-center gap-4 hover:border-primary/40 active:scale-[0.98] transition-all text-left disabled:opacity-50`}>
+                        <span className="text-3xl">{p.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-foreground">{p.label}</p>
+                          <p className="text-[11px] text-muted-foreground leading-snug">{p.desc}</p>
+                        </div>
+                        <ChevronRight size={16} className="text-muted-foreground shrink-0" />
                       </button>
                     ))}
                   </div>

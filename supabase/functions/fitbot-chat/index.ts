@@ -21,7 +21,14 @@ serve(async (req) => {
 
     // === GENERATE WORKOUT PLAN (structured) ===
     if (type === "generate-plan") {
-      const systemPrompt = `You are FitBot, an expert AI fitness coach. Generate a complete workout plan. Consider the user's fitness level and goals. Always provide safe, effective exercises with proper form cues.${langSuffix(language)}`;
+      const isCalisthenics = (context?.focus || "").toLowerCase().includes("calisthenics");
+      const systemPrompt = isCalisthenics
+        ? `You are FitBot, an expert calisthenics coach. Generate a progressive bodyweight training plan for the user's level. 
+For BEGINNER: focus on push-up variations, bodyweight squats, planks, lunges, dead hangs, wall sits, glute bridges. Keep reps achievable.
+For INTERMEDIATE: include dips, pull-ups, diamond push-ups, pistol squat progressions, L-sit progressions, pike push-ups, muscle-up negatives.
+For ADVANCED: include muscle-ups, handstand push-ups, planche progressions, front lever, back lever, human flag progressions, one-arm push-up progressions.
+Always include warm-up and cool-down. Provide detailed form cues since these are bodyweight movements. No equipment needed.${langSuffix(language)}`
+        : `You are FitBot, an expert AI fitness coach. Generate a complete workout plan. Consider the user's fitness level and goals. Always provide safe, effective exercises with proper form cues.${langSuffix(language)}`;
 
       const userPrompt = `Generate a ${context?.focus || "full body"} workout plan for ${context?.level || "intermediate"} level. ${context?.duration ? `Target duration: ${context.duration} minutes.` : ""} ${context?.equipment || "Standard gym equipment available."}`;
 
