@@ -215,7 +215,7 @@ function CalendarDietForm({ defaultDate, onClose, onSave, t }: {
                 className={`px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                   recurrence === r ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
                 }`}>
-                {r === "once" ? "Once" : r === "daily" ? "🔁 Daily" : "🔁 Weekly"}
+                {r === "once" ? t("calendar.onceFreq") : r === "daily" ? t("calendar.dailyFreq") : t("calendar.weeklyFreq")}
               </button>
             ))}
           </div>
