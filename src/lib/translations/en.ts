@@ -51,7 +51,7 @@ export const en = {
 
   // Auth Page
   auth: {
-    welcomeTo: "Welcome to LoveList",
+    welcomeTo: "Welcome to PartnerAI",
     signIn: "Sign In",
     signUp: "Sign Up",
     signInToAccount: "Sign in to your account",
