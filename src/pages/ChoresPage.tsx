@@ -101,6 +101,13 @@ export default function ChoresPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [sortBy, setSortBy] = useState<"created" | "due">("created");
   const settingsRef = useRef<HTMLDivElement>(null);
+  // Edit state
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editFrequency, setEditFrequency] = useState("");
+  const [editAssign, setEditAssign] = useState("");
+  const [editDueDate, setEditDueDate] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // Close settings on outside click
   useEffect(() => {
