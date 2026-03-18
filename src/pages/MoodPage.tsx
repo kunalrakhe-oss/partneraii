@@ -99,6 +99,25 @@ function AiMoodTip({ myMood, partnerMood, weekHistory }: { myMood: string | null
   );
 }
 
+function GatedAiMoodTip(props: { myMood: string | null; partnerMood: string | null; weekHistory: string }) {
+  const { canAccess } = useSubscriptionContext();
+  const navigate = useNavigate();
+
+  if (!canAccess("mood-ai-tips")) {
+    return (
+      <div className="border border-border rounded-2xl p-4 flex items-start gap-3 bg-muted/50">
+        <Lock size={16} className="text-muted-foreground shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          <span className="text-xs font-medium text-muted-foreground">AI Mood Tips</span>
+          <p className="text-xs text-muted-foreground mt-0.5">Upgrade to Pro for personalized mood tips.</p>
+          <button onClick={() => navigate("/upgrade")} className="text-xs font-semibold text-primary mt-1.5">Upgrade →</button>
+        </div>
+      </div>
+    );
+  }
+
+  return <AiMoodTip {...props} />;
+
 export default function MoodPage() {
   const { user } = useAuth();
   const { partnerPair, loading: ppLoading } = usePartnerPair();
