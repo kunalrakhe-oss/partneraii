@@ -144,5 +144,5 @@ export function useSubscription(): SubscriptionState {
     return () => clearInterval(interval);
   }, [user, refreshSubscription]);
 
-  return { tier, subscribed, subscriptionEnd, loading, refreshSubscription, accessCodeActive, applyAccessCode, clearAccessCode };
+  return { tier, subscribed, subscriptionEnd, loading, refreshSubscription, accessCodeActive, applyAccessCode, clearAccessCode, trialActive, trialDaysLeft };
 }
