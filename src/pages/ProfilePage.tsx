@@ -419,6 +419,7 @@ export default function ProfilePage() {
   };
 
   const handleSignOut = async () => {
+    localStorage.removeItem("lovelist-setup-done");
     await signOut();
   };
 
