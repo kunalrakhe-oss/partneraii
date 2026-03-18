@@ -68,6 +68,8 @@ export function useSubscription(): SubscriptionState {
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [accessCodeActive, setAccessCodeActive] = useState(isAccessCodeActive());
+  const trialActive = isTrialActive(user?.created_at);
+  const trialDaysLeft = getTrialDaysLeft(user?.created_at);
 
   const applyAccessCode = useCallback((code: string): boolean => {
     if (code === VALID_ACCESS_CODE) {
