@@ -347,7 +347,7 @@ export default function OnboardingFlow() {
                     : "bg-card border border-border text-foreground hover:border-primary/40"
                 }`}
               >
-                🇬🇧 English
+                🇺🇸 English
               </button>
               <button
                 onClick={() => { setLanguage("hi"); setStep("entry"); }}
