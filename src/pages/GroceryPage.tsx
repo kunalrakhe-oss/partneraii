@@ -426,7 +426,7 @@ export default function GroceryPage() {
             <p className="text-sm text-muted-foreground">{config.emptyText}</p>
             <p className="text-xs text-muted-foreground mt-1">{config.emptyHint}</p>
           </div>
-        ) : activeList === "grocery" ? (
+        ) : hasMultipleCategories ? (
           <div className="space-y-5">
             {Object.entries(grouped).map(([displayCat, catItems]) => {
               const uncheckedCat = catItems.filter(i => !i.is_checked);
@@ -458,17 +458,20 @@ export default function GroceryPage() {
         ) : (
           <div className="space-y-2">
             <AnimatePresence>
-              {sortedItems.map(item => (
-                <ItemRow
-                  key={item.id}
-                  item={item}
-                  onToggle={toggleItem}
-                  onMove={moveItem}
-                  onEdit={setEditingItem}
-                  isFirst={uncheckedItems[0]?.id === item.id}
-                  isLast={uncheckedItems[uncheckedItems.length - 1]?.id === item.id}
-                />
-              ))}
+              {Object.values(grouped).flat().map((item, _i, arr) => {
+                const unchecked = arr.filter(i => !i.is_checked);
+                return (
+                  <ItemRow
+                    key={item.id}
+                    item={item}
+                    onToggle={toggleItem}
+                    onMove={moveItem}
+                    onEdit={setEditingItem}
+                    isFirst={unchecked[0]?.id === item.id}
+                    isLast={unchecked[unchecked.length - 1]?.id === item.id}
+                  />
+                );
+              })}
             </AnimatePresence>
           </div>
         )}
