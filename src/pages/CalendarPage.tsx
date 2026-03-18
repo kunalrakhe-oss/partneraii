@@ -180,7 +180,7 @@ function CalendarDietForm({ defaultDate, onClose, onSave }: {
         <div className="w-10 h-1 rounded-full bg-muted mx-auto mt-3 mb-2" />
         <div className="px-5 pb-8">
           <div className="flex items-center justify-between mb-5">
-            <h3 className="text-lg font-bold text-foreground">Add Diet Item</h3>
+            <h3 className="text-lg font-bold text-foreground">{t("calendar.addDietItem")}</h3>
             <button onClick={onClose} className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
               <X size={16} className="text-muted-foreground" />
             </button>
