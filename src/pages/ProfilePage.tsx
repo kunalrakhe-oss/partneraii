@@ -705,7 +705,7 @@ export default function ProfilePage() {
       </BottomSheet>
 
       {/* Notifications Sheet */}
-      <BottomSheet open={activeSheet === "notifications"} onClose={() => setActiveSheet(null)} title="Notifications">
+      <BottomSheet open={activeSheet === "notifications"} onClose={() => setActiveSheet(null)} title={t("profile.notifications")}>
         <NotificationSettingsContent />
       </BottomSheet>
 
