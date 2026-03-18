@@ -400,18 +400,18 @@ export default function HomePage() {
             <motion.div variants={item}>
               <Link
                 to={activePlan.plan_type === "postpartum" ? "/postpartum" : "/physio"}
-                className="block bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent rounded-2xl p-4 border border-emerald-500/20"
+                className="block bg-gradient-to-r from-success/10 via-success/5 to-transparent rounded-2xl p-4 border border-success/20"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-500/15 flex items-center justify-center shrink-0">
-                    <Activity size={22} className="text-emerald-500" />
+                  <div className="w-12 h-12 rounded-xl bg-success/15 flex items-center justify-center shrink-0">
+                    <Activity size={22} className="text-success" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-bold text-foreground truncate">{activePlan.title}</p>
-                      <div className="flex items-center gap-0.5 bg-orange-500/10 px-1.5 py-0.5 rounded-full shrink-0">
-                        <Flame size={10} className="text-orange-500" />
-                        <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400">
+                      <div className="flex items-center gap-0.5 bg-warning/10 px-1.5 py-0.5 rounded-full shrink-0">
+                        <Flame size={10} className="text-warning" />
+                        <span className="text-[10px] font-bold text-warning">
                           Day {Math.max(1, Math.floor((Date.now() - new Date(activePlan.started_at).getTime()) / (1000 * 60 * 60 * 24)) + 1)}
                         </span>
                       </div>
