@@ -433,8 +433,8 @@ export default function HomePage() {
                           <span className="text-2xl">🌤️</span>
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-bold text-foreground">How are you feeling today?</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">Tap to log your mood & connect with your partner</p>
+                          <p className="text-sm font-bold text-foreground">{t("home.howFeeling")}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{t("home.tapToLogMood")}</p>
                         </div>
                         <Heart size={16} className="text-secondary shrink-0" />
                       </div>
