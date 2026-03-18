@@ -573,7 +573,7 @@ export default function HomePage() {
                     <div className="space-y-2">
                       {urgentChores.length === 0 ? (
                         <div className="bg-card rounded-2xl p-4 shadow-card text-center">
-                          <p className="text-sm text-muted-foreground">No pending chores 🎉</p>
+                          <p className="text-sm text-muted-foreground">{t("home.noPendingChores")}</p>
                         </div>
                       ) : (
                         urgentChores.map(chore => (
