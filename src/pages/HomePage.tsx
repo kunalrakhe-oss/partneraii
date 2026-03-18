@@ -541,7 +541,7 @@ export default function HomePage() {
           </motion.div>}
 
           {/* Urgent Chores */}
-          <motion.div variants={item}>
+          {showWidget("urgent-chores") && <motion.div variants={item}>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-bold text-foreground">Urgent Chores</h2>
               <div className="flex items-center gap-2">
