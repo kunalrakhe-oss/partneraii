@@ -305,6 +305,15 @@ export default function ProfilePage() {
       case "Theme & Appearance":
         setActiveSheet("theme");
         break;
+      case "Install App":
+        if (isIOS) {
+          toast({ title: "Install LoveLists", description: "Tap Share → Add to Home Screen in Safari" });
+        } else if (canInstall) {
+          promptInstall();
+        } else {
+          toast({ title: "Already available", description: "Use your browser menu to install the app" });
+        }
+        break;
       default:
         toast({ title: "Coming soon", description: `${label} will be available in a future update` });
     }
