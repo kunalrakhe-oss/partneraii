@@ -87,6 +87,7 @@ export function useLayoutPreferences() {
     setHomeWidgetsState(DEFAULT_WIDGETS);
     localStorage.setItem(NAV_KEY, JSON.stringify(DEFAULT_NAV));
     localStorage.setItem(WIDGETS_KEY, JSON.stringify(DEFAULT_WIDGETS));
+    dispatchChange();
   }, []);
 
   return {
