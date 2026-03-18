@@ -25,8 +25,8 @@ export default function WelcomePage({ onComplete }: WelcomePageProps) {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center gap-2 mb-8"
         >
-          <Heart size={24} className="text-primary" fill="hsl(346, 77%, 60%)" />
-          <span className="text-xl font-bold text-foreground">LoveList</span>
+          <Sparkles size={24} className="text-primary" />
+          <span className="text-xl font-bold text-foreground">Partner<span className="love-gradient-text">AI</span></span>
         </motion.div>
 
         {/* Hero Image */}
