@@ -8,6 +8,7 @@ import VoiceAssistant from "@/components/VoiceAssistant";
 import CompletedTasksCleanup from "@/components/CompletedTasksCleanup";
 import { getNavTabs, type NavTabId } from "@/hooks/useLayoutPreferences";
 import { useState, useEffect } from "react";
+import PullToRefresh from "@/components/PullToRefresh";
 
 const tabMeta: Record<string, { icon: typeof Home; label: string; to: string }> = {
   home: { to: "/", icon: Home, label: "Home" },
@@ -46,9 +47,9 @@ export default function AppLayout() {
       <PostAuthInstallPrompt />
       <VoiceAssistant />
       <CompletedTasksCleanup />
-      <main className="flex-1 overflow-y-auto pb-nav">
+      <PullToRefresh>
         <Outlet />
-      </main>
+      </PullToRefresh>
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border safe-bottom z-50">
         <div className="flex items-center justify-around" style={{ height: 'var(--nav-h)' }}>
           {tabs.map(({ to, icon: Icon, label }) => (
