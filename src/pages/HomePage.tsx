@@ -201,7 +201,7 @@ export default function HomePage() {
       setAiInsight(DEMO_AI_INSIGHT);
       return;
     }
-    if (partnerPair && !aiInsight && !insightLoading && daysTogether > 0) {
+    if (canAccess("daily-insight") && partnerPair && !aiInsight && !insightLoading && daysTogether > 0) {
       fetchInsight();
     }
   }, [partnerPair, daysTogether, fetchInsight, aiInsight, insightLoading, isDemoMode]);
