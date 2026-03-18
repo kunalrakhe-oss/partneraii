@@ -554,12 +554,12 @@ export default function HomePage() {
                             <span className="text-2xl">{MOOD_EMOJI[myMood.mood] || "✨"}</span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs text-muted-foreground">{t("home.yourMoodToday") || "Your mood today"}</p>
+                            <p className="text-xs text-muted-foreground">{t("home.yourMoodToday")}</p>
                             <p className="text-sm font-bold text-foreground">{myMood.mood.charAt(0).toUpperCase() + myMood.mood.slice(1)}</p>
                             {myMood.note && <p className="text-xs text-muted-foreground mt-0.5 truncate">"{myMood.note}"</p>}
                           </div>
                           <button onClick={() => navigate("/mood")} className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1.5 rounded-full shrink-0">
-                            {t("common.change") || "Change"}
+                            {t("common.change")}
                           </button>
                         </div>
                       </div>
@@ -568,7 +568,7 @@ export default function HomePage() {
                       <div className="bg-card rounded-2xl p-4 border border-border shadow-card">
                         <div className="flex items-center gap-2 mb-2">
                           <Brain size={14} className="text-primary" />
-                          <span className="text-xs font-semibold text-primary">AI Check-in</span>
+                          <span className="text-xs font-semibold text-primary">{t("home.aiCheckin")}</span>
                         </div>
                         {aiMoodLoading ? (
                           <div className="flex items-center gap-2 py-1">
@@ -579,7 +579,7 @@ export default function HomePage() {
                           <p className="text-xs text-muted-foreground leading-relaxed">{aiMoodCheckin || "Loading…"}</p>
                         )}
                         <button onClick={() => navigate("/chat?tab=ai")} className="text-xs font-semibold text-primary mt-2 flex items-center gap-1">
-                          Chat with AI →
+                          {t("home.chatWithAi")}
                         </button>
                       </div>
                     </motion.div>
