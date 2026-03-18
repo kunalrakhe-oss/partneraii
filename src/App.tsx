@@ -28,6 +28,7 @@ import OnboardingFlow from "@/pages/OnboardingFlow";
 import UpgradePage from "@/pages/UpgradePage";
 import InstallPrompt from "@/components/InstallPrompt";
 import FullscreenPrompt from "@/components/FullscreenPrompt";
+import FeatureGate from "@/components/FeatureGate";
 import FullscreenExitButton from "@/components/FullscreenExitButton";
 
 const queryClient = new QueryClient();
