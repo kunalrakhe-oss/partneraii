@@ -8,7 +8,7 @@ import VoiceAssistant from "@/components/VoiceAssistant";
 import CompletedTasksCleanup from "@/components/CompletedTasksCleanup";
 import { getNavTabs, type NavTabId } from "@/hooks/useLayoutPreferences";
 import { useState, useEffect } from "react";
-import PullToRefresh from "@/components/PullToRefresh";
+
 import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
