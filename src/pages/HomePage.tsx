@@ -78,13 +78,16 @@ export default function HomePage() {
   const [insightDismissed, setInsightDismissed] = useState(false);
   const [insightLoading, setInsightLoading] = useState(false);
 
+  const isSingle = appMode === "single";
+
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("display_name, avatar_url, created_at, partner_id").eq("user_id", user.id).maybeSingle()
+    supabase.from("profiles").select("display_name, avatar_url, created_at, partner_id, app_mode").eq("user_id", user.id).maybeSingle()
       .then(({ data }) => {
         const raw = data?.display_name || user.user_metadata?.full_name || user.user_metadata?.display_name || user.user_metadata?.name || user.email?.split("@")[0] || "there";
         setFirstName(raw.split(" ")[0]);
         setAvatarUrl(data?.avatar_url || user.user_metadata?.avatar_url || null);
+        setAppMode((data as any)?.app_mode || "couple");
         if (data?.created_at) {
           const created = new Date(data.created_at);
           const diff = Math.max(1, Math.floor((Date.now() - created.getTime()) / (1000 * 60 * 60 * 24)));
