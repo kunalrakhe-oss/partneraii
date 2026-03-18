@@ -648,7 +648,7 @@ export default function HomePage() {
         {/* Floating New Event FAB - icon only */}
         <button
           onClick={() => setShowAddEvent(true)}
-          className="fixed bottom-20 right-5 max-w-lg love-gradient text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-elevated z-40"
+          className="fixed bottom-above-nav right-5 max-w-lg love-gradient text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-elevated z-40"
         >
           <Plus size={20} />
         </button>

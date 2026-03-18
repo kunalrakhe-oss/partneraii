@@ -515,7 +515,7 @@ export default function GroceryPage() {
         {/* Floating Add Button */}
         <button
           onClick={() => setShowNewList(true)}
-          className="fixed bottom-20 right-5 w-14 h-14 rounded-full love-gradient text-primary-foreground flex items-center justify-center shadow-elevated z-40"
+          className="fixed bottom-above-nav right-5 w-14 h-14 rounded-full love-gradient text-primary-foreground flex items-center justify-center shadow-elevated z-40"
         >
           <Plus size={24} />
         </button>
@@ -575,7 +575,7 @@ function EditSheet({
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", damping: 28, stiffness: 350 }}
-      className="fixed bottom-20 left-0 right-0 z-[60] max-w-lg mx-auto"
+      className="fixed bottom-on-nav left-0 right-0 z-[60] max-w-lg mx-auto"
     >
       <div className="bg-card rounded-t-3xl border border-border border-b-0 shadow-lg max-h-[72vh] flex flex-col">
         {/* Header */}

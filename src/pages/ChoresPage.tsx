@@ -626,7 +626,7 @@ export default function ChoresPage() {
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => setShowAdd(true)}
-          className="fixed bottom-24 right-5 z-30 w-14 h-14 rounded-full love-gradient text-primary-foreground shadow-elevated flex items-center justify-center"
+          className="fixed bottom-above-nav right-5 z-30 w-14 h-14 rounded-full love-gradient text-primary-foreground shadow-elevated flex items-center justify-center"
         >
           <Plus size={24} strokeWidth={2.5} />
         </motion.button>

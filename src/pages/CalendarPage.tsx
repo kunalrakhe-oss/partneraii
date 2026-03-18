@@ -693,7 +693,7 @@ export default function CalendarPage() {
         {showFabMenu && (
           <motion.div
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-            className="fixed bottom-[5.5rem] right-5 z-50 flex flex-col gap-2 items-end"
+            className="fixed right-5 z-50 flex flex-col gap-2 items-end" style={{ bottom: 'calc(var(--nav-total) + 4.5rem)' }}
           >
             <button
               onClick={() => { setShowFabMenu(false); openAddForm(); }}
@@ -714,7 +714,7 @@ export default function CalendarPage() {
         )}
         <button
           onClick={() => setShowFabMenu(prev => !prev)}
-          className="fixed bottom-20 right-5 max-w-lg love-gradient text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-elevated z-50"
+          className="fixed bottom-above-nav right-5 max-w-lg love-gradient text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-elevated z-50"
         >
           <Plus size={22} className={`transition-transform ${showFabMenu ? "rotate-45" : ""}`} />
         </button>
