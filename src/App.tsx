@@ -86,6 +86,7 @@ function AppRoutes() {
         <Route path="/memories" element={<MemoriesPage />} />
         <Route path="/workout" element={<WorkoutPage />} />
         <Route path="/diet" element={<DietPage />} />
+        <Route path="/upgrade" element={<UpgradePage />} />
       </Route>
       {/* Authenticated users always redirect away from auth/onboarding */}
       <Route path="/auth" element={<Navigate to="/" replace />} />
