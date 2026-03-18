@@ -358,7 +358,7 @@ export default function HomePage() {
           )}
 
           {/* Next Upcoming Event */}
-          {nextEvent && (
+          {showWidget("next-event") && nextEvent && (
             <motion.div variants={item}>
               <Link to="/calendar" className="block love-gradient rounded-2xl p-4 shadow-elevated relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary-foreground/10 rounded-full -translate-y-8 translate-x-8" />
