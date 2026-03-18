@@ -256,7 +256,7 @@ export default function MoodPage() {
           </button>
         </div>
 
-        <p className="text-sm font-bold text-foreground mb-3">How are you feeling?</p>
+        <p className="text-sm font-bold text-foreground mb-3">{t("mood.howFeeling")}</p>
         {MOOD_GROUPS.map((group) => (
           <div key={group.label} className="mb-4">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">{group.label}</p>
