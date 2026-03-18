@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   format, addDays, subDays, startOfWeek, startOfMonth, endOfMonth,
   eachDayOfInterval, isSameDay, isToday, isSameMonth, addMonths, subMonths,
