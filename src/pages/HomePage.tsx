@@ -36,6 +36,7 @@ export default function HomePage() {
   const { t } = useLanguage();
   const [firstName, setFirstName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [appMode, setAppMode] = useState<string>("couple");
   const [partnerProfile, setPartnerProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
   const [partnerMood, setPartnerMood] = useState<{ mood: string; note: string | null } | null>(null);
   const [myMood, setMyMood] = useState<{ mood: string; note: string | null } | null>(null);
