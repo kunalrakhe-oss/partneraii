@@ -823,7 +823,7 @@ export default function HomePage() {
                   className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-40"
                 >
                   <Send size={14} />
-                  {sendingReaction ? "Sending..." : "Send"}
+                  {sendingReaction ? t("common.loading") : t("common.send")}
                 </button>
 
                 <div className="flex gap-2 mt-3">
