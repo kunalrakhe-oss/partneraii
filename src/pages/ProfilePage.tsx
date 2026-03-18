@@ -770,7 +770,7 @@ export default function ProfilePage() {
               <input
                 value={accessCodeInput}
                 onChange={e => setAccessCodeInput(e.target.value)}
-                placeholder="Enter your code"
+                placeholder={t("profile.enterCode")}
                 className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring mb-4"
                 autoFocus
               />
