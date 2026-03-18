@@ -317,9 +317,9 @@ export default function HomePage() {
               <div className="bg-gradient-to-br from-primary/10 via-secondary/5 to-primary/10 rounded-2xl p-5 border border-primary/20 shadow-soft">
                 <div className="flex items-center gap-2 mb-1">
                   <Heart size={16} className="text-primary" fill="currentColor" />
-                  <p className="text-sm font-bold text-foreground">Make it real</p>
-                </div>
-                <p className="text-xs text-muted-foreground mb-4">Start your love journey in 3 simple steps</p>
+                   <p className="text-sm font-bold text-foreground">{t("home.makeItReal")}</p>
+                 </div>
+                 <p className="text-xs text-muted-foreground mb-4">{t("home.startJourney")}</p>
 
                 <div className="space-y-3 mb-5">
                   {[
