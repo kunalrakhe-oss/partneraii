@@ -148,6 +148,7 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const { canInstall, isInstalled, isIOS, promptInstall } = usePWAInstall();
   const { isSupported: fullscreenSupported, isFullscreen, toggleFullscreen } = useFullscreen();
+  const { isSupported: voiceSupported, enabled: voiceEnabled, toggleEnabled: toggleVoice } = useWakeWord();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [displayName, setDisplayName] = useState("");
