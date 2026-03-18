@@ -144,10 +144,11 @@ export default function GroceryPage() {
 
   const addItem = async () => {
     if (!input.trim() || !userId || !partnerPair) return;
-    const category = activeList === "grocery" ? categorizeGroceryItem(input.trim()) : "other";
+    const category = activeList === "grocery" ? categorizeGroceryItem(input.trim()) : categorizeListItem(input.trim(), activeList);
     
-    // Show categorization animation for grocery items
-    if (activeList === "grocery" && category !== "other") {
+    // Show categorization animation when item gets a specific category
+    const fallbacks = ["other", "general", "misc", "other_gifts", "other_ideas"];
+    if (!fallbacks.includes(category)) {
       setCategorizingAnim(true);
       setTimeout(() => setCategorizingAnim(false), 1200);
     }
