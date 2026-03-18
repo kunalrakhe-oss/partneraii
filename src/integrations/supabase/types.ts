@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      budget_entries: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          description: string | null
+          entry_date: string
+          id: string
+          is_recurring: boolean
+          partner_pair: string
+          recurrence: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          entry_date?: string
+          id?: string
+          is_recurring?: boolean
+          partner_pair: string
+          recurrence?: string | null
+          type?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          description?: string | null
+          entry_date?: string
+          id?: string
+          is_recurring?: boolean
+          partner_pair?: string
+          recurrence?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           assigned_to: string
