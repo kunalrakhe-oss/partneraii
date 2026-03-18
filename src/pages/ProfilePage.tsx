@@ -445,6 +445,9 @@ export default function ProfilePage() {
       case "Customize Layout":
         setActiveSheet("customize");
         break;
+      case "Language":
+        setActiveSheet("language");
+        break;
       case "Subscription & Billing":
         if (subscribed) {
           // Open customer portal
