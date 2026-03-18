@@ -127,7 +127,7 @@ export default function UpgradePage() {
                 <p className="text-xs text-muted-foreground">{t("upgrade.basicFeatures")}</p>
               </div>
               {tier === "free" && (
-                <span className="ml-auto text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">Current Plan</span>
+                <span className="ml-auto text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">{t("upgrade.currentPlan")}</span>
               )}
             </div>
             <p className="text-2xl font-bold text-foreground mb-4">$0<span className="text-xs text-muted-foreground font-normal">/forever</span></p>
