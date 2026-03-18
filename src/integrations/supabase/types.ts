@@ -467,6 +467,48 @@ export type Database = {
         }
         Relationships: []
       }
+      period_logs: {
+        Row: {
+          created_at: string
+          cycle_length: number | null
+          id: string
+          notes: string | null
+          partner_pair: string
+          period_duration: number | null
+          period_end: string | null
+          period_start: string
+          symptoms: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          cycle_length?: number | null
+          id?: string
+          notes?: string | null
+          partner_pair: string
+          period_duration?: number | null
+          period_end?: string | null
+          period_start: string
+          symptoms?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          cycle_length?: number | null
+          id?: string
+          notes?: string | null
+          partner_pair?: string
+          period_duration?: number | null
+          period_end?: string | null
+          period_start?: string
+          symptoms?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
