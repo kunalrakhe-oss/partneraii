@@ -19,23 +19,13 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    // === GENERATE RECOVERY PLAN ===
+    // === GENERATE STRUCTURED RECOVERY PLAN ===
     if (type === "generate-plan") {
       const systemPrompt = `You are a compassionate, expert AI physical therapy assistant. Based on the user's injury/recovery assessment answers, generate a COMPREHENSIVE physical therapy and recovery plan.
 
 IMPORTANT: You are NOT a licensed physical therapist or doctor. Always recommend consulting a healthcare professional before starting any exercise program, especially post-injury or post-surgery.
 
-The plan should be safe, progressive, and actionable. Cover:
-1. 📋 Recovery Assessment Summary — summarize their situation
-2. 🎯 Recovery Goals — short-term and long-term milestones
-3. 🏥 Phase 1: Acute/Initial Recovery — gentle mobility, pain management, what to avoid
-4. 💪 Phase 2: Strengthening — progressive exercises with sets, reps, hold times
-5. 🏃 Phase 3: Return to Activity — functional movements, sport-specific if applicable
-6. 🧊 Pain Management Tips — ice/heat, compression, elevation, when to rest
-7. 🥗 Nutrition for Recovery — anti-inflammatory foods, protein, hydration
-8. ⚠️ Red Flags — when to stop and see a doctor immediately
-
-For each exercise include: name, description, sets/reps/hold time, difficulty level, and form tips. Use emojis and clear markdown formatting.${langSuffix(language)}`;
+Generate a structured plan with phases, exercises, pain management tips, nutrition advice, and red flags.${langSuffix(language)}`;
 
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
@@ -49,7 +39,84 @@ For each exercise include: name, description, sets/reps/hold time, difficulty le
             { role: "system", content: systemPrompt },
             { role: "user", content: `Here are the user's recovery assessment answers:\n${JSON.stringify(answers, null, 2)}\n\nPlease generate a comprehensive, personalized physical therapy and recovery plan.` },
           ],
-          stream: true,
+          tools: [{
+            type: "function",
+            function: {
+              name: "create_recovery_plan",
+              description: "Create a structured physical therapy recovery plan",
+              parameters: {
+                type: "object",
+                properties: {
+                  summary: { type: "string", description: "Brief recovery assessment summary (2-3 sentences)" },
+                  phases: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string", description: "Phase name e.g. 'Phase 1: Acute Recovery'" },
+                        description: { type: "string", description: "What this phase focuses on" },
+                        durationWeeks: { type: "string", description: "e.g. 'Weeks 1-2'" },
+                        icon: { type: "string", description: "Single emoji for this phase" },
+                        exercises: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              name: { type: "string" },
+                              description: { type: "string", description: "How to perform this exercise" },
+                              sets: { type: "number" },
+                              reps: { type: "string", description: "e.g. '10' or '30 seconds hold'" },
+                              holdTime: { type: "string", description: "e.g. '15 seconds' if applicable" },
+                              difficulty: { type: "string", enum: ["Easy", "Moderate", "Challenging"] },
+                              formTips: { type: "string", description: "Key form tip" },
+                              icon: { type: "string", description: "Single emoji" },
+                              imagePrompt: { type: "string", description: "Brief description for generating an illustration of this exercise" },
+                            },
+                            required: ["name", "description", "sets", "reps", "difficulty", "icon", "imagePrompt"],
+                            additionalProperties: false,
+                          },
+                        },
+                      },
+                      required: ["title", "description", "durationWeeks", "icon", "exercises"],
+                      additionalProperties: false,
+                    },
+                  },
+                  painManagement: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        tip: { type: "string" },
+                        icon: { type: "string" },
+                      },
+                      required: ["tip", "icon"],
+                      additionalProperties: false,
+                    },
+                  },
+                  nutrition: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        tip: { type: "string" },
+                        icon: { type: "string" },
+                      },
+                      required: ["tip", "icon"],
+                      additionalProperties: false,
+                    },
+                  },
+                  redFlags: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Warning signs that require immediate medical attention",
+                  },
+                },
+                required: ["summary", "phases", "painManagement", "nutrition", "redFlags"],
+                additionalProperties: false,
+              },
+            },
+          }],
+          tool_choice: { type: "function", function: { name: "create_recovery_plan" } },
         }),
       });
 
@@ -62,8 +129,13 @@ For each exercise include: name, description, sets/reps/hold time, difficulty le
         throw new Error("AI gateway error");
       }
 
-      return new Response(response.body, {
-        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      const data = await response.json();
+      const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+      if (!toolCall) throw new Error("No tool call in response");
+
+      const plan = JSON.parse(toolCall.function.arguments);
+      return new Response(JSON.stringify({ plan }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 

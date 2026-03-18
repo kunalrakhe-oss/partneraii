@@ -19,24 +19,11 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    // === GENERATE FINANCIAL PLAN ===
+    // === GENERATE STRUCTURED FINANCIAL PLAN ===
     if (type === "generate-plan") {
       const systemPrompt = `You are a friendly, expert AI financial advisor for couples inside LoveList app. Based on the couple's financial assessment, generate a COMPREHENSIVE budget and financial plan.
 
-IMPORTANT: You are NOT a licensed financial advisor. Always recommend consulting a certified financial planner for major decisions. Your advice is educational and general.
-
-The plan should be practical, actionable, and couple-focused. Cover:
-1. 💰 Financial Health Summary — assessment of their current situation
-2. 📊 Recommended Monthly Budget — category-by-category breakdown with suggested amounts/percentages (50/30/20 rule or customized)
-3. 🎯 Financial Goals — short-term (3-6 months), mid-term (1-2 years), long-term (5+ years)
-4. 💳 Debt Strategy — if applicable, payoff plan (avalanche vs snowball method)
-5. 🏦 Emergency Fund Plan — how much to save and timeline
-6. 💕 Couple Money Tips — how to manage finances together, joint vs separate accounts, money date nights
-7. 📈 Investment Ideas — beginner-friendly options based on their goals
-8. 🛒 Smart Saving Tips — practical daily/weekly savings hacks
-9. ⚠️ Financial Red Flags — spending patterns to watch
-
-Use clear markdown, tables for budget breakdowns, and emojis. Be encouraging and realistic.${langSuffix(language)}`;
+IMPORTANT: You are NOT a licensed financial advisor. Always recommend consulting a certified financial planner for major decisions.${langSuffix(language)}`;
 
       const budgetContext = budgetData ? `\n\nExisting budget data: ${JSON.stringify(budgetData)}` : "";
 
@@ -52,7 +39,82 @@ Use clear markdown, tables for budget breakdowns, and emojis. Be encouraging and
             { role: "system", content: systemPrompt },
             { role: "user", content: `Here are the couple's financial assessment answers:\n${JSON.stringify(answers, null, 2)}${budgetContext}\n\nPlease generate a comprehensive, personalized financial plan.` },
           ],
-          stream: true,
+          tools: [{
+            type: "function",
+            function: {
+              name: "create_financial_plan",
+              description: "Create a structured financial plan for a couple",
+              parameters: {
+                type: "object",
+                properties: {
+                  summary: { type: "string", description: "Financial health summary (2-3 sentences)" },
+                  healthScore: { type: "number", description: "Financial health score 1-10" },
+                  budgetBreakdown: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        category: { type: "string" },
+                        percentage: { type: "number" },
+                        amount: { type: "string", description: "Suggested monthly amount" },
+                        icon: { type: "string" },
+                      },
+                      required: ["category", "percentage", "amount", "icon"],
+                      additionalProperties: false,
+                    },
+                  },
+                  goals: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string" },
+                        timeline: { type: "string" },
+                        target: { type: "string" },
+                        icon: { type: "string" },
+                        priority: { type: "string", enum: ["High", "Medium", "Low"] },
+                      },
+                      required: ["title", "timeline", "target", "icon", "priority"],
+                      additionalProperties: false,
+                    },
+                  },
+                  actionItems: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        action: { type: "string" },
+                        icon: { type: "string" },
+                        urgency: { type: "string", enum: ["Now", "This Month", "This Quarter"] },
+                      },
+                      required: ["action", "icon", "urgency"],
+                      additionalProperties: false,
+                    },
+                  },
+                  coupleTips: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        tip: { type: "string" },
+                        icon: { type: "string" },
+                      },
+                      required: ["tip", "icon"],
+                      additionalProperties: false,
+                    },
+                  },
+                  warnings: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Financial red flags or spending patterns to watch",
+                  },
+                },
+                required: ["summary", "healthScore", "budgetBreakdown", "goals", "actionItems", "coupleTips", "warnings"],
+                additionalProperties: false,
+              },
+            },
+          }],
+          tool_choice: { type: "function", function: { name: "create_financial_plan" } },
         }),
       });
 
@@ -63,8 +125,13 @@ Use clear markdown, tables for budget breakdowns, and emojis. Be encouraging and
         throw new Error("AI gateway error");
       }
 
-      return new Response(response.body, {
-        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      const data = await response.json();
+      const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+      if (!toolCall) throw new Error("No tool call in response");
+
+      const plan = JSON.parse(toolCall.function.arguments);
+      return new Response(JSON.stringify({ plan }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 

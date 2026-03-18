@@ -46,14 +46,8 @@ DISCLAIMER: You are not a licensed medical professional. Always recommend consul
       return new Response(response.body, { headers: { ...corsHeaders, "Content-Type": "text/event-stream" } });
     }
 
-    // type === "analyze" — one-shot analysis
-    const prompt = `Analyze this health data and provide:
-1. **Key Trends** — What patterns do you see?
-2. **Health Score** — Rate overall health 1-10 based on data
-3. **Predictions** — What to expect if current trends continue
-4. **Top 3 Recommendations** — Specific, actionable tips
-5. **Partner Insights** — How partners can support each other's health
-
+    // type === "analyze" — structured analysis
+    const prompt = `Analyze this health data and provide structured insights.
 Here is the data (last 30 days):
 ${JSON.stringify(metrics, null, 2)}`;
 
@@ -66,10 +60,78 @@ ${JSON.stringify(metrics, null, 2)}`;
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: "You are a health analytics AI. Provide data-driven insights with markdown formatting. Not a licensed medical professional." },
+          { role: "system", content: "You are a health analytics AI. Provide data-driven insights. Not a licensed medical professional." },
           { role: "user", content: prompt },
         ],
-        stream: true,
+        tools: [{
+          type: "function",
+          function: {
+            name: "create_health_analysis",
+            description: "Create a structured health analysis report",
+            parameters: {
+              type: "object",
+              properties: {
+                healthScore: { type: "number", description: "Overall health score 1-10" },
+                summary: { type: "string", description: "2-3 sentence health summary" },
+                trends: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      metric: { type: "string" },
+                      direction: { type: "string", enum: ["up", "down", "stable"] },
+                      insight: { type: "string" },
+                      icon: { type: "string" },
+                    },
+                    required: ["metric", "direction", "insight", "icon"],
+                    additionalProperties: false,
+                  },
+                },
+                recommendations: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      title: { type: "string" },
+                      description: { type: "string" },
+                      icon: { type: "string" },
+                      priority: { type: "string", enum: ["High", "Medium", "Low"] },
+                    },
+                    required: ["title", "description", "icon", "priority"],
+                    additionalProperties: false,
+                  },
+                },
+                predictions: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      prediction: { type: "string" },
+                      icon: { type: "string" },
+                    },
+                    required: ["prediction", "icon"],
+                    additionalProperties: false,
+                  },
+                },
+                partnerTips: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      tip: { type: "string" },
+                      icon: { type: "string" },
+                    },
+                    required: ["tip", "icon"],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              required: ["healthScore", "summary", "trends", "recommendations", "predictions", "partnerTips"],
+              additionalProperties: false,
+            },
+          },
+        }],
+        tool_choice: { type: "function", function: { name: "create_health_analysis" } },
       }),
     });
 
@@ -80,7 +142,14 @@ ${JSON.stringify(metrics, null, 2)}`;
       throw new Error(`AI gateway error: ${status}`);
     }
 
-    return new Response(response.body, { headers: { ...corsHeaders, "Content-Type": "text/event-stream" } });
+    const data = await response.json();
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    if (!toolCall) throw new Error("No tool call in response");
+
+    const analysis = JSON.parse(toolCall.function.arguments);
+    return new Response(JSON.stringify({ analysis }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (e) {
     console.error("health-analytics error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
