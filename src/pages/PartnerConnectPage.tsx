@@ -175,7 +175,8 @@ export default function PartnerConnectPage() {
       } else {
         const result = data as any;
         if (result?.success) {
-          toast({ title: "Partner removed" });
+          await supabase.from("profiles").update({ app_mode: "single" }).eq("user_id", user.id);
+          toast({ title: "Partner removed", description: "Switched to single mode" });
           setAlreadyPaired(false);
           setPartnerName(null);
           setConfirmRemove(false);
