@@ -13,6 +13,7 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
+  const [appMode, setAppMode] = useState<"single" | "couple">(() => (localStorage.getItem("lovelist-app-mode") as "single" | "couple") || "single");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { t, language, setLanguage } = useLanguage();
