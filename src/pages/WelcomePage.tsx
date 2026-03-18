@@ -74,7 +74,7 @@ export default function WelcomePage({ onComplete }: WelcomePageProps) {
           onClick={handleCreate}
           className="w-full h-14 rounded-2xl bg-card text-foreground font-semibold text-base flex items-center justify-center gap-2.5 shadow-soft mb-4"
         >
-          <Sparkles size={20} />
+          <Zap size={20} />
           Get Started
         </button>
 

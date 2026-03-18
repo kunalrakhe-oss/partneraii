@@ -86,7 +86,7 @@ export default function AuthPage() {
 
         <h1 className="text-2xl font-bold text-foreground text-center mb-1">Welcome to Partner<span className="love-gradient-text">AI</span></h1>
         <p className="text-sm text-muted-foreground text-center mb-6">
-          {mode === "login" ? t("auth.signInToAccount") : mode === "signup" ? t("auth.createAccount") : t("auth.resetPassword")}
+          {mode === "login" ? "Your AI-powered path to a better life" : mode === "signup" ? "Start your journey to being healthier, happier & wealthier" : t("auth.resetPassword")}
         </p>
 
         {/* Me / We Mode Toggle */}
