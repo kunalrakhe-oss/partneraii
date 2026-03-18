@@ -270,7 +270,7 @@ export default function OnboardingFlow() {
   // ─── RENDER ─────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto relative overflow-hidden">
+    <div className="h-[100dvh] bg-background flex flex-col max-w-lg mx-auto relative overflow-hidden">
       <AnimatePresence mode="wait">
         {/* ─── STEP 0: Entry ─── */}
         {step === "entry" && (
