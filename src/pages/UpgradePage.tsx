@@ -93,7 +93,7 @@ export default function UpgradePage() {
                 : "bg-muted text-muted-foreground"
             }`}
           >
-            Monthly
+            {t("upgrade.monthly")}
           </button>
           <button
             onClick={() => setInterval("yearly")}
