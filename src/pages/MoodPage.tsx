@@ -117,6 +117,7 @@ function GatedAiMoodTip(props: { myMood: string | null; partnerMood: string | nu
   }
 
   return <AiMoodTip {...props} />;
+}
 
 export default function MoodPage() {
   const { user } = useAuth();
