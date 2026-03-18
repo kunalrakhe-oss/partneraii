@@ -693,7 +693,7 @@ export default function CalendarPage() {
         {showFabMenu && (
           <motion.div
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-            className="fixed bottom-[5.5rem] right-5 z-50 flex flex-col gap-2 items-end"
+            className="fixed right-5 z-50 flex flex-col gap-2 items-end" style={{ bottom: 'calc(var(--nav-total) + 4.5rem)' }}
           >
             <button
               onClick={() => { setShowFabMenu(false); openAddForm(); }}
