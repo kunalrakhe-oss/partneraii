@@ -184,12 +184,16 @@ export default function MoodPage() {
       const { data, error } = await supabase.from("mood_logs").update({ mood, note: note || null }).eq("id", todayLog.id).select().single();
       if (error) { toast.error("Failed to update mood"); return; }
       setLogs(prev => prev.map(l => l.id === todayLog.id ? data : l));
+      toast.success("Mood updated!");
+      navigate(-1);
     } else {
       const { data, error } = await supabase.from("mood_logs").insert({
         user_id: user.id, partner_pair: partnerPair, mood, note: note || null, log_date: today,
       }).select().single();
       if (error) { toast.error("Failed to log mood"); return; }
       setLogs(prev => [...prev, data]);
+      toast.success("Mood logged!");
+      navigate(-1);
     }
   };
 
