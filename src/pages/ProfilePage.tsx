@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download, Mic, LayoutGrid, GripVertical } from "lucide-react";
+import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download, Mic, LayoutGrid, GripVertical, Crown, CreditCard } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { useNavigate } from "react-router-dom";
