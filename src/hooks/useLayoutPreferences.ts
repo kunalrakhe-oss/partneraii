@@ -65,10 +65,10 @@ export function useLayoutPreferences() {
   const toggleNavTab = useCallback((id: NavTabId) => {
     setNavTabsState(prev => {
       const next = prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id];
-      // Must have at least home + 1 other
       if (next.length < 2) return prev;
       if (!next.includes("home")) return prev;
       localStorage.setItem(NAV_KEY, JSON.stringify(next));
+      dispatchChange();
       return next;
     });
   }, []);
