@@ -508,8 +508,8 @@ export default function HomePage() {
                           <BookHeart size={22} className="text-accent-foreground" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-bold text-foreground">Add a Memory or Note</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">Capture a special moment together 💕</p>
+                           <p className="text-sm font-bold text-foreground">{t("home.addMemoryNote")}</p>
+                           <p className="text-xs text-muted-foreground mt-0.5">{t("home.captureSpecial")}</p>
                         </div>
                         <Plus size={18} className="text-muted-foreground shrink-0" />
                       </div>
