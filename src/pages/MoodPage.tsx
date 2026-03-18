@@ -192,7 +192,8 @@ export default function MoodPage() {
       }).select().single();
       if (error) { toast.error("Failed to log mood"); return; }
       setLogs(prev => [...prev, data]);
-    }
+      toast.success("Mood logged!");
+      navigate(-1);
   };
 
   const updateNote = async () => {
