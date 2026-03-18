@@ -106,7 +106,8 @@ export function useSubscription(): SubscriptionState {
       setSubscribed(true);
       setSubscriptionEnd(null);
       setLoading(false);
-      // Still check Stripe in case they also have a paid sub — but trial grants premium meanwhile
+      // If no valid session, don't attempt Stripe check
+      if (!session?.access_token) return;
     }
 
     if (!session?.access_token) {
@@ -126,8 +127,11 @@ export function useSubscription(): SubscriptionState {
       setSubscriptionEnd(data?.subscription_end || null);
     } catch (e) {
       console.error("Failed to check subscription:", e);
-      setTier("free");
-      setSubscribed(false);
+      // Don't downgrade if trial is active
+      if (!isTrialActive(user?.created_at)) {
+        setTier("free");
+        setSubscribed(false);
+      }
     } finally {
       setLoading(false);
     }
