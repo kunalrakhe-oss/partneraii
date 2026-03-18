@@ -499,7 +499,7 @@ export default function HomePage() {
                 <Plus size={18} className="text-muted-foreground shrink-0" />
               </div>
             </button>
-          </motion.div>
+          </motion.div>}
 
           {/* Quick Links */}
           <motion.div variants={item} className="grid grid-cols-3 gap-3">
