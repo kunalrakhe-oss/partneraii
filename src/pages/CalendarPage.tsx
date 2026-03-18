@@ -232,7 +232,7 @@ function CalendarDietForm({ defaultDate, onClose, onSave, t }: {
             </div>
           )}
 
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Category</label>
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">{t("calendar.category")}</label>
           <div className="grid grid-cols-3 gap-2 mb-4">
             {DIET_CATEGORIES.map(c => (
               <button key={c.key} onClick={() => setCat(c.key)}
