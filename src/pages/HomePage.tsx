@@ -128,7 +128,7 @@ export default function HomePage() {
       .select("id, title, event_date, event_time, category, countdown_type")
       .eq("partner_pair", partnerPair)
       .eq("is_completed", false)
-      .gte("event_date", today)
+      .gt("event_date", today)
       .order("event_date", { ascending: true })
       .order("event_time", { ascending: true })
       .limit(1)
