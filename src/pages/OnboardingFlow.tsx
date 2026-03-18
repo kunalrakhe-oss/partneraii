@@ -117,11 +117,11 @@ export default function OnboardingFlow() {
 
   useEffect(() => {
     const done = localStorage.getItem("lovelist-onboarding-done");
-    if (done === "true") {
+    if (done === "true" && user) {
       navigate("/", { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
 
   const goBack = () => {
     if (step === "slides" && slideIndex > 0) {

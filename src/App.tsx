@@ -52,24 +52,17 @@ function AppRoutes() {
     );
   }
 
-  // Authenticated — if user chose "real" path, exit demo and resume onboarding
-  const onboardIntent = localStorage.getItem("lovelist-onboard-intent");
-  if (onboardIntent === "real") {
-    localStorage.removeItem("lovelist-onboard-intent");
-    localStorage.setItem("lovelist-demo-dismissed", "true");
-    // Don't mark onboarding done — let them finish the setup flow
-    return (
-      <Routes>
-        <Route path="*" element={<Navigate to="/onboarding" replace />} />
-        <Route path="/onboarding" element={<OnboardingFlow />} />
-      </Routes>
-    );
-  }
-
-  // Authenticated — mark onboarding done (user has an account, no need for onboarding)
-  if (localStorage.getItem("lovelist-onboarding-done") !== "true") {
-    localStorage.setItem("lovelist-onboarding-done", "true");
-  }
+  // Authenticated — mark onboarding done (user has an account)
+  useEffect(() => {
+    const onboardIntent = localStorage.getItem("lovelist-onboard-intent");
+    if (onboardIntent === "real") {
+      localStorage.removeItem("lovelist-onboard-intent");
+      localStorage.setItem("lovelist-demo-dismissed", "true");
+    }
+    if (localStorage.getItem("lovelist-onboarding-done") !== "true") {
+      localStorage.setItem("lovelist-onboarding-done", "true");
+    }
+  }, []);
 
   return (
     <Routes>
