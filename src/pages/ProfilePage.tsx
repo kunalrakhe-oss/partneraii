@@ -534,6 +534,7 @@ export default function ProfilePage() {
       title: t("profile.accountSettings"),
       items: [
         { key: "personal-info", icon: User, label: t("profile.personalInfo"), sub: t("profile.namePhone") },
+        { key: "app-mode", icon: Users, label: "App Mode", sub: isSingle ? "Me Mode (Solo)" : "We Mode (Couple)" },
         { key: "notifications", icon: Bell, label: t("profile.notifications"), sub: t("profile.remindersAlerts") },
         // Show partner profile for couple mode, or "Switch to Couple Mode" for singles
         ...(isSingle
