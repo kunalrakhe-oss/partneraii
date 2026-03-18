@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download, Mic, LayoutGrid, GripVertical } from "lucide-react";
+import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download, Mic, LayoutGrid, GripVertical, Crown, CreditCard } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,7 @@ import { getNotificationPrefs, setNotificationPrefs, playNotificationSound } fro
 import { useFullscreen } from "@/hooks/useFullscreen";
 import { useWakeWord } from "@/hooks/useWakeWord";
 import { useLayoutPreferences, ALL_NAV_TABS, ALL_HOME_WIDGETS, type NavTabId, type HomeWidgetId } from "@/hooks/useLayoutPreferences";
+import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 
 type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | "customize" | null;
 
@@ -255,6 +256,7 @@ function CustomizeLayoutSheet({ open, onClose }: { open: boolean; onClose: () =>
 }
 
 export default function ProfilePage() {
+  const { tier, subscribed } = useSubscriptionContext();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const { canInstall, isInstalled, isIOS, promptInstall } = usePWAInstall();
@@ -439,10 +441,29 @@ export default function ProfilePage() {
       case "Customize Layout":
         setActiveSheet("customize");
         break;
+      case "Subscription & Billing":
+        if (subscribed) {
+          // Open customer portal
+          (async () => {
+            try {
+              const { data, error } = await supabase.functions.invoke("customer-portal");
+              if (error) throw error;
+              if (data?.url) window.open(data.url, "_blank");
+            } catch (e: any) {
+              toast({ title: "Error", description: e.message, variant: "destructive" });
+            }
+          })();
+        } else {
+          navigate("/upgrade");
+        }
+        break;
       default:
         toast({ title: "Coming soon", description: `${label} will be available in a future update` });
     }
   };
+
+  const tierLabel = tier === "premium" ? "Premium" : tier === "pro" ? "Pro" : "Free";
+  const tierSub = subscribed ? `${tierLabel} plan active` : "Free plan — upgrade anytime";
 
   const settingsSections = [
     {
@@ -452,6 +473,12 @@ export default function ProfilePage() {
         { icon: Bell, label: "Notifications", sub: "Reminders & Alerts" },
         { icon: Heart, label: "Partner Profile", sub: partnerName ? `Connected to ${partnerName}` : "Invite your partner" },
         ...(partnerId ? [{ icon: UserMinus, label: "Remove Partner", sub: `Disconnect from ${partnerName || "partner"}` }] : []),
+      ],
+    },
+    {
+      title: "Subscription",
+      items: [
+        { icon: Crown, label: "Subscription & Billing", sub: tierSub },
       ],
     },
     {

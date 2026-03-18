@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { DemoProvider } from "@/contexts/DemoContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import AppLayout from "@/components/AppLayout";
 import HomePage from "@/pages/HomePage";
 import CalendarPage from "@/pages/CalendarPage";
@@ -24,8 +25,10 @@ import AuthPage from "@/pages/AuthPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NotFound from "@/pages/NotFound";
 import OnboardingFlow from "@/pages/OnboardingFlow";
+import UpgradePage from "@/pages/UpgradePage";
 import InstallPrompt from "@/components/InstallPrompt";
 import FullscreenPrompt from "@/components/FullscreenPrompt";
+import FeatureGate from "@/components/FeatureGate";
 import FullscreenExitButton from "@/components/FullscreenExitButton";
 
 const queryClient = new QueryClient();
@@ -81,9 +84,10 @@ function AppRoutes() {
         <Route path="/chores" element={<ChoresPage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/memories" element={<MemoriesPage />} />
-        <Route path="/workout" element={<WorkoutPage />} />
-        <Route path="/diet" element={<DietPage />} />
+        <Route path="/memories" element={<FeatureGate feature="memories" featureName="Memories"><MemoriesPage /></FeatureGate>} />
+        <Route path="/workout" element={<FeatureGate feature="workout" featureName="Workout Tracking"><WorkoutPage /></FeatureGate>} />
+        <Route path="/diet" element={<FeatureGate feature="diet" featureName="Diet Tracking"><DietPage /></FeatureGate>} />
+        <Route path="/upgrade" element={<UpgradePage />} />
       </Route>
       {/* Authenticated users always redirect away from auth/onboarding */}
       <Route path="/auth" element={<Navigate to="/" replace />} />
@@ -98,6 +102,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <AuthProvider>
+        <SubscriptionProvider>
         <DemoProvider>
           <TooltipProvider>
             <Toaster />
@@ -110,6 +115,7 @@ const App = () => (
             </BrowserRouter>
           </TooltipProvider>
         </DemoProvider>
+        </SubscriptionProvider>
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
