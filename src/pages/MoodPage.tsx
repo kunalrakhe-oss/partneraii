@@ -272,10 +272,10 @@ export default function MoodPage() {
           </div>
         ))}
 
-        <p className="text-sm font-semibold text-foreground mb-2">Add a note (optional)</p>
-        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="What's on your mind?" rows={2}
+        <p className="text-sm font-semibold text-foreground mb-2">{t("mood.addNote")}</p>
+        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder={t("mood.whatsOnMind")} rows={2}
           className="w-full px-4 py-3 rounded-2xl bg-card shadow-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none border border-border mb-3" />
-        <button onClick={updateNote} className="w-full h-11 rounded-btn love-gradient text-primary-foreground font-semibold text-sm shadow-soft mb-6">Update My Mood</button>
+        <button onClick={updateNote} className="w-full h-11 rounded-btn love-gradient text-primary-foreground font-semibold text-sm shadow-soft mb-6">{t("mood.updateMood")}</button>
 
         {/* Partner's Status with Reaction */}
         <div className="flex items-center gap-2 mb-3">
