@@ -555,7 +555,7 @@ export default function ProfilePage() {
         { key: "language", icon: Globe, label: t("profile.language"), sub: localStorage.getItem("lovelist-language") === "hi" ? "हिन्दी" : "English" },
         ...(voiceSupported ? [{ key: "voice-assistant", icon: Mic, label: t("profile.voiceAssistant"), sub: voiceEnabled ? t("profile.heyLoveActive") : t("profile.sayHeyLove") }] : []),
         ...(fullscreenSupported ? [{ key: "fullscreen", icon: Maximize, label: t("profile.fullscreenMode"), sub: isFullscreen ? t("profile.currentlyFullscreen") : t("profile.hideBrowserBar"), toggle: true, toggleKey: "fullscreen" as const }] : []),
-        ...(!isInstalled ? [{ key: "install-app", icon: Download, label: t("profile.installApp"), sub: isIOS ? t("profile.addToHomeScreen") : t("profile.nativeExperience"), toggle: true, toggleKey: "install" as const }] : []),
+        
         { key: "privacy", icon: Lock, label: t("profile.privacySecurity") },
         { key: "help", icon: HelpCircle, label: t("profile.helpSupport") },
       ],
