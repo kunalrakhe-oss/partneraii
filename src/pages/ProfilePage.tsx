@@ -688,7 +688,7 @@ export default function ProfilePage() {
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Birthday</label>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("profile.birthdayLabel")}</label>
             <input
               type="date" value={editBirthday} onChange={e => setEditBirthday(e.target.value)}
               className="w-full bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
