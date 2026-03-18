@@ -579,7 +579,7 @@ export default function HomePage() {
                           <p className="text-xs text-muted-foreground leading-relaxed">{aiMoodCheckin || "Loading…"}</p>
                         )}
                         <button onClick={() => navigate("/chat?tab=ai")} className="text-xs font-semibold text-primary mt-2 flex items-center gap-1">
-                          Chat with AI →
+                          {t("home.chatWithAi")}
                         </button>
                       </div>
                     </motion.div>
