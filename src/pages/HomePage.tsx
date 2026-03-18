@@ -524,36 +524,36 @@ export default function HomePage() {
                       <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
                         <ShoppingCart size={18} className="text-foreground" />
                       </div>
-                      <p className="text-sm font-bold text-foreground">Groceries</p>
-                      <p className="text-xs text-muted-foreground">{uncheckedGroceries} items</p>
-                    </Link>
-                    <Link to="/chat" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                        <MessageSquare size={18} className="text-primary" />
-                      </div>
-                      <p className="text-sm font-bold text-foreground">Chat</p>
-                      <p className="text-xs text-muted-foreground">{messageCount} msgs</p>
-                    </Link>
-                    <Link to="/memories" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
-                        <Camera size={18} className="text-accent-foreground" />
-                      </div>
-                      <p className="text-sm font-bold text-foreground">Memories</p>
-                      <p className="text-xs text-muted-foreground">Timeline</p>
-                    </Link>
-                    <Link to="/workout" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-destructive/15 flex items-center justify-center">
-                        <Dumbbell size={18} className="text-destructive" />
-                      </div>
-                      <p className="text-sm font-bold text-foreground">Workout</p>
-                      <p className="text-xs text-muted-foreground">Stay fit</p>
-                    </Link>
-                    <Link to="/diet" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-secondary/15 flex items-center justify-center">
-                        <Apple size={18} className="text-secondary" />
-                      </div>
-                      <p className="text-sm font-bold text-foreground">Diet</p>
-                      <p className="text-xs text-muted-foreground">Eat well</p>
+                       <p className="text-sm font-bold text-foreground">{t("home.groceries")}</p>
+                       <p className="text-xs text-muted-foreground">{uncheckedGroceries} {t("common.items")}</p>
+                     </Link>
+                     <Link to="/chat" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                       <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+                         <MessageSquare size={18} className="text-primary" />
+                       </div>
+                       <p className="text-sm font-bold text-foreground">{t("nav.chat")}</p>
+                       <p className="text-xs text-muted-foreground">{messageCount} {t("common.msgs")}</p>
+                     </Link>
+                     <Link to="/memories" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                       <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center">
+                         <Camera size={18} className="text-accent-foreground" />
+                       </div>
+                       <p className="text-sm font-bold text-foreground">{t("home.memories")}</p>
+                       <p className="text-xs text-muted-foreground">{t("home.timeline")}</p>
+                     </Link>
+                     <Link to="/workout" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                       <div className="w-10 h-10 rounded-xl bg-destructive/15 flex items-center justify-center">
+                         <Dumbbell size={18} className="text-destructive" />
+                       </div>
+                       <p className="text-sm font-bold text-foreground">{t("home.workout")}</p>
+                       <p className="text-xs text-muted-foreground">{t("home.stayFit")}</p>
+                     </Link>
+                     <Link to="/diet" className="bg-card rounded-2xl p-4 shadow-card flex flex-col gap-2">
+                       <div className="w-10 h-10 rounded-xl bg-secondary/15 flex items-center justify-center">
+                         <Apple size={18} className="text-secondary" />
+                       </div>
+                       <p className="text-sm font-bold text-foreground">{t("home.diet")}</p>
+                       <p className="text-xs text-muted-foreground">{t("home.eatWell")}</p>
                     </Link>
                   </motion.div>
                 );
