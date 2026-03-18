@@ -298,6 +298,54 @@ export type Database = {
         }
         Relationships: []
       }
+      health_metrics: {
+        Row: {
+          calories_burned: number | null
+          created_at: string
+          heart_rate: number | null
+          id: string
+          metric_date: string
+          notes: string | null
+          partner_pair: string
+          sleep_hours: number | null
+          steps: number | null
+          updated_at: string
+          user_id: string
+          water_glasses: number | null
+          weight: number | null
+        }
+        Insert: {
+          calories_burned?: number | null
+          created_at?: string
+          heart_rate?: number | null
+          id?: string
+          metric_date?: string
+          notes?: string | null
+          partner_pair: string
+          sleep_hours?: number | null
+          steps?: number | null
+          updated_at?: string
+          user_id: string
+          water_glasses?: number | null
+          weight?: number | null
+        }
+        Update: {
+          calories_burned?: number | null
+          created_at?: string
+          heart_rate?: number | null
+          id?: string
+          metric_date?: string
+          notes?: string | null
+          partner_pair?: string
+          sleep_hours?: number | null
+          steps?: number | null
+          updated_at?: string
+          user_id?: string
+          water_glasses?: number | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
       location_shares: {
         Row: {
           accuracy: number | null
