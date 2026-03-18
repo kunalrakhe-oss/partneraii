@@ -466,6 +466,9 @@ export default function ProfilePage() {
           navigate("/connect");
         });
         break;
+      case "app-mode":
+        setActiveSheet("app-mode");
+        break;
       case "theme":
         setActiveSheet("theme");
         break;
