@@ -201,8 +201,8 @@ export default function UpgradePage() {
                 <Crown size={20} className="text-primary-foreground" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-foreground">Premium</h3>
-                <p className="text-xs text-muted-foreground">The ultimate experience</p>
+                <h3 className="text-sm font-bold text-foreground">{t("upgrade.premium")}</h3>
+                <p className="text-xs text-muted-foreground">{t("upgrade.ultimateExperience")}</p>
               </div>
               {tier === "premium" && (
                 <span className="ml-auto text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-full">Current Plan</span>
