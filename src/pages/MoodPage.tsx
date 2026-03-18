@@ -290,9 +290,9 @@ export default function MoodPage() {
             </div>
             <div>
               <p className="text-sm font-bold text-foreground">
-                {partnerName} is feeling {partnerLog ? (MOOD_EMOJI_MAP[partnerLog.mood] || "") + " " + partnerLog.mood.charAt(0).toUpperCase() + partnerLog.mood.slice(1) : "—"}
+                {partnerName} {t("mood.isFeeling")} {partnerLog ? (MOOD_EMOJI_MAP[partnerLog.mood] || "") + " " + partnerLog.mood.charAt(0).toUpperCase() + partnerLog.mood.slice(1) : "—"}
               </p>
-              <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{partnerLog?.note || "No mood logged yet today"}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">{partnerLog?.note || t("mood.noMoodLoggedYet")}</p>
             </div>
           </div>
 
