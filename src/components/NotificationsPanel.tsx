@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, X, Check, MessageCircle, Heart, Calendar, Trash2 } from "lucide-react";
+import { Bell, X, Check, MessageCircle, Heart, Calendar, Trash2, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,6 +20,7 @@ const typeIcons: Record<string, typeof Heart> = {
   mood: Heart,
   chat: MessageCircle,
   calendar: Calendar,
+  overdue: Clock,
 };
 
 export function useNotificationCount() {
@@ -173,10 +174,10 @@ export default function NotificationsPanel({ open, onClose }: { open: boolean; o
                       }`}
                     >
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                        notif.type === "mood" ? "bg-secondary/15" : notif.type === "chat" ? "bg-primary/15" : "bg-muted"
+                        notif.type === "mood" ? "bg-secondary/15" : notif.type === "chat" ? "bg-primary/15" : notif.type === "overdue" ? "bg-destructive/15" : "bg-muted"
                       }`}>
                         <Icon size={16} className={
-                          notif.type === "mood" ? "text-secondary" : notif.type === "chat" ? "text-primary" : "text-muted-foreground"
+                          notif.type === "mood" ? "text-secondary" : notif.type === "chat" ? "text-primary" : notif.type === "overdue" ? "text-destructive" : "text-muted-foreground"
                         } />
                       </div>
                       <div className="flex-1 min-w-0">
