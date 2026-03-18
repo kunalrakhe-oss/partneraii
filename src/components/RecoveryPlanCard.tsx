@@ -61,6 +61,16 @@ export default function RecoveryPlanCard({ exercise, accentColor = "emerald", on
         onClick={() => setExpanded(!expanded)}
         className="w-full text-left px-4 py-3 flex items-start gap-3"
       >
+        {completable && (
+          <div
+            onClick={(e) => { e.stopPropagation(); onToggleComplete?.(exercise.name); }}
+            className={`w-5 h-5 mt-0.5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
+              completed ? "bg-primary border-transparent" : "border-border"
+            }`}
+          >
+            {completed && <span className="text-primary-foreground text-xs">✓</span>}
+          </div>
+        )}
         <span className="text-xl mt-0.5">{exercise.icon || "🏋️"}</span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground">{exercise.name}</p>
