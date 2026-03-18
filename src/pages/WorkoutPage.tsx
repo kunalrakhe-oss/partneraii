@@ -348,6 +348,7 @@ export default function WorkoutPage() {
         body: {
           type: "generate-plan",
           context: { focus, level: "intermediate", duration: 45 },
+          language: localStorage.getItem("lovelist-language") || "en",
         },
       });
       if (error) throw error;

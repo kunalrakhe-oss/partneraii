@@ -96,6 +96,7 @@ export default function VoiceAssistant() {
         },
         body: JSON.stringify({
           messages: [{ role: "user", content: text }],
+          language: localStorage.getItem("lovelist-language") || "en",
         }),
       });
 
