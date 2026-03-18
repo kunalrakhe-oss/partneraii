@@ -22,6 +22,7 @@ export default function AppLayout() {
       <PartnerNotifications />
       <PostAuthInstallPrompt />
       <VoiceAssistant />
+      <CompletedTasksCleanup />
       <main className="flex-1 overflow-y-auto pb-nav">
         <Outlet />
       </main>
