@@ -184,7 +184,7 @@ export default function MemoriesPage() {
     } else {
       toast({ title: "Memory saved! ✨", description: "Your moment has been captured." });
       resetForm();
-      // Don't close modal - let user add another or close manually
+      setShowAdd(false);
       fetchMemories();
     }
     setSubmitting(false);
