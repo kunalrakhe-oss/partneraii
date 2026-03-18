@@ -225,9 +225,9 @@ export default function HomePage() {
 
   const greeting = (() => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
+    if (hour < 12) return t("greeting.morning");
+    if (hour < 17) return t("greeting.afternoon");
+    return t("greeting.evening");
   })();
 
   const toggleChore = async (id: string) => {
