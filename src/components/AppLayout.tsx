@@ -20,6 +20,7 @@ export default function AppLayout() {
       <DemoBanner />
       <PartnerNotifications />
       <PostAuthInstallPrompt />
+      <VoiceAssistant />
       <main className="flex-1 overflow-y-auto pb-nav">
         <Outlet />
       </main>

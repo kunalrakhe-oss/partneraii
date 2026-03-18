@@ -12,6 +12,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Monitor, Volume2, Vibrate, Maximize } from "lucide-react";
 import { getNotificationPrefs, setNotificationPrefs, playNotificationSound } from "@/lib/notificationSound";
 import { useFullscreen } from "@/hooks/useFullscreen";
+import { useWakeWord } from "@/hooks/useWakeWord";
 
 type SheetType = "personal" | "notifications" | "theme" | "remove-partner" | null;
 
