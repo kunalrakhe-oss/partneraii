@@ -245,7 +245,7 @@ function CalendarDietForm({ defaultDate, onClose, onSave, t }: {
             ))}
           </div>
 
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Assigned To</label>
+          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">{t("calendar.assignedTo")}</label>
           <div className="grid grid-cols-3 gap-2 mb-4">
             {DIET_ASSIGN.map(a => (
               <button key={a.value} onClick={() => setAssignedTo(a.value)}
