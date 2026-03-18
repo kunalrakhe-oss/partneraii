@@ -793,7 +793,7 @@ export default function HomePage() {
                   <input
                     value={reactionMessage}
                     onChange={e => setReactionMessage(e.target.value)}
-                    placeholder="Add a personal message..."
+                    placeholder={t("mood.addMessage")}
                     className="w-full bg-muted rounded-xl px-4 h-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
