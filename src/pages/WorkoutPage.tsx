@@ -744,7 +744,7 @@ export default function WorkoutPage() {
 
         {/* ── Bottom Action Button ────────────────────────────────────────── */}
         {plan && !showChat && (
-          <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-3 bg-gradient-to-t from-background via-background to-transparent safe-bottom">
+          <div className="absolute bottom-0 left-0 right-0 px-5 pb-[calc(var(--nav-h)+1rem)] pt-3 bg-gradient-to-t from-background via-background to-transparent">
             {!workoutStarted ? (
               <button onClick={() => setWorkoutStarted(true)}
                 className="w-full h-14 rounded-2xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 shadow-elevated active:scale-[0.98] transition-transform">
