@@ -58,6 +58,7 @@ export default function AppLayout() {
     };
   }, []);
 
+  const isSingle = appMode === "single";
   const tabs = visibleTabs.map(id => tabMeta[id]).filter(Boolean);
 
   return (
