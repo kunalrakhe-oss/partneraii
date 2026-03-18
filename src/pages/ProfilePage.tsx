@@ -424,7 +424,7 @@ export default function ProfilePage() {
 
   const [removingPartner, setRemovingPartner] = useState(false);
   const handleRemovePartner = async () => {
-    if (!partnerId) return;
+    if (!partnerId || !user) return;
     setRemovingPartner(true);
     const { data, error } = await supabase.rpc("remove_partner", { partner_profile_id: partnerId });
     if (error) {
@@ -432,7 +432,8 @@ export default function ProfilePage() {
     } else {
       const result = data as any;
       if (result?.success) {
-        toast({ title: "Partner removed" });
+        await supabase.from("profiles").update({ app_mode: "single" }).eq("user_id", user.id);
+        toast({ title: "Partner removed", description: "Switched to single mode" });
         setPartnerName(null);
         setPartnerId(null);
         setActiveSheet(null);
