@@ -144,7 +144,81 @@ function NotificationSettingsContent() {
   );
 }
 
-export default function ProfilePage() {
+function CustomizeLayoutSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { navTabs, homeWidgets, toggleNavTab, toggleHomeWidget, resetDefaults } = useLayoutPreferences();
+
+  return (
+    <BottomSheet open={open} onClose={onClose} title="Customize Layout">
+      <div className="space-y-5">
+        {/* Nav Bar Tabs */}
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground mb-2">Navigation Bar</p>
+          <p className="text-[10px] text-muted-foreground mb-3">Choose which tabs appear in your bottom nav (Home is always shown)</p>
+          <div className="space-y-1.5">
+            {ALL_NAV_TABS.map(tab => {
+              const isActive = navTabs.includes(tab.id);
+              const isHome = tab.id === "home";
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => !isHome && toggleNavTab(tab.id)}
+                  disabled={isHome}
+                  className={`w-full flex items-center justify-between bg-muted rounded-xl px-4 py-3 border transition-colors ${
+                    isActive ? "border-primary" : "border-border"
+                  } ${isHome ? "opacity-60" : ""}`}
+                >
+                  <p className="text-sm font-medium text-foreground">{tab.label}</p>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                    isActive ? "bg-primary" : "bg-border"
+                  }`}>
+                    {isActive && <Check size={12} className="text-primary-foreground" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Home Screen Widgets */}
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground mb-2">Home Screen Widgets</p>
+          <p className="text-[10px] text-muted-foreground mb-3">Toggle which sections appear on your home page</p>
+          <div className="space-y-1.5">
+            {ALL_HOME_WIDGETS.map(widget => {
+              const isActive = homeWidgets.includes(widget.id);
+              return (
+                <button
+                  key={widget.id}
+                  onClick={() => toggleHomeWidget(widget.id)}
+                  className={`w-full flex items-center justify-between bg-muted rounded-xl px-4 py-3 border transition-colors ${
+                    isActive ? "border-primary" : "border-border"
+                  }`}
+                >
+                  <p className="text-sm font-medium text-foreground">{widget.label}</p>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                    isActive ? "bg-primary" : "bg-border"
+                  }`}>
+                    {isActive && <Check size={12} className="text-primary-foreground" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Reset */}
+        <button
+          onClick={resetDefaults}
+          className="w-full text-center text-xs font-medium text-muted-foreground py-2"
+        >
+          Reset to defaults
+        </button>
+      </div>
+    </BottomSheet>
+  );
+}
+
+
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const { canInstall, isInstalled, isIOS, promptInstall } = usePWAInstall();
