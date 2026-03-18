@@ -379,9 +379,9 @@ export default function OnboardingFlow() {
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-                className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-6 shadow-elevated"
+                className="w-20 h-20 rounded-full overflow-hidden mb-6 shadow-elevated"
               >
-                <Heart size={36} className="text-primary-foreground" fill="currentColor" />
+                <img src={partneraiIcon} alt="PartnerAI" className="w-full h-full object-contain" />
               </motion.div>
 
               <motion.h1
