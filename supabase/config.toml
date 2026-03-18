@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.postpartum-chat]
 verify_jwt = false
+
+[functions.finance-chat]
+verify_jwt = false
