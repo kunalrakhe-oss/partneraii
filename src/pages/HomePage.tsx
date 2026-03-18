@@ -532,6 +532,7 @@ export default function HomePage() {
                 ) : null;
 
               case "partner-mood":
+                if (isSingle) return null; // Hide partner mood for single users
                 return (
                   <motion.div key="partner-mood" variants={item}>
                     <p className="text-sm font-semibold text-foreground mb-2">{t("home.partnerMood")}</p>
