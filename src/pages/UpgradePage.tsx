@@ -44,6 +44,7 @@ export default function UpgradePage() {
   const navigate = useNavigate();
   const { tier, loading: subLoading } = useSubscriptionContext();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [checkingOut, setCheckingOut] = useState<string | null>(null);
 
