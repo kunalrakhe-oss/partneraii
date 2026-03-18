@@ -298,7 +298,7 @@ export default function MoodPage() {
 
           {partnerLog && (
             <>
-              <p className="text-xs text-muted-foreground mb-2">React to their mood</p>
+              <p className="text-xs text-muted-foreground mb-2">{t("mood.reactToMood")}</p>
               <div className="flex gap-2 mb-3">
                 {["❤️", "🤗", "💪", "😘", "🥺", "🔥"].map(emoji => (
                   <button key={emoji} onClick={() => setMoodReaction(prev => prev === emoji ? "" : emoji)}
