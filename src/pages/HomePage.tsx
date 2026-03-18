@@ -344,8 +344,8 @@ export default function HomePage() {
 
 
 
-          {/* ❤️ Make it Real - Getting Started */}
-          {isDemoMode && (
+          {/* ❤️ Make it Real - Getting Started (couple mode demo) */}
+          {isDemoMode && !isSingle && (
             <motion.div variants={item}>
               <div className="bg-gradient-to-br from-primary/10 via-secondary/5 to-primary/10 rounded-2xl p-5 border border-primary/20 shadow-soft">
                 <div className="flex items-center gap-2 mb-1">
