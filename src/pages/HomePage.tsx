@@ -371,7 +371,7 @@ export default function HomePage() {
                     <Link to="/calendar" className="block love-gradient rounded-2xl p-4 shadow-elevated relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-primary-foreground/10 rounded-full -translate-y-8 translate-x-8" />
                       <div className="flex items-center justify-between mb-1">
-                        <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">Next Up</p>
+                        <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">{t("home.nextUp")}</p>
                         {getCountdownBadge(nextEvent) && (
                           <span className="text-[10px] font-bold bg-primary-foreground/20 text-primary-foreground px-2 py-0.5 rounded-full">
                             {getCountdownBadge(nextEvent)}
