@@ -215,6 +215,20 @@ export default function ChoresPage() {
     if (!userId || !partnerPair) return;
     const title = newTitle.trim();
     if (!title) return;
+
+    // Free tier: cap at 5 active chores
+    if (!canAccess("unlimited-chores")) {
+      const { count } = await supabase
+        .from("chores")
+        .select("id", { count: "exact", head: true })
+        .eq("partner_pair", partnerPair)
+        .eq("is_completed", false);
+      if ((count ?? 0) >= 5) {
+        toast({ title: "Free plan limit reached", description: "Upgrade to Pro for unlimited chores!", variant: "destructive" });
+        return;
+      }
+    }
+
     setSubmitting(true);
 
     let assignedTo: string | null = null;
