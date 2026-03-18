@@ -71,7 +71,6 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/onboarding" element={<OnboardingFlow />} />
       <Route element={<AppLayout />}>
         <Route path="/connect" element={<PartnerConnectPage />} />
         <Route path="/couple" element={<CoupleProfilePage />} />
@@ -86,7 +85,9 @@ function AppRoutes() {
         <Route path="/workout" element={<WorkoutPage />} />
         <Route path="/diet" element={<DietPage />} />
       </Route>
+      {/* Authenticated users always redirect away from auth/onboarding */}
       <Route path="/auth" element={<Navigate to="/" replace />} />
+      <Route path="/onboarding" element={<Navigate to="/" replace />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
