@@ -92,6 +92,7 @@ export default function OnboardingFlow() {
   const { user } = useAuth();
   const { exitDemo } = useDemo();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const [step, setStep] = useState<Step>(() => {
     if (user && localStorage.getItem("lovelist-demo-dismissed") === "true" && localStorage.getItem("lovelist-onboarding-done") !== "true") {
