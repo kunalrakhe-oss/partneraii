@@ -56,9 +56,6 @@ function AppRoutes() {
       localStorage.removeItem("lovelist-onboard-intent");
       localStorage.setItem("lovelist-demo-dismissed", "true");
     }
-    if (localStorage.getItem("lovelist-onboarding-done") !== "true") {
-      localStorage.setItem("lovelist-onboarding-done", "true");
-    }
   }, [user]);
 
   // Check if newly authenticated user needs setup
@@ -69,20 +66,18 @@ function AppRoutes() {
       setNeedsSetup(false);
       return;
     }
-    // Check profile for explicit mode choice
+    // Check profile — trigger auto-creates a row, so check if display_name was explicitly set
     const checkProfile = async () => {
       const { data } = await supabase
         .from("profiles")
         .select("app_mode, display_name")
         .eq("user_id", user.id)
         .single();
-      // Default app_mode is 'couple' from DB. If user has a display_name that
-      // differs from email prefix, they likely completed setup before.
-      // We check a localStorage flag to be safe.
-      if (!data) {
+      if (!data || !data.display_name) {
+        // No profile or no display name means setup not completed
         setNeedsSetup(true);
       } else {
-        // Mark as done so we don't check again
+        // Has display_name → user completed setup before
         localStorage.setItem("lovelist-setup-done", "true");
         setNeedsSetup(false);
       }
@@ -98,17 +93,14 @@ function AppRoutes() {
     );
   }
 
-  // Not authenticated — show auth pages only
-  const onboardingDone = localStorage.getItem("lovelist-onboarding-done") === "true";
-  const defaultRoute = onboardingDone ? "/auth" : "/onboarding";
-
+  // Not authenticated — always show onboarding first, with /auth available
   if (!user) {
     return (
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/onboarding" element={<OnboardingFlow />} />
-        <Route path="*" element={<Navigate to={defaultRoute} replace />} />
+        <Route path="*" element={<Navigate to="/onboarding" replace />} />
       </Routes>
     );
   }
