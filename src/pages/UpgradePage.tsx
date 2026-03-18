@@ -95,6 +95,23 @@ export default function UpgradePage() {
           <div className="w-9" />
         </div>
 
+        {/* Trial Banner */}
+        {trialActive && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 p-4 rounded-2xl border border-accent bg-accent/10 flex items-center gap-3"
+          >
+            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center shrink-0">
+              <Gift size={20} className="text-accent-foreground" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-foreground">🎉 Free Premium Trial Active</p>
+              <p className="text-xs text-muted-foreground">{trialDaysLeft} day{trialDaysLeft !== 1 ? "s" : ""} remaining — enjoy all features!</p>
+            </div>
+          </motion.div>
+        )}
+
         {/* Billing Toggle */}
         <div className="flex items-center justify-center gap-1 mb-6">
           <button
