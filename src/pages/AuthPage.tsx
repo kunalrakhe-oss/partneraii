@@ -84,7 +84,7 @@ export default function AuthPage() {
           <img src={onboardingHero} alt="Couple" className="w-full h-full object-cover" />
         </motion.div>
 
-        <h1 className="text-2xl font-bold text-foreground text-center mb-1">{t("auth.welcomeTo")}</h1>
+        <h1 className="text-2xl font-bold text-foreground text-center mb-1">Welcome to Partner<span className="love-gradient-text">AI</span></h1>
         <p className="text-sm text-muted-foreground text-center mb-6">
           {mode === "login" ? t("auth.signInToAccount") : mode === "signup" ? t("auth.createAccount") : t("auth.resetPassword")}
         </p>
