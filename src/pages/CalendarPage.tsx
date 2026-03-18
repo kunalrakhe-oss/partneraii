@@ -737,7 +737,7 @@ export default function CalendarPage() {
 
         {/* Diet Form Bottom Sheet */}
         <AnimatePresence>
-          {showDietForm && <CalendarDietForm
+          {showDietForm && <CalendarDietForm t={t}
             defaultDate={format(selectedDate, "yyyy-MM-dd")}
             onClose={() => setShowDietForm(false)}
             onSave={async (data) => {
