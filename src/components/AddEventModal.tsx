@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
+import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { toast } from "sonner";
 import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 
