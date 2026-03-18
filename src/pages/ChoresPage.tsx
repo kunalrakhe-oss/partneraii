@@ -1015,6 +1015,95 @@ export default function ChoresPage() {
                     </div>
                   </div>
 
+                  {/* Link List Items */}
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => { setShowListPicker(!showListPicker); if (!showListPicker) fetchListItems(); }}
+                      className="w-full px-4 py-3 flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
+                          <Link2 size={16} className="text-primary" />
+                        </div>
+                        <span className="text-sm text-foreground font-medium">Link List Items</span>
+                      </div>
+                      <span className="text-sm text-primary font-medium">
+                        {selectedLinkedItems.length > 0 ? `${selectedLinkedItems.length} selected` : "None"}
+                      </span>
+                    </button>
+
+                    <AnimatePresence>
+                      {showListPicker && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          {/* Filter tabs */}
+                          <div className="flex gap-1.5 px-4 py-2 overflow-x-auto no-scrollbar">
+                            <button
+                              onClick={() => setListPickerFilter("all")}
+                              className={`px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all ${
+                                listPickerFilter === "all" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                              }`}
+                            >All</button>
+                            {Object.entries(LIST_TYPE_LABELS).map(([key, { label, emoji }]) => (
+                              <button
+                                key={key}
+                                onClick={() => setListPickerFilter(key)}
+                                className={`px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap transition-all ${
+                                  listPickerFilter === key ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                                }`}
+                              >{emoji} {label}</button>
+                            ))}
+                          </div>
+
+                          {/* Item list */}
+                          <div className="max-h-48 overflow-y-auto px-4 pb-3 space-y-1">
+                            {allListItems
+                              .filter(item => listPickerFilter === "all" || item.list_type === listPickerFilter)
+                              .map(item => {
+                                const isSelected = selectedLinkedItems.includes(item.id);
+                                const typeInfo = LIST_TYPE_LABELS[item.list_type] || { label: item.list_type, emoji: "📦" };
+                                return (
+                                  <button
+                                    key={item.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedLinkedItems(prev =>
+                                        isSelected ? prev.filter(id => id !== item.id) : [...prev, item.id]
+                                      );
+                                    }}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all ${
+                                      isSelected ? "bg-primary/10 border border-primary/20" : "hover:bg-muted/50"
+                                    }`}
+                                  >
+                                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${
+                                      isSelected ? "border-primary bg-primary" : "border-border"
+                                    }`}>
+                                      {isSelected && <Check size={12} className="text-primary-foreground" />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm text-foreground truncate">{item.name}</p>
+                                    </div>
+                                    <span className="text-[10px] text-muted-foreground font-medium shrink-0">
+                                      {typeInfo.emoji} {typeInfo.label}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            {allListItems.filter(item => listPickerFilter === "all" || item.list_type === listPickerFilter).length === 0 && (
+                              <p className="text-xs text-muted-foreground text-center py-4">No items found</p>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
                   {/* Photo attachment */}
                   <div className="bg-card rounded-2xl border border-border overflow-hidden p-4">
                     <p className="text-xs font-semibold text-muted-foreground mb-2">Photo (optional)</p>
