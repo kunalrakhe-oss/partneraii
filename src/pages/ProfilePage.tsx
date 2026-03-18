@@ -677,14 +677,14 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Gender</label>
-            <div className="flex gap-2">
-              {["Male", "Female", "Non-binary", "Other"].map(g => (
-                <button key={g} onClick={() => setEditGender(g.toLowerCase())}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-medium border transition-all ${editGender === g.toLowerCase() ? "bg-primary text-primary-foreground border-primary" : "bg-muted border-border text-foreground"}`}>
-                  {g}
-                </button>
-              ))}
+             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{t("profile.gender")}</label>
+             <div className="flex gap-2">
+               {([["male", t("profile.male")], ["female", t("profile.female")], ["non-binary", t("profile.nonBinary")], ["other", t("profile.other")]] as const).map(([val, label]) => (
+                 <button key={val} onClick={() => setEditGender(val)}
+                   className={`flex-1 py-2.5 rounded-xl text-xs font-medium border transition-all ${editGender === val ? "bg-primary text-primary-foreground border-primary" : "bg-muted border-border text-foreground"}`}>
+                   {label}
+                 </button>
+               ))}
             </div>
           </div>
           <div>
