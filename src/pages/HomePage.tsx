@@ -299,7 +299,7 @@ export default function HomePage() {
 
   return (
     <PageTransition>
-      <div className="px-5 pt-10 pb-6">
+      <div className="pb-6">
         <motion.div variants={container} initial="hidden" animate="show" className="space-y-5">
           {/* Header */}
           <motion.div variants={item} className="flex items-center justify-between">
