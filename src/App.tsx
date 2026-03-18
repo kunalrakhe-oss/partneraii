@@ -99,6 +99,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <InstallPrompt />
             <BrowserRouter>
               <AppRoutes />
             </BrowserRouter>
