@@ -16,23 +16,7 @@ import PageTransition from "@/components/PageTransition";
 import type { Tables } from "@/integrations/supabase/types";
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_GROCERY_ITEMS } from "@/lib/demoData";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { Plus, Sparkles, Check, Trash2, ShoppingCart, ClipboardList, Gift, Plane, Heart, ChevronUp, ChevronDown, X, CalendarIcon, Clock, Flag, AlertTriangle, FileText, ChevronRight } from "lucide-react";
-import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
-import ProfileButton from "@/components/ProfileButton";
-import { categorizeGroceryItem } from "@/lib/store";
-import { supabase } from "@/integrations/supabase/client";
-import { usePartnerPair } from "@/hooks/usePartnerPair";
-import { useToast } from "@/hooks/use-toast";
-import PageTransition from "@/components/PageTransition";
-import type { Tables } from "@/integrations/supabase/types";
-import { useDemo } from "@/contexts/DemoContext";
-import { DEMO_GROCERY_ITEMS } from "@/lib/demoData";
+
 
 type GroceryRow = Tables<"grocery_items">;
 
