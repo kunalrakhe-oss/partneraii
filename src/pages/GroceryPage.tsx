@@ -256,11 +256,7 @@ export default function GroceryPage() {
     );
   }
 
-  const sortedItems = activeList !== "grocery"
-    ? [...items].sort((a, b) => Number(a.is_checked) - Number(b.is_checked) || ((a as any).sort_order ?? 0) - ((b as any).sort_order ?? 0))
-    : [];
-
-  const uncheckedItems = activeList !== "grocery" ? sortedItems.filter(i => !i.is_checked) : [];
+  const hasMultipleCategories = Object.keys(grouped).length > 1;
 
   return (
     <PageTransition>
