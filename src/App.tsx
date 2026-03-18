@@ -102,6 +102,7 @@ function AppRoutes() {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+      <LanguageProvider>
       <AuthProvider>
         <SubscriptionProvider>
         <DemoProvider>
@@ -118,6 +119,7 @@ const App = () => (
         </DemoProvider>
         </SubscriptionProvider>
       </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
