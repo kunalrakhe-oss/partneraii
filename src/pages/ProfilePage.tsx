@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download, Mic, LayoutGrid, GripVertical, Crown, CreditCard, KeyRound, Globe } from "lucide-react";
+import { Heart, User, ChevronRight, Bell, Lock, HelpCircle, Palette, Link2, LogOut, Camera, Loader2, X, Check, Moon, Sun, ChevronLeft, UserMinus, Download, Mic, LayoutGrid, GripVertical, Crown, CreditCard, KeyRound, Globe, Users } from "lucide-react";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -308,6 +308,7 @@ export default function ProfilePage() {
   const [partnerId, setPartnerId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [activeSheet, setActiveSheet] = useState<SheetType>(null);
+  const [appMode, setAppMode] = useState<string>("couple");
 
   // Personal info edit state
   const [editName, setEditName] = useState("");
@@ -318,12 +319,14 @@ export default function ProfilePage() {
   const [birthday, setBirthday] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const isSingle = appMode === "single";
+
   useEffect(() => {
     if (!user) return;
     const fetchProfile = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, partner_id, phone, gender, birthday")
+        .select("display_name, avatar_url, partner_id, phone, gender, birthday, app_mode")
         .eq("user_id", user.id)
         .single();
       if (data) {
@@ -335,6 +338,7 @@ export default function ProfilePage() {
         setAvatarUrl(data.avatar_url || user.user_metadata?.avatar_url || null);
         setGender((data as any).gender || "");
         setBirthday((data as any).birthday || "");
+        setAppMode((data as any).app_mode || "couple");
         setPartnerId(data.partner_id);
         if (data.partner_id) {
           const { data: partner } = await supabase
@@ -454,6 +458,13 @@ export default function ProfilePage() {
       case "remove-partner":
         setActiveSheet("remove-partner");
         break;
+      case "switch-to-couple":
+        // Switch to couple mode and navigate to partner connect
+        supabase.from("profiles").update({ app_mode: "couple" } as any).eq("user_id", user!.id).then(() => {
+          setAppMode("couple");
+          navigate("/connect");
+        });
+        break;
       case "theme":
         setActiveSheet("theme");
         break;
@@ -520,8 +531,14 @@ export default function ProfilePage() {
       items: [
         { key: "personal-info", icon: User, label: t("profile.personalInfo"), sub: t("profile.namePhone") },
         { key: "notifications", icon: Bell, label: t("profile.notifications"), sub: t("profile.remindersAlerts") },
-        { key: "partner-profile", icon: Heart, label: t("profile.partnerProfile"), sub: partnerName ? `${t("profile.connectedTo")} ${partnerName}` : t("profile.invitePartner") },
-        ...(partnerId ? [{ key: "remove-partner", icon: UserMinus, label: t("profile.removePartner"), sub: `${t("profile.disconnectFrom")} ${partnerName || "partner"}` }] : []),
+        // Show partner profile for couple mode, or "Switch to Couple Mode" for singles
+        ...(isSingle
+          ? [{ key: "switch-to-couple", icon: Users, label: "Switch to Couple Mode", sub: "Connect with a partner" }]
+          : [
+            { key: "partner-profile", icon: Heart, label: t("profile.partnerProfile"), sub: partnerName ? `${t("profile.connectedTo")} ${partnerName}` : t("profile.invitePartner") },
+            ...(partnerId ? [{ key: "remove-partner", icon: UserMinus, label: t("profile.removePartner"), sub: `${t("profile.disconnectFrom")} ${partnerName || "partner"}` }] : []),
+          ]
+        ),
       ],
     },
     {

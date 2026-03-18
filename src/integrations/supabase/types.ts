@@ -679,6 +679,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          app_mode: string
           avatar_url: string | null
           birthday: string | null
           created_at: string
@@ -691,6 +692,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          app_mode?: string
           avatar_url?: string | null
           birthday?: string | null
           created_at?: string
@@ -703,6 +705,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          app_mode?: string
           avatar_url?: string | null
           birthday?: string | null
           created_at?: string

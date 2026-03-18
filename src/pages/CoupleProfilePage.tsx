@@ -110,11 +110,17 @@ export default function CoupleProfilePage() {
     async function load() {
       const { data: me } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, phone, gender, birthday, partner_id, created_at")
+        .select("display_name, avatar_url, phone, gender, birthday, partner_id, created_at, app_mode")
         .eq("user_id", user!.id)
         .single();
 
       if (me) {
+        // Redirect singles to their own profile
+        if ((me as any).app_mode === "single") {
+          navigate("/profile", { replace: true });
+          return;
+        }
+
         setMyProfile({
           display_name: me.display_name,
           avatar_url: me.avatar_url,

@@ -36,6 +36,7 @@ export default function HomePage() {
   const { t } = useLanguage();
   const [firstName, setFirstName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [appMode, setAppMode] = useState<string>("couple");
   const [partnerProfile, setPartnerProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
   const [partnerMood, setPartnerMood] = useState<{ mood: string; note: string | null } | null>(null);
   const [myMood, setMyMood] = useState<{ mood: string; note: string | null } | null>(null);
@@ -77,13 +78,16 @@ export default function HomePage() {
   const [insightDismissed, setInsightDismissed] = useState(false);
   const [insightLoading, setInsightLoading] = useState(false);
 
+  const isSingle = appMode === "single";
+
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("display_name, avatar_url, created_at, partner_id").eq("user_id", user.id).maybeSingle()
+    supabase.from("profiles").select("display_name, avatar_url, created_at, partner_id, app_mode").eq("user_id", user.id).maybeSingle()
       .then(({ data }) => {
         const raw = data?.display_name || user.user_metadata?.full_name || user.user_metadata?.display_name || user.user_metadata?.name || user.email?.split("@")[0] || "there";
         setFirstName(raw.split(" ")[0]);
         setAvatarUrl(data?.avatar_url || user.user_metadata?.avatar_url || null);
+        setAppMode((data as any)?.app_mode || "couple");
         if (data?.created_at) {
           const created = new Date(data.created_at);
           const diff = Math.max(1, Math.floor((Date.now() - created.getTime()) / (1000 * 60 * 60 * 24)));
@@ -307,8 +311,8 @@ export default function HomePage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {/* Couple Avatars */}
-              {partnerProfile && !isDemoMode && (
+              {/* Couple Avatars - only for couple mode */}
+              {!isSingle && partnerProfile && !isDemoMode && (
                 <button onClick={() => navigate("/couple")} className="flex -space-x-2.5 mr-1">
                   {avatarUrl ? (
                     <img src={avatarUrl} alt="Me" className="w-9 h-9 rounded-full object-cover border-2 border-card z-10 ring-1 ring-primary/20" />
@@ -340,8 +344,8 @@ export default function HomePage() {
 
 
 
-          {/* ❤️ Make it Real - Getting Started */}
-          {isDemoMode && (
+          {/* ❤️ Make it Real - Getting Started (couple mode demo) */}
+          {isDemoMode && !isSingle && (
             <motion.div variants={item}>
               <div className="bg-gradient-to-br from-primary/10 via-secondary/5 to-primary/10 rounded-2xl p-5 border border-primary/20 shadow-soft">
                 <div className="flex items-center gap-2 mb-1">
@@ -483,10 +487,10 @@ export default function HomePage() {
               case "partnership-stats":
                 return (
                   <motion.div key="partnership-stats" variants={item}>
-                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{t("home.partnershipStats")}</p>
+                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{isSingle ? "My Stats" : t("home.partnershipStats")}</p>
                      <div className="grid grid-cols-2 gap-3">
                        {[
-                         { label: t("home.daysTogether"), value: daysTogether, icon: Heart, gradient: "from-secondary/20 to-secondary/5", iconBg: "bg-secondary/20", iconColor: "text-secondary", link: "/memories" },
+                         { label: isSingle ? "Day Streak" : t("home.daysTogether"), value: daysTogether, icon: Heart, gradient: "from-secondary/20 to-secondary/5", iconBg: "bg-secondary/20", iconColor: "text-secondary", link: "/memories" },
                          { label: t("home.events"), value: totalEvents, icon: CalendarDays, gradient: "from-primary/20 to-primary/5", iconBg: "bg-primary/20", iconColor: "text-primary", link: "/calendar" },
                          { label: t("home.memories"), value: totalMemories, icon: Image, gradient: "from-accent/20 to-accent/5", iconBg: "bg-accent/20", iconColor: "text-accent-foreground", link: "/memories" },
                          { label: t("home.tasksDone"), value: completedChores, icon: Trophy, gradient: "from-success/20 to-success/5", iconBg: "bg-success/20", iconColor: "text-success", link: "/chores" },
@@ -528,6 +532,7 @@ export default function HomePage() {
                 ) : null;
 
               case "partner-mood":
+                if (isSingle) return null; // Hide partner mood for single users
                 return (
                   <motion.div key="partner-mood" variants={item}>
                     <p className="text-sm font-semibold text-foreground mb-2">{t("home.partnerMood")}</p>

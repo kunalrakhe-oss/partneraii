@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Heart, ArrowRight, ArrowLeft, ChevronRight, ChevronLeft, Sparkles, Users, MessageCircle, Brain, Camera, ClipboardList, Smile, Send, Copy, Keyboard, Link2 } from "lucide-react";
+import { Heart, ArrowRight, ArrowLeft, ChevronRight, ChevronLeft, Sparkles, Users, MessageCircle, Brain, Camera, ClipboardList, Smile, Send, Copy, Keyboard, Link2, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,21 +13,21 @@ type Step = "language" | "entry" | "slides" | "mode" | "demo" | "setup-names" | 
 
 const slides = [
   {
-    emoji: "❤️",
-    title: "Stay connected daily",
-    description: "See how your partner feels. Never miss the small things.",
+    emoji: "✨",
+    title: "Stay on top of your day",
+    description: "Track your mood, tasks, and daily goals effortlessly.",
     color: "from-secondary/20 to-secondary/5",
   },
   {
     emoji: "🧠",
-    title: "Smart AI for your relationship",
+    title: "Smart AI for your life",
     description: "Auto-organize life, suggest moments, reduce stress.",
     color: "from-primary/20 to-primary/5",
   },
   {
-    emoji: "💑",
-    title: "Build something together",
-    description: "Memories, tasks, and love — all in one place.",
+    emoji: "🚀",
+    title: "Build your best life",
+    description: "Memories, tasks, fitness, and wellness — all in one place.",
     color: "from-accent/30 to-accent/10",
   },
 ];
@@ -67,13 +67,19 @@ const fadeUp = {
   transition: { duration: 0.35, ease: [0.2, 0, 0, 1] as [number, number, number, number] },
 };
 
-// Step ordering for back navigation
-const STEP_ORDER: Step[] = ["language", "entry", "slides", "mode", "setup-names", "setup-relationship", "setup-connect", "setup-start"];
+// Step ordering for back navigation — dynamic based on mode
+function getStepOrder(appMode: "single" | "couple"): Step[] {
+  if (appMode === "single") {
+    return ["language", "entry", "slides", "mode", "setup-names", "setup-start"];
+  }
+  return ["language", "entry", "slides", "mode", "setup-names", "setup-relationship", "setup-connect", "setup-start"];
+}
 
-function getPrevStep(current: Step): Step | null {
-  const idx = STEP_ORDER.indexOf(current);
+function getPrevStep(current: Step, appMode: "single" | "couple"): Step | null {
+  const order = getStepOrder(appMode);
+  const idx = order.indexOf(current);
   if (idx <= 0) return null;
-  return STEP_ORDER[idx - 1];
+  return order[idx - 1];
 }
 
 function BackButton({ onClick }: { onClick: () => void }) {
@@ -110,6 +116,7 @@ export default function OnboardingFlow() {
   const [copied, setCopied] = useState(false);
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [showSuggestion, setShowSuggestion] = useState(false);
+  const [appMode, setAppMode] = useState<"single" | "couple">("couple");
 
   // Relationship details
   const [anniversaryDate, setAnniversaryDate] = useState("");
@@ -132,7 +139,7 @@ export default function OnboardingFlow() {
       setSlideIndex(slideIndex - 1);
       return;
     }
-    const prev = getPrevStep(step);
+    const prev = getPrevStep(step, appMode);
     if (prev) setStep(prev);
   };
 
@@ -157,6 +164,20 @@ export default function OnboardingFlow() {
     }
   };
 
+  const handleModeSelect = async (mode: "single" | "couple") => {
+    setAppMode(mode);
+    exitDemo();
+    if (user) {
+      // Save app_mode to profile
+      await supabase.from("profiles").update({ app_mode: mode } as any).eq("user_id", user.id);
+      setStep("setup-names");
+    } else {
+      localStorage.setItem("lovelist-onboard-intent", "real");
+      localStorage.setItem("lovelist-app-mode", mode);
+      navigate("/auth", { replace: true });
+    }
+  };
+
   const handleSaveNames = async () => {
     if (!yourName.trim()) return;
     if (user) {
@@ -165,7 +186,11 @@ export default function OnboardingFlow() {
         .update({ display_name: yourName.trim() })
         .eq("user_id", user.id);
     }
-    setStep("setup-relationship");
+    if (appMode === "single") {
+      setStep("setup-start");
+    } else {
+      setStep("setup-relationship");
+    }
   };
 
   const handleSaveRelationship = async () => {
@@ -227,6 +252,8 @@ export default function OnboardingFlow() {
       toast({ title: "Invalid code", description: "Please check and try again.", variant: "destructive" });
       return;
     }
+    // When connecting as partner, switch to couple mode
+    await supabase.from("profiles").update({ app_mode: "couple" } as any).eq("user_id", user.id);
     toast({ title: "Connected! 🎉", description: "You're now paired with your partner." });
     setStep("setup-start");
   };
@@ -241,18 +268,18 @@ export default function OnboardingFlow() {
     if (!pair) pair = user.id;
 
     await supabase.from("chores").insert({
-      title: "Plan something special ❤️",
+      title: appMode === "single" ? "Plan something special ✨" : "Plan something special ❤️",
       user_id: user.id,
       partner_pair: pair,
       assigned_to: "me",
     });
 
     await supabase.from("memories").insert({
-      title: "Our Story Begins 💕",
+      title: appMode === "single" ? "My Journey Begins ✨" : "Our Story Begins 💕",
       type: "milestone",
       user_id: user.id,
       partner_pair: pair,
-      description: "The start of something beautiful",
+      description: appMode === "single" ? "The start of something great" : "The start of something beautiful",
     });
   };
 
@@ -370,7 +397,7 @@ export default function OnboardingFlow() {
                 transition={{ delay: 0.3 }}
                 className="text-sm text-muted-foreground text-center max-w-[240px] leading-relaxed"
               >
-                {t("onboarding.buildRelationship")}
+                Your life, organized.
               </motion.p>
 
               <motion.div
@@ -379,7 +406,7 @@ export default function OnboardingFlow() {
                 transition={{ delay: 0.4 }}
                 className="w-48 h-48 rounded-full overflow-hidden mt-10 shadow-elevated border-4 border-card"
               >
-                <img src={onboardingHero} alt="Couple" className="w-full h-full object-cover" />
+                <img src={onboardingHero} alt="Get Started" className="w-full h-full object-cover" />
               </motion.div>
             </div>
 
@@ -393,8 +420,8 @@ export default function OnboardingFlow() {
                 onClick={() => setStep("slides")}
                 className="w-full h-14 rounded-2xl bg-primary text-primary-foreground font-semibold text-base flex items-center justify-center gap-2 shadow-elevated"
               >
-                <Heart size={18} fill="currentColor" />
-                {t("onboarding.startTogether")}
+                <Sparkles size={18} />
+                Get Started
               </button>
             </motion.div>
           </motion.div>
@@ -459,7 +486,7 @@ export default function OnboardingFlow() {
           </motion.div>
         )}
 
-        {/* ─── STEP 2: Mode Selection ─── */}
+        {/* ─── STEP 2: Mode Selection — Single or Couple ─── */}
         {step === "mode" && (
           <motion.div key="mode" {...fadeUp} className="flex-1 flex flex-col items-center justify-center px-6 relative">
             <BackButton onClick={goBack} />
@@ -468,26 +495,36 @@ export default function OnboardingFlow() {
               animate={{ scale: 1 }}
               className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-6"
             >
-              <Users size={28} className="text-primary-foreground" />
+              <Sparkles size={28} className="text-primary-foreground" />
             </motion.div>
 
-            <h2 className="text-2xl font-bold text-foreground mb-2 text-center">How do you want to start?</h2>
-            <p className="text-sm text-muted-foreground text-center mb-10">Choose what feels right</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2 text-center">How do you want to use LoveList?</h2>
+            <p className="text-sm text-muted-foreground text-center mb-10">You can always change this later</p>
 
             <div className="w-full space-y-3">
               <button
-                onClick={() => {
-                  exitDemo();
-                  if (user) {
-                    setStep("setup-names");
-                  } else {
-                    localStorage.setItem("lovelist-onboard-intent", "real");
-                    navigate("/auth", { replace: true });
-                  }
-                }}
-                className="w-full h-14 rounded-2xl bg-primary text-primary-foreground font-semibold text-base flex items-center justify-center gap-2 shadow-elevated"
+                onClick={() => handleModeSelect("couple")}
+                className="w-full h-16 rounded-2xl bg-primary text-primary-foreground font-semibold text-base flex items-center gap-4 px-5 shadow-elevated"
               >
-                ❤️ With My Partner
+                <div className="w-10 h-10 rounded-xl bg-primary-foreground/20 flex items-center justify-center shrink-0">
+                  <Users size={20} />
+                </div>
+                <div className="text-left">
+                  <p className="text-base font-bold">With My Partner</p>
+                  <p className="text-xs opacity-80">Share lists, chores & calendar</p>
+                </div>
+              </button>
+              <button
+                onClick={() => handleModeSelect("single")}
+                className="w-full h-16 rounded-2xl bg-card border border-border text-foreground font-semibold text-base flex items-center gap-4 px-5 shadow-soft"
+              >
+                <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
+                  <User size={20} className="text-primary" />
+                </div>
+                <div className="text-left">
+                  <p className="text-base font-bold">Just Me</p>
+                  <p className="text-xs text-muted-foreground">Personal productivity & wellness</p>
+                </div>
               </button>
             </div>
           </motion.div>
@@ -511,15 +548,17 @@ export default function OnboardingFlow() {
                     className="w-full h-12 px-4 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                   />
                 </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Partner's name (optional)</label>
-                  <input
-                    value={partnerName}
-                    onChange={(e) => setPartnerName(e.target.value)}
-                    placeholder="e.g. Neelam"
-                    className="w-full h-12 px-4 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  />
-                </div>
+                {appMode === "couple" && (
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Partner's name (optional)</label>
+                    <input
+                      value={partnerName}
+                      onChange={(e) => setPartnerName(e.target.value)}
+                      placeholder="e.g. Neelam"
+                      className="w-full h-12 px-4 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -534,7 +573,7 @@ export default function OnboardingFlow() {
           </motion.div>
         )}
 
-        {/* ─── STEP 3B-1.5: Relationship Details ─── */}
+        {/* ─── STEP 3B-1.5: Relationship Details (couple only) ─── */}
         {step === "setup-relationship" && (
           <motion.div key="relationship" {...fadeUp} className="flex-1 flex flex-col px-6 py-12 relative">
             <BackButton onClick={goBack} />
@@ -681,7 +720,7 @@ export default function OnboardingFlow() {
           </motion.div>
         )}
 
-        {/* ─── STEP 3B-2: Connect Partner ─── */}
+        {/* ─── STEP 3B-2: Connect Partner (couple only) ─── */}
         {step === "setup-connect" && (
           <motion.div key="connect" {...fadeUp} className="flex-1 flex flex-col px-6 py-12 relative">
             <BackButton onClick={goBack} />
@@ -767,7 +806,9 @@ export default function OnboardingFlow() {
               <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mb-4">
                 <Sparkles size={28} className="text-primary" />
               </div>
-              <h2 className="text-2xl font-bold text-foreground mb-1">Start your journey ❤️</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-1">
+                {appMode === "single" ? "Start your journey ✨" : "Start your journey ❤️"}
+              </h2>
               <p className="text-sm text-muted-foreground mb-8">Pick your first action</p>
 
               <div className="w-full space-y-3">
@@ -821,13 +862,17 @@ export default function OnboardingFlow() {
             exit={{ opacity: 0, y: 40, scale: 0.95 }}
             className="fixed bottom-6 left-4 right-4 max-w-lg mx-auto z-50"
           >
-            <div className="bg-card border border-border rounded-2xl p-4 shadow-elevated flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-                <Sparkles size={18} className="text-primary" />
+            <div className="bg-card border border-border rounded-2xl shadow-elevated p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <Brain size={18} className="text-primary" />
               </div>
-              <div>
-                <p className="text-xs font-semibold text-primary mb-0.5">✨ LoveBot Suggestion</p>
-                <p className="text-sm text-foreground">Plan a small surprise today ❤️</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-foreground">
+                  {appMode === "single" ? "Welcome to LoveList! ✨" : "Welcome to LoveList! 💕"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {appMode === "single" ? "Your personal AI assistant is ready" : "Your shared AI assistant is ready"}
+                </p>
               </div>
             </div>
           </motion.div>
