@@ -37,6 +37,7 @@ export const en = {
     pending: "Pending",
     overdue: "Overdue",
     comingSoon: "Coming soon",
+    change: "Change",
     or: "or",
     items: "items",
     msgs: "msgs",
