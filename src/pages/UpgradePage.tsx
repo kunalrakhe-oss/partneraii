@@ -123,8 +123,8 @@ export default function UpgradePage() {
                 <Star size={20} className="text-muted-foreground" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-foreground">Free</h3>
-                <p className="text-xs text-muted-foreground">Basic features</p>
+                <h3 className="text-sm font-bold text-foreground">{t("upgrade.free")}</h3>
+                <p className="text-xs text-muted-foreground">{t("upgrade.basicFeatures")}</p>
               </div>
               {tier === "free" && (
                 <span className="ml-auto text-[10px] font-bold text-primary bg-primary/10 px-2 py-1 rounded-full">Current Plan</span>
