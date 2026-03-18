@@ -50,10 +50,10 @@ export function useLayoutPreferences() {
   const [homeWidgets, setHomeWidgetsState] = useState<HomeWidgetId[]>(() => load(WIDGETS_KEY, DEFAULT_WIDGETS));
 
   const setNavTabs = useCallback((tabs: NavTabId[]) => {
-    // Home is always required
     const withHome = tabs.includes("home") ? tabs : ["home" as NavTabId, ...tabs];
     setNavTabsState(withHome);
     localStorage.setItem(NAV_KEY, JSON.stringify(withHome));
+    dispatchChange();
   }, []);
 
   const setHomeWidgets = useCallback((widgets: HomeWidgetId[]) => {
