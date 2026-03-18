@@ -73,11 +73,17 @@ function AppRoutes() {
         .select("app_mode, display_name")
         .eq("user_id", user.id)
         .single();
+
+      // Sync localStorage mode selection to DB
+      const savedMode = localStorage.getItem("lovelist-app-mode");
+      if (savedMode && (savedMode === "single" || savedMode === "couple")) {
+        await supabase.from("profiles").update({ app_mode: savedMode }).eq("user_id", user.id);
+        localStorage.removeItem("lovelist-app-mode");
+      }
+
       if (!data || !data.display_name) {
-        // No profile or no display name means setup not completed
         setNeedsSetup(true);
       } else {
-        // Has display_name → user completed setup before
         localStorage.setItem("lovelist-setup-done", "true");
         setNeedsSetup(false);
       }

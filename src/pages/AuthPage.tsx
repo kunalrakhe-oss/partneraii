@@ -90,11 +90,11 @@ export default function AuthPage() {
         </p>
 
         {/* Me / We Mode Toggle */}
-        <div className="flex gap-1 bg-muted rounded-xl p-1 w-full mb-2">
+        <div className="flex gap-0.5 bg-muted rounded-full p-0.5 w-fit mx-auto mb-2">
           {([{ value: "single", label: "Me Mode", icon: User }, { value: "couple", label: "We Mode", icon: Users }] as const).map(({ value, label, icon: Icon }) => (
             <button key={value} type="button" onClick={() => { setAppMode(value); localStorage.setItem("lovelist-app-mode", value); }}
-              className={`flex-1 flex items-center justify-center gap-1.5 text-xs font-medium py-2 rounded-lg transition-colors ${appMode === value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
-              <Icon size={14} />
+              className={`flex items-center justify-center gap-1 text-[11px] font-medium px-4 py-1.5 rounded-full transition-colors ${appMode === value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
+              <Icon size={12} />
               {label}
             </button>
           ))}
