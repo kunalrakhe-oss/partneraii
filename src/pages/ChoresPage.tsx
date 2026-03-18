@@ -453,7 +453,6 @@ export default function ChoresPage() {
           </div>
         </div>
 
-        <div className="px-5">
         {/* Weekly Progress */}
         <div className="bg-primary/30 rounded-2xl p-5 mt-5 mb-6 flex items-center gap-4 shadow-soft">
           <div className="flex-1">
