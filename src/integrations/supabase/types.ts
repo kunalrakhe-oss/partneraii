@@ -247,6 +247,42 @@ export type Database = {
         }
         Relationships: []
       }
+      diet_plans: {
+        Row: {
+          created_at: string
+          goal: string | null
+          id: string
+          is_active: boolean
+          partner_pair: string
+          plan_data: Json
+          started_at: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          goal?: string | null
+          id?: string
+          is_active?: boolean
+          partner_pair: string
+          plan_data?: Json
+          started_at?: string
+          title?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          goal?: string | null
+          id?: string
+          is_active?: boolean
+          partner_pair?: string
+          plan_data?: Json
+          started_at?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       grocery_items: {
         Row: {
           category: string | null

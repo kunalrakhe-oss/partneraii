@@ -56,6 +56,7 @@ export default function HomePage() {
   const unreadCount = useNotificationCount();
   const [visibleWidgets, setVisibleWidgets] = useState<HomeWidgetId[]>(getHomeWidgets);
   const [activePlan, setActivePlan] = useState<{ plan_type: string; title: string; started_at: string } | null>(null);
+  const [activeDietPlan, setActiveDietPlan] = useState<{ title: string; goal: string; started_at: string } | null>(null);
   useEffect(() => {
     const onUpdate = () => setVisibleWidgets(getHomeWidgets());
     window.addEventListener("layout-prefs-changed", onUpdate);
@@ -164,7 +165,7 @@ export default function HomePage() {
     return () => { supabase.removeChannel(moodChannel); };
   }, [partnerPair, user, today]);
 
-  // Fetch active recovery plan
+  // Fetch active recovery plan & diet plan
   useEffect(() => {
     if (!user) return;
     supabase
@@ -177,6 +178,18 @@ export default function HomePage() {
       .maybeSingle()
       .then(({ data }) => {
         setActivePlan(data as any);
+      });
+
+    supabase
+      .from("diet_plans")
+      .select("title, goal, started_at")
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        setActiveDietPlan(data as any);
       });
   }, [user]);
 
@@ -406,7 +419,35 @@ export default function HomePage() {
             </motion.div>
           )}
 
-          {/* Ordered Widgets */}
+          {/* Active Diet Plan Card */}
+          {activeDietPlan && (
+            <motion.div variants={item}>
+              <Link
+                to="/diet"
+                className="block bg-gradient-to-r from-secondary/10 via-secondary/5 to-transparent rounded-2xl p-4 border border-secondary/20"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-secondary/15 flex items-center justify-center shrink-0">
+                    <Apple size={22} className="text-secondary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold text-foreground truncate">{activeDietPlan.title}</p>
+                      <div className="flex items-center gap-0.5 bg-primary/10 px-1.5 py-0.5 rounded-full shrink-0">
+                        <Flame size={10} className="text-primary" />
+                        <span className="text-[10px] font-bold text-primary">
+                          Day {Math.max(1, Math.floor((Date.now() - new Date(activeDietPlan.started_at).getTime()) / (1000 * 60 * 60 * 24)) + 1)}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">Tap to track your diet plan →</p>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          )}
+
+
           {visibleWidgets.map(widgetId => {
             switch (widgetId) {
               case "next-event":
