@@ -20,6 +20,7 @@ const typeIcons: Record<string, typeof Heart> = {
   mood: Heart,
   chat: MessageCircle,
   calendar: Calendar,
+  overdue: Clock,
 };
 
 export function useNotificationCount() {
