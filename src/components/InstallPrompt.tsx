@@ -11,7 +11,7 @@ export default function InstallPrompt() {
 
   // Show immediately — no delay
   useEffect(() => {
-    if (canInstall) setVisible(true);
+    if (canInstall && !isInstalled) setVisible(true);
   }, [canInstall]);
 
   useEffect(() => {
