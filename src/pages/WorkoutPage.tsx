@@ -595,6 +595,25 @@ export default function WorkoutPage() {
                   </div>
                 </div>
 
+                {/* Calisthenics Programs */}
+                <div>
+                  <p className="text-sm font-bold text-foreground mb-1">🤸 Calisthenics Training</p>
+                  <p className="text-[11px] text-muted-foreground mb-3">Progressive bodyweight programs — no equipment needed</p>
+                  <div className="space-y-2.5">
+                    {CALISTHENICS_PROGRAMS.map(p => (
+                      <button key={p.value} onClick={() => generatePlan(`calisthenics ${p.value} level bodyweight training`, p.value, p.value === "beginner" ? 30 : p.value === "intermediate" ? 45 : 60)} disabled={generating}
+                        className={`w-full bg-gradient-to-r ${p.color} rounded-2xl p-4 border border-border/50 flex items-center gap-4 hover:border-primary/40 active:scale-[0.98] transition-all text-left disabled:opacity-50`}>
+                        <span className="text-3xl">{p.emoji}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-foreground">{p.label}</p>
+                          <p className="text-[11px] text-muted-foreground leading-snug">{p.desc}</p>
+                        </div>
+                        <ChevronRight size={16} className="text-muted-foreground shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {generating && (
                   <div className="flex flex-col items-center py-6">
                     <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center mb-3 animate-pulse">
