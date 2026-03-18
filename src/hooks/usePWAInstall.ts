@@ -90,7 +90,7 @@ export function usePWAInstall() {
     setDismissed(true);
   }, []);
 
-  const canInstall = !isInstalled && !dismissed && (!!deferredPrompt || isIOS);
+  const canInstall = !isInstalled && !dismissed && (!!deferredPrompt || (isIOS && !isStandalone()));
   const isFirstView = viewCount <= 1;
 
   return { canInstall, isIOS, isInstalled, promptInstall, dismiss, isFirstView };

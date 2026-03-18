@@ -670,7 +670,7 @@ export default function ProfilePage() {
         </button>
 
         <p className="text-center text-[10px] text-muted-foreground mt-5 mb-2">
-          LoveList v1.0.4 • {t("profile.madeWithLove")}
+          PartnerAI v1.0.4 • {t("profile.madeWithLove")}
         </p>
       </div>
 
