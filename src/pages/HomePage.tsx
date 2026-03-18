@@ -433,7 +433,7 @@ export default function HomePage() {
           )}
 
           {/* Partner's Mood */}
-          <motion.div variants={item}>
+          {showWidget("partner-mood") && <motion.div variants={item}>
             <p className="text-sm font-semibold text-foreground mb-2">Partner's Mood</p>
             <button onClick={() => partnerMood ? setShowMoodPopup(true) : navigate("/mood")} className="w-full text-left">
               <div className="flex items-center gap-3">
