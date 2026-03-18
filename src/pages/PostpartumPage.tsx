@@ -6,6 +6,10 @@ import ReactMarkdown from "react-markdown";
 import PlanPhaseSection from "@/components/PlanPhaseSection";
 import RecoveryTracker from "@/components/RecoveryTracker";
 import { type Exercise } from "@/components/RecoveryPlanCard";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePartnerPair } from "@/hooks/usePartnerPair";
+import { toast } from "sonner";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
