@@ -660,6 +660,14 @@ export default function CalendarPage() {
   };
 
   const toggleComplete = async (event: CalendarEvent) => {
+    // Detect virtual recurring instances (they have suffixed IDs like "uuid-daily-2025-03-19")
+    const isVirtualRecurring = event.id.includes("-daily-") || event.id.includes("-weekly-");
+    
+    if (isVirtualRecurring) {
+      toast.info("Recurring events can't be individually completed. Edit the event to change its recurrence first.");
+      return;
+    }
+
     if (event._source === "chore") {
       await supabase.from("chores").update({ is_completed: !event.is_completed }).eq("id", event._sourceId!);
     } else if (event._source === "grocery") {
