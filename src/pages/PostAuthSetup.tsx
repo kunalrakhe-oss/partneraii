@@ -4,9 +4,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Users, ArrowRight, Check, Loader2, Heart, Dumbbell, Wallet, Brain, Zap, Coffee, Sun, Target, CalendarDays } from "lucide-react";
+import { User, Users, ArrowRight, Check, Loader2, Heart, Dumbbell, Wallet, Brain, Zap, Coffee, Sun, Target, CalendarDays, Sparkles, X } from "lucide-react";
 
-type Step = "mode" | "name" | "priorities" | "morning";
+type Step = "mode" | "name" | "priorities" | "morning" | "goals";
+
+const GOAL_SUGGESTIONS = [
+  "Lose weight", "Build muscle", "Eat healthier", "Save money",
+  "Manage knee pain", "Run a marathon", "Sleep better", "Reduce stress",
+  "Improve relationship", "Get organized",
+];
 
 const PRIORITY_OPTIONS = [
   { id: "health", label: "Health & Fitness", icon: Dumbbell, color: "text-green-500" },
