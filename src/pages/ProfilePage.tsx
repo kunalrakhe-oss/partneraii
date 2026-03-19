@@ -652,7 +652,7 @@ export default function ProfilePage() {
         </button>
 
         <p className="text-center text-[10px] text-muted-foreground mt-5 mb-2">
-          PartnerAI v1.0.4 • {t("profile.madeWithLove")}
+          PAI v1.0.4 • {t("profile.madeWithLove")}
         </p>
       </div>
 
