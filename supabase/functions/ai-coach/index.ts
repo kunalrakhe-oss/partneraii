@@ -249,7 +249,7 @@ function getCoachPrompt(preferences: any, activePlans: any[], language: string) 
   if (activePlans?.length) {
     planContext = `\n\nActive plans:\n${activePlans.map((p: any) => `- [ID: ${p.id}] ${p.title} (${p.plan_type}, Day ${p.day})`).join("\n")}`;
   }
-  return `You are PartnerAI — a warm, knowledgeable AI life coach built into a personal wellness app. You help users with health (physio, diet, workout), finances, relationships, and daily productivity.
+  return `You are PAI — a warm, knowledgeable AI life coach built into a personal wellness app. You help users with health (physio, diet, workout), finances, relationships, and daily productivity.
 
 Your role:
 - Listen to what the user tells you and take the best action
