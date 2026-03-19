@@ -203,12 +203,12 @@ export default function HomePage() {
     return () => { supabase.removeChannel(moodChannel); };
   }, [partnerPair, user, today]);
 
-  // Fetch active recovery plan & diet plan
+  // Fetch active recovery plan & diet plan (with IDs for AI Coach modification)
   useEffect(() => {
     if (!user) return;
     supabase
       .from("recovery_plans")
-      .select("plan_type, title, started_at")
+      .select("id, plan_type, title, started_at")
       .eq("user_id", user.id)
       .eq("is_active", true)
       .order("created_at", { ascending: false })
@@ -220,7 +220,7 @@ export default function HomePage() {
 
     supabase
       .from("diet_plans")
-      .select("title, goal, started_at")
+      .select("id, title, goal, started_at")
       .eq("user_id", user.id)
       .eq("is_active", true)
       .order("created_at", { ascending: false })
