@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Plus, Sparkles, Check, Trash2, ShoppingCart, ClipboardList, Gift, Plane, Heart, ChevronUp, ChevronDown, X, CalendarIcon, Clock, Flag, AlertTriangle, FileText, ChevronRight } from "lucide-react";
+import { usePageFab } from "@/contexts/PageFabContext";
 import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
@@ -94,6 +95,7 @@ export default function GroceryPage() {
   const [editingItem, setEditingItem] = useState<GroceryRow | null>(null);
   const [customLists, setCustomLists] = useState<{ key: string; label: string; emoji: string }[]>([]);
   const [showNewList, setShowNewList] = useState(false);
+  usePageFab([{ label: "New List", icon: Plus, onTap: () => setShowNewList(true) }]);
   const [newListName, setNewListName] = useState("");
   const [newListEmoji, setNewListEmoji] = useState("📝");
 
@@ -531,13 +533,6 @@ export default function GroceryPage() {
         )}
       </AnimatePresence>
 
-        {/* Floating Add Button */}
-        <button
-          onClick={() => setShowNewList(true)}
-          className="fixed bottom-above-nav right-5 w-14 h-14 rounded-full love-gradient text-primary-foreground flex items-center justify-center shadow-elevated z-40"
-        >
-          <Plus size={24} />
-        </button>
     </PageTransition>
   );
 }

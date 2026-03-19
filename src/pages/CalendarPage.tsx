@@ -13,6 +13,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAppMode } from "@/hooks/useAppMode";
+import { usePageFab } from "@/contexts/PageFabContext";
 import ProfileButton from "@/components/ProfileButton";
 import AddEventModal from "@/components/AddEventModal";
 import PageTransition from "@/components/PageTransition";
@@ -310,6 +311,10 @@ export default function CalendarPage() {
   const [showFabMenu, setShowFabMenu] = useState(false);
   const [showViewMenu, setShowViewMenu] = useState(false);
   const [showDietForm, setShowDietForm] = useState(false);
+  usePageFab([
+    { label: "Add Event", icon: CalendarPlus, onTap: () => openAddForm() },
+    { label: "Add Diet", icon: Plus, onTap: () => setShowDietForm(true) },
+  ]);
   const [dietSaving, setDietSaving] = useState(false);
   const [choreLinkedItems, setChoreLinkedItems] = useState<Record<string, any[]>>({});
   const [expandedChores, setExpandedChores] = useState<Set<string>>(new Set());
@@ -815,36 +820,6 @@ export default function CalendarPage() {
 
         </div>
 
-
-        {/* FAB with menu */}
-        {showFabMenu && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-            className="fixed right-5 z-50 flex flex-col gap-2 items-end" style={{ bottom: 'calc(var(--nav-total) + 4.5rem)' }}
-          >
-            <button
-              onClick={() => { setShowFabMenu(false); openAddForm(); }}
-              className="flex items-center gap-2 bg-card text-foreground px-4 py-2.5 rounded-2xl shadow-elevated border border-border text-sm font-semibold"
-            >
-              <CalendarPlus size={16} className="text-primary" /> Add Event
-            </button>
-            <button
-              onClick={() => { setShowFabMenu(false); setShowDietForm(true); }}
-              className="flex items-center gap-2 bg-card text-foreground px-4 py-2.5 rounded-2xl shadow-elevated border border-border text-sm font-semibold"
-            >
-              <span className="text-base">🥗</span> Add Diet Item
-            </button>
-          </motion.div>
-        )}
-        {showFabMenu && (
-          <div className="fixed inset-0 z-40" onClick={() => setShowFabMenu(false)} />
-        )}
-        <button
-          onClick={() => setShowFabMenu(prev => !prev)}
-          className="fixed bottom-above-nav right-5 max-w-lg love-gradient text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-elevated z-50"
-        >
-          <Plus size={22} className={`transition-transform ${showFabMenu ? "rotate-45" : ""}`} />
-        </button>
 
         {/* Diet Form Bottom Sheet */}
         <AnimatePresence>

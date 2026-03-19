@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Plus, Camera, Heart, Star, Calendar, X, Image as ImageIcon, Award, BookOpen, Loader2, ChevronLeft, MessageCircle, Send } from "lucide-react";
+import { usePageFab } from "@/contexts/PageFabContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ProfileButton from "@/components/ProfileButton";
 import { motion, AnimatePresence } from "framer-motion";
@@ -48,6 +49,7 @@ export default function MemoriesPage() {
   const [memories, setMemories] = useState<MemoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  usePageFab([{ label: "Add Memory", icon: Camera, onTap: () => setShowAdd(true) }]);
   const [filter, setFilter] = useState<FilterType>("all");
   const [submitting, setSubmitting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -497,13 +499,6 @@ export default function MemoriesPage() {
           </div>
         )}
 
-        {/* FAB */}
-        <button
-          onClick={() => setShowAdd(true)}
-          className="fixed bottom-above-nav right-5 max-w-lg love-gradient text-primary-foreground w-14 h-14 rounded-full flex items-center justify-center shadow-elevated z-40"
-        >
-          <Plus size={22} />
-        </button>
 
         {/* Add Memory Modal */}
         <AnimatePresence>

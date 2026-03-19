@@ -1,4 +1,4 @@
-import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send, Bell, Users, BookOpen, Rocket, BookHeart, Dumbbell, Apple, Baby, Shield, Activity, HeartPulse, MapPin, Wallet, PartyPopper, Flame, Brain, Target, Salad, Moon } from "lucide-react";
+import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send, Bell, Users, BookOpen, Rocket, BookHeart, Dumbbell, Apple, Baby, Shield, Activity, HeartPulse, MapPin, Wallet, PartyPopper, Flame, Brain, Target, Salad, Moon, CalendarPlus } from "lucide-react";
 import ProfileButton from "@/components/ProfileButton";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,6 +15,7 @@ import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_STATS, DEMO_PARTNER_MOOD, DEMO_MOOD_MESSAGE, DEMO_AI_INSIGHT, DEMO_TODAY_EVENTS, DEMO_PARTNER1, DEMO_PARTNER2, DEMO_CHORES } from "@/lib/demoData";
 import { getHomeWidgets, type HomeWidgetId } from "@/hooks/useLayoutPreferences";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { usePageFab } from "@/contexts/PageFabContext";
 
 const container = {
   hidden: { opacity: 0 },
@@ -46,6 +47,7 @@ export default function HomePage() {
   const [messageCount, setMessageCount] = useState(0);
   const [nextEvent, setNextEvent] = useState<NextEvent | null>(null);
   const [showAddEvent, setShowAddEvent] = useState(false);
+  usePageFab([{ label: "Add Event", icon: CalendarPlus, onTap: () => setShowAddEvent(true) }]);
   const [showMoodPopup, setShowMoodPopup] = useState(false);
   const [moodReaction, setMoodReaction] = useState("");
   const [sendingReaction, setSendingReaction] = useState(false);
@@ -932,13 +934,6 @@ export default function HomePage() {
 
         </motion.div>
 
-        {/* Floating New Event FAB - icon only */}
-        <button
-          onClick={() => setShowAddEvent(true)}
-          className="fixed bottom-above-nav right-5 max-w-lg love-gradient text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-elevated z-40"
-        >
-          <Plus size={20} />
-        </button>
 
         <AddEventModal
           open={showAddEvent}

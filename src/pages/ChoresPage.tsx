@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, forwardRef, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users, ArrowDownAZ, CheckCheck, Trash, Pencil, Save, Lock, ClipboardList, Link2 } from "lucide-react";
+import { usePageFab } from "@/contexts/PageFabContext";
 import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -107,6 +108,7 @@ export default function ChoresPage() {
   const { isSingle } = useAppMode();
   const [chores, setChores] = useState<ChoreRow[]>([]);
   const [showAdd, setShowAdd] = useState(false);
+  usePageFab([{ label: "Add Chore", icon: ClipboardList, onTap: () => setShowAdd(true) }]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterMode>("all");
   const [loading, setLoading] = useState(true);
@@ -859,14 +861,6 @@ export default function ChoresPage() {
           </div>
         )}
 
-        {/* FAB */}
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setShowAdd(true)}
-          className="fixed bottom-above-nav right-5 z-30 w-14 h-14 rounded-full love-gradient text-primary-foreground shadow-elevated flex items-center justify-center"
-        >
-          <Plus size={24} strokeWidth={2.5} />
-        </motion.button>
 
         {/* Add Chore Modal — Apple Calendar style */}
         <AnimatePresence>
