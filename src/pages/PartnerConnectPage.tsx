@@ -300,11 +300,8 @@ export default function PartnerConnectPage() {
         </div>
 
         {/* Hero Image */}
-        <div className="flex justify-center mb-5">
-          <div className="w-36 h-36 rounded-full overflow-hidden shadow-elevated border-4 border-card">
-            <img src={onboardingHero} alt="Couple holding hands" className="w-full h-full object-cover" />
-          </div>
-        </div>
+
+
 
         {/* Headline */}
         <h1 className="text-2xl font-bold text-foreground text-center mb-2">{t("partner.betterTogether")}</h1>
