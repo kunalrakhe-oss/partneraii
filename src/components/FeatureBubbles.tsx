@@ -106,23 +106,49 @@ export default function FeatureBubbles({ isSingle }: FeatureBubblesProps) {
 
   return (
     <>
-      {/* 2x2 Grid of pillar buttons */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* 4 circular pillar buttons with curved text */}
+      <div className="flex justify-between px-2">
         {pillars.map((pillar) => {
           const Icon = pillar.icon;
+          const circleId = `circle-${pillar.id}`;
           return (
             <motion.button
               key={pillar.id}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.9 }}
+              whileHover={{ scale: 1.08 }}
               onClick={() => setActivePillar(pillar)}
-              className={`flex items-center gap-2.5 px-3 py-3 rounded-2xl bg-gradient-to-r ${pillar.bgGradient} ring-1 ${pillar.ringColor} transition-all`}
+              className="flex flex-col items-center gap-1.5 group"
             >
-              <div className={`w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center shadow-sm ring-1 ${pillar.ringColor}`}>
-                <Icon size={18} className={pillar.color} />
+              <div className="relative w-[72px] h-[72px]">
+                {/* Curved text around circle */}
+                <svg
+                  className="absolute inset-0 w-full h-full"
+                  viewBox="0 0 72 72"
+                >
+                  <defs>
+                    <path
+                      id={circleId}
+                      d="M 36,36 m -27,0 a 27,27 0 1,1 54,0 a 27,27 0 1,1 -54,0"
+                    />
+                  </defs>
+                  <text
+                    className="fill-foreground"
+                    style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "2.5px" }}
+                  >
+                    <textPath
+                      href={`#${circleId}`}
+                      startOffset="50%"
+                      textAnchor="middle"
+                    >
+                      {pillar.label.toUpperCase()}
+                    </textPath>
+                  </text>
+                </svg>
+                {/* Center icon circle */}
+                <div className={`absolute inset-[10px] rounded-full bg-gradient-to-br ${pillar.bgGradient} ring-2 ${pillar.ringColor} flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow`}>
+                  <Icon size={22} className={pillar.color} />
+                </div>
               </div>
-              <span className="text-xs font-bold text-foreground text-left leading-tight">
-                {pillar.label}
-              </span>
             </motion.button>
           );
         })}
