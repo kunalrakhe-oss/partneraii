@@ -96,7 +96,7 @@ export const en = {
     memories: "Memories",
     tasksDone: "Tasks Done",
     howFeeling: "How are you feeling today?",
-    tapToLogMood: "Tap to log your mood & connect with your partner",
+    tapToLogMood: "Tap to log your mood",
     yourMoodToday: "Your mood today",
     aiCheckin: "AI Check-in",
     chatWithAi: "Chat with AI →",
