@@ -294,6 +294,119 @@ function CalendarDietForm({ defaultDate, onClose, onSave, t }: {
   );
 }
 
+/* ─────────────── DYNAMIC MINI CALENDAR ─────────────── */
+
+function DynamicMiniCalendar({ currentDate, selectedDate, events, onSelectDate }: {
+  currentDate: Date;
+  selectedDate: Date;
+  events: CalendarEvent[];
+  onSelectDate: (d: Date) => void;
+}) {
+  const [expanded, setExpanded] = useState(true);
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const calEnd = addDays(startOfWeek(addDays(monthEnd, 6), { weekStartsOn: 1 }), -1);
+  const allDays = eachDayOfInterval({ start: calStart, end: calEnd > monthEnd ? calEnd : addDays(monthEnd, 6 - monthEnd.getDay()) });
+  // Ensure we have complete weeks
+  const weeks: Date[][] = [];
+  for (let i = 0; i < allDays.length; i += 7) {
+    weeks.push(allDays.slice(i, i + 7));
+  }
+
+  const dayHeaders = ["M", "T", "W", "T", "F", "S", "S"];
+
+  return (
+    <div className="mt-2">
+      <button
+        onClick={() => setExpanded(e => !e)}
+        className="w-full flex items-center justify-center py-1"
+      >
+        <motion.div
+          animate={{ rotate: expanded ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronDown size={16} className="text-muted-foreground" />
+        </motion.div>
+      </button>
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="px-1 pb-2">
+              {/* Day headers */}
+              <div className="grid grid-cols-7 mb-1">
+                {dayHeaders.map((d, i) => (
+                  <div key={i} className="text-center text-[10px] font-semibold text-muted-foreground uppercase">
+                    {d}
+                  </div>
+                ))}
+              </div>
+              {/* Calendar grid */}
+              {weeks.map((week, wi) => (
+                <div key={wi} className="grid grid-cols-7">
+                  {week.map((day) => {
+                    const dateStr = format(day, "yyyy-MM-dd");
+                    const dayEvts = events.filter(e => e.event_date === dateStr);
+                    const isSelected = isSameDay(day, selectedDate);
+                    const today = isToday(day);
+                    const inMonth = isSameMonth(day, currentDate);
+                    const hasEvents = dayEvts.length > 0;
+                    const completedAll = hasEvents && dayEvts.every(e => e.is_completed);
+
+                    return (
+                      <button
+                        key={dateStr}
+                        onClick={() => onSelectDate(day)}
+                        className={`relative flex flex-col items-center justify-center py-1.5 rounded-lg transition-all ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground"
+                            : today
+                            ? "bg-primary/10"
+                            : ""
+                        } ${!inMonth ? "opacity-30" : ""}`}
+                      >
+                        <span className={`text-xs font-semibold ${
+                          isSelected ? "text-primary-foreground" : today ? "text-primary" : "text-foreground"
+                        }`}>
+                          {format(day, "d")}
+                        </span>
+                        {/* Event indicator dots */}
+                        {hasEvents && (
+                          <div className="flex gap-0.5 mt-0.5">
+                            {dayEvts.slice(0, 3).map((evt, i) => (
+                              <div
+                                key={i}
+                                className={`w-1 h-1 rounded-full ${
+                                  isSelected ? "bg-primary-foreground/60" :
+                                  completedAll ? "bg-success" :
+                                  evt.category === "date-night" ? "bg-secondary" :
+                                  evt.category === "birthday" ? "bg-pink-400" :
+                                  evt.category === "chore" ? "bg-orange-400" :
+                                  "bg-primary/60"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export default function CalendarPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
