@@ -9,12 +9,13 @@ import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { uploadAttachment } from "@/components/MediaPicker";
 import AIChatbot from "@/components/AIChatbot";
 import aiAssistantIcon from "@/assets/ai-assistant-icon.png";
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_CHAT_MESSAGES, DEMO_PARTNER2 } from "@/lib/demoData";
+import { useAppMode } from "@/hooks/useAppMode";
 
 interface ChatMsg {
   id: string;
@@ -50,6 +51,8 @@ export default function ChatPage() {
   const { isDemoMode } = useDemo();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { isSingle } = useAppMode();
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [input, setInput] = useState("");
@@ -59,13 +62,34 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [activeTab, setActiveTab] = useState<ChatTab>("partner");
+  const [activeTab, setActiveTab] = useState<ChatTab>(() => {
+    const tab = searchParams.get("tab");
+    return tab === "ai" ? "ai" : "partner";
+  });
+  const [moodContext, setMoodContext] = useState<string | null>(() => {
+    const mood = searchParams.get("mood");
+    const note = searchParams.get("note");
+    if (mood) return `I'm feeling ${mood} today.${note ? ` ${note}` : ""} Can you help me talk through this?`;
+    return null;
+  });
   const [selectedMsg, setSelectedMsg] = useState<ChatMsg | null>(null);
   const [replyTo, setReplyTo] = useState<ChatMsg | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Force AI tab in single mode
+  useEffect(() => {
+    if (isSingle && activeTab === "partner") setActiveTab("ai");
+  }, [isSingle, activeTab]);
+
+  // Clean up URL params after reading
+  useEffect(() => {
+    if (searchParams.has("tab") || searchParams.has("mood") || searchParams.has("note")) {
+      setSearchParams({}, { replace: true });
+    }
+  }, []);
 
   // Fetch partner profile
   useEffect(() => {
@@ -258,6 +282,7 @@ export default function ChatPage() {
                 className="flex items-center justify-between w-full">
                 <h1 className="text-lg font-bold text-foreground shrink-0">{t("chat.chat")}</h1>
 
+                {!isSingle && (
                 <div className="flex bg-muted rounded-2xl p-1 gap-1">
                   <button
                     onClick={() => setActiveTab("partner")}
@@ -288,6 +313,7 @@ export default function ChatPage() {
                     <span>{t("chat.yourAI")}</span>
                   </button>
                 </div>
+                )}
 
                 <button
                   onClick={() => { setSearchOpen(true); setTimeout(() => searchInputRef.current?.focus(), 100); }}
@@ -302,7 +328,7 @@ export default function ChatPage() {
 
         {activeTab === "ai" ? (
           canAccess("lovebot") ? (
-            <AIChatbot embedded />
+            <AIChatbot embedded initialContext={moodContext} />
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center p-8">
