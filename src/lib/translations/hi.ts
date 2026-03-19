@@ -270,6 +270,8 @@ export const hi: TranslationKeys = {
     addNote: "एक नोट जोड़ें (वैकल्पिक)",
     whatsOnMind: "क्या चल रहा है मन में?",
     updateMood: "मूड अपडेट करें",
+    tapToSelect: "मूड दर्ज करने के लिए इमोजी टैप करें",
+    tapToChange: "बदलने के लिए टैप करें:",
     partnerStatus: "पार्टनर की स्थिति",
     isFeeling: "महसूस कर रहा/रही है",
     noMoodLoggedYet: "आज अभी कोई मूड दर्ज नहीं",
