@@ -518,6 +518,34 @@ export default function MemoriesPage() {
           </div>
         )}
 
+        {/* Fullscreen Photo Lightbox */}
+        <AnimatePresence>
+          {viewingPhoto && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[70] bg-black/95 flex items-center justify-center"
+              onClick={() => setViewingPhoto(null)}
+            >
+              <button
+                onClick={() => setViewingPhoto(null)}
+                className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center"
+              >
+                <X size={20} className="text-white" />
+              </button>
+              <motion.img
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                src={viewingPhoto}
+                alt="Memory photo"
+                className="max-w-full max-h-full object-contain p-4"
+                onClick={e => e.stopPropagation()}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Add Memory Modal */}
         <AnimatePresence>
