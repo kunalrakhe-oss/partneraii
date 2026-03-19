@@ -1,53 +1,39 @@
 
 
-# Plan: Replace Pillar Bubbles with a Compact Feature Grid
+## Plan: Tap-to-Add Water Intake (250ml per tap)
 
-## What changes
+Replace the water intake number input with an interactive tap-based widget where each tap adds 250ml (displayed as glasses where 1 glass = 250ml).
 
-Replace the current 4 big circular pillar buttons + fullscreen orbital overlay with a **flat, compact grid of all features** — no nesting, no overlay, no two-tap navigation. Every feature is one tap away.
+### What changes
 
-## New design
+**File: `src/pages/HealthPage.tsx`**
 
-A simple scrollable grid of small icon+label items, grouped under thin pillar headers. Takes roughly half the vertical space of the current bubbles.
+1. **Remove water from the generic `metricFields` grid** — filter out the `water_glasses` key so it no longer renders as a plain number input.
 
+2. **Add a dedicated Water Intake card below the metrics grid** with:
+   - A row of 8 droplet icons (representing a 2L daily goal)
+   - Filled/highlighted droplets for each glass already logged
+   - Tapping anywhere on the card adds +1 glass (250ml)
+   - Display: `{count} × 250ml = {total}ml` and a progress bar toward the 2L goal
+   - A minus button to undo a tap
+   - The card updates `form.water_glasses` in state so it saves with the existing "Save Today" button
+
+3. **Visual design**: Cyan-colored filled droplets, muted empty ones, subtle scale animation on tap using framer-motion.
+
+### Layout (Log tab)
 ```text
-Life Pillars
-┌─────────────────────────────────┐
-│ 💚 Healthy                      │
-│ [Workout] [Diet] [Health]       │
-│ [Physio] [Postpartum] [Men's]   │
-│                                 │
-│ ✨ Happy                        │
-│ [Mood] [Memories] [Baby] [Chat] │
-│                                 │
-│ 💰 Wealthy                      │
-│ [Finance] [Lists]               │
-│                                 │
-│ 🎯 Successful                   │
-│ [Tasks] [Calendar] [Events]     │
-│ [Safety]                        │
-└─────────────────────────────────┘
+┌─────────────────────────────┐
+│  [Steps] [HR]  [Sleep]      │  ← 2×3 grid (water removed)
+│  [Cals]  [Weight]           │
+├─────────────────────────────┤
+│  💧 Water Intake             │
+│  🔵🔵🔵🔵⚪⚪⚪⚪  [-] [+]  │  ← tap droplets or + button
+│  4 × 250ml = 1000ml         │
+│  ████████░░░░  50% of 2L    │
+└─────────────────────────────┘
+│  [Notes input]              │
+│  [Save Today button]        │
 ```
 
-Each item: small 40px icon circle + label below, arranged in a wrapping flex row (4 per row). Tap goes directly to the page. No overlay, no orbit animation.
-
-## File changes
-
-### 1. `src/components/home/PillarGrid.tsx` — Rewrite
-
-- Remove `FeatureBubbles` import entirely
-- Inline the pillar data (same routes/icons) but render as:
-  - For each pillar: a thin colored label header
-  - Below it: a `flex flex-wrap gap-3` of small icon buttons (40px circles) with labels
-  - Each button navigates directly via `useNavigate`
-- Accept `isSingle` prop to conditionally show Chat
-- Remove `uncheckedGroceries`, `pendingChores`, `totalEvents` props (unused in this simpler layout)
-
-### 2. `src/components/FeatureBubbles.tsx` — Delete
-
-No longer needed. The orbital overlay logic is removed.
-
-### 3. `src/pages/HomePage.tsx` — Update PillarGrid props
-
-Remove the extra props (`uncheckedGroceries`, `pendingChores`, `totalEvents`) from the PillarGrid call since the simplified grid doesn't use them.
+No database or backend changes needed — `water_glasses` field already exists and the save logic remains the same.
 
