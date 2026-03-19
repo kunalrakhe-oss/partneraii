@@ -36,7 +36,7 @@ export default function FeatureBubbles({ isSingle }: FeatureBubblesProps) {
   const pillars: Pillar[] = [
     {
       id: "healthy",
-      label: "Stay Healthy",
+      label: "Healthy",
       icon: HeartPulse,
       color: "text-success",
       bgGradient: "from-success/20 to-success/5",
