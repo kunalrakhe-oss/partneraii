@@ -49,6 +49,19 @@ const tools = [
                       name: { type: "string" },
                       sets: { type: "string" },
                       notes: { type: "string" },
+                      image_prompt: { type: "string", description: "A visual description of the exercise for generating an illustration" },
+                      recipe: {
+                        type: "object",
+                        description: "For diet plans: ingredients and instructions for the meal",
+                        properties: {
+                          ingredients: { type: "array", items: { type: "string" } },
+                          instructions: { type: "string" },
+                          prep_time: { type: "string" },
+                          calories: { type: "number" },
+                        },
+                        required: ["ingredients", "instructions"],
+                        additionalProperties: false,
+                      },
                     },
                     required: ["name"],
                     additionalProperties: false,
@@ -61,6 +74,60 @@ const tools = [
           },
         },
         required: ["plan_type", "title", "phases"],
+        additionalProperties: false,
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "modify_plan",
+      description: "Modify an existing recovery, diet, or workout plan based on user feedback. Use when user says things like 'remove squats', 'I don't eat dairy', 'make it easier'.",
+      parameters: {
+        type: "object",
+        properties: {
+          plan_id: { type: "string", description: "The UUID of the plan to modify" },
+          plan_type: { type: "string", enum: ["physio", "diet", "workout"] },
+          modifications: { type: "string", description: "Natural language summary of what was changed" },
+          updated_phases: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                duration_days: { type: "number" },
+                exercises: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      name: { type: "string" },
+                      sets: { type: "string" },
+                      notes: { type: "string" },
+                      image_prompt: { type: "string" },
+                      recipe: {
+                        type: "object",
+                        properties: {
+                          ingredients: { type: "array", items: { type: "string" } },
+                          instructions: { type: "string" },
+                          prep_time: { type: "string" },
+                          calories: { type: "number" },
+                        },
+                        required: ["ingredients", "instructions"],
+                        additionalProperties: false,
+                      },
+                    },
+                    required: ["name"],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              required: ["name", "duration_days", "exercises"],
+              additionalProperties: false,
+            },
+          },
+        },
+        required: ["plan_id", "plan_type", "modifications", "updated_phases"],
         additionalProperties: false,
       },
     },
@@ -107,7 +174,7 @@ serve(async (req) => {
 
     let planContext = "";
     if (activePlans?.length) {
-      planContext = `\n\nActive plans:\n${activePlans.map((p: any) => `- ${p.title} (${p.plan_type}, Day ${p.day})`).join("\n")}`;
+      planContext = `\n\nActive plans:\n${activePlans.map((p: any) => `- [ID: ${p.id}] ${p.title} (${p.plan_type}, Day ${p.day})`).join("\n")}`;
     }
 
     const systemPrompt = `You are PartnerAI — a warm, knowledgeable AI life coach built into a personal wellness app. You help users with health (physio, diet, workout), finances, relationships, and daily productivity.
@@ -122,6 +189,17 @@ Your role:
 - Always ask follow-up questions when you need more info before creating a plan
 - Keep responses concise (2-4 sentences) and actionable
 - When creating plans, make them realistic and progressive (easy → moderate → challenging)
+
+PLAN CREATION RULES:
+- For EXERCISE plans (physio/workout): include "image_prompt" for each exercise — describe the body position and movement clearly for illustration generation
+- For DIET plans: ALWAYS include a "recipe" object for each meal item with ingredients list, brief instructions, prep_time, and estimated calories
+- Make recipes simple and practical with common ingredients
+
+PLAN MODIFICATION RULES:
+- When user asks to change something about an existing plan (remove an exercise, swap a food, make easier/harder), use the modify_plan tool
+- You MUST include the plan_id from the active plans list
+- Provide the COMPLETE updated_phases array (not just the changed parts)
+- Describe what you changed in the modifications field
 
 IMPORTANT: Use exactly ONE tool call per response. If you need more info, use chat_response with a follow_up_question.${prefContext}${planContext}${langInstruction}`;
 
@@ -175,32 +253,37 @@ IMPORTANT: Use exactly ONE tool call per response. If you need more info, use ch
         args = {};
       }
 
-      // If it's a create_plan, save to DB
+      const authHeader = req.headers.get("Authorization");
+      const getSupabase = () => {
+        if (!authHeader) return null;
+        return createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_ANON_KEY")!,
+          { global: { headers: { Authorization: authHeader } } }
+        );
+      };
+
+      // Create plan
       if (fn === "create_plan") {
-        const authHeader = req.headers.get("Authorization");
-        if (authHeader) {
-          const supabase = createClient(
-            Deno.env.get("SUPABASE_URL")!,
-            Deno.env.get("SUPABASE_ANON_KEY")!,
-            { global: { headers: { Authorization: authHeader } } }
-          );
+        const supabase = getSupabase();
+        if (supabase) {
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
-            // Get partner pair
             const { data: ppData } = await supabase.rpc("get_partner_pair", { uid: user.id });
             const partnerPair = ppData || `solo:${user.id}`;
 
             if (args.plan_type === "diet") {
-              await supabase.from("diet_plans").insert({
+              const { data: inserted } = await supabase.from("diet_plans").insert({
                 user_id: user.id,
                 partner_pair: partnerPair,
                 title: args.title,
                 goal: args.goal || "general",
                 plan_data: { phases: args.phases },
                 is_active: true,
-              });
+              }).select("id").single();
+              if (inserted) args.plan_id = inserted.id;
             } else {
-              await supabase.from("recovery_plans").insert({
+              const { data: inserted } = await supabase.from("recovery_plans").insert({
                 user_id: user.id,
                 partner_pair: partnerPair,
                 title: args.title,
@@ -208,8 +291,24 @@ IMPORTANT: Use exactly ONE tool call per response. If you need more info, use ch
                 plan_data: { phases: args.phases },
                 assessment_answers: {},
                 is_active: true,
-              });
+              }).select("id").single();
+              if (inserted) args.plan_id = inserted.id;
             }
+          }
+        }
+      }
+
+      // Modify plan
+      if (fn === "modify_plan") {
+        const supabase = getSupabase();
+        if (supabase) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const table = args.plan_type === "diet" ? "diet_plans" : "recovery_plans";
+            await supabase.from(table)
+              .update({ plan_data: { phases: args.updated_phases } })
+              .eq("id", args.plan_id)
+              .eq("user_id", user.id);
           }
         }
       }
