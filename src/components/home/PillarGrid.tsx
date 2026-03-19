@@ -21,7 +21,7 @@ export default function PillarGrid({ isSingle }: PillarGridProps) {
       children: [
         { to: "/workout", icon: Dumbbell, label: "Workout" },
         { to: "/diet", icon: Salad, label: "Diet" },
-        { to: "/health", icon: Activity, label: "Health" },
+        { to: "/health", icon: Activity, label: "Habits" },
         { to: "/physio", icon: Activity, label: "Physio" },
         { to: "/postpartum", icon: HeartPulse, label: "Postpartum" },
         { to: "/mens-health", icon: Shield, label: "Men's" },

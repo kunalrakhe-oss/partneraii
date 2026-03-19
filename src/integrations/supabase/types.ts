@@ -373,6 +373,86 @@ export type Database = {
         }
         Relationships: []
       }
+      habit_logs: {
+        Row: {
+          count: number
+          created_at: string
+          habit_id: string
+          id: string
+          log_date: string
+          partner_pair: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          habit_id: string
+          id?: string
+          log_date?: string
+          partner_pair: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          habit_id?: string
+          id?: string
+          log_date?: string
+          partner_pair?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_logs_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habits: {
+        Row: {
+          color: string
+          created_at: string
+          frequency: string
+          icon: string
+          id: string
+          is_active: boolean
+          name: string
+          partner_pair: string
+          target_per_day: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          frequency?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          partner_pair: string
+          target_per_day?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          frequency?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          partner_pair?: string
+          target_per_day?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       health_metrics: {
         Row: {
           calories_burned: number | null
