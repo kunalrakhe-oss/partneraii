@@ -191,11 +191,6 @@ export default function HomePage() {
             </button>
           </motion.div>
 
-          {/* AI Coach Strip */}
-          <motion.div variants={item}>
-            <AICoachStrip greeting={greeting} firstName={firstName} />
-          </motion.div>
-
           {/* Today's Focus */}
           <motion.div variants={item}>
             <TodayFocusRing dailyGoals={dailyGoals} />
