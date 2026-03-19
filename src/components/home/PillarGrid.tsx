@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { HeartPulse, Sparkles, Wallet, Target, Dumbbell, Salad, Activity, Shield, Baby, Heart, Camera, MessageSquare, ShoppingCart, Check, CalendarDays, PartyPopper, MapPin, ChevronDown } from "lucide-react";
 
 interface PillarGridProps {
@@ -12,8 +12,8 @@ type Pillar = { id: string; label: string; icon: typeof Heart; color: string; ch
 
 export default function PillarGrid({ isSingle }: PillarGridProps) {
   const navigate = useNavigate();
-  const [sectionOpen, setSectionOpen] = useState(true);
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [activePillar, setActivePillar] = useState<string | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   const pillars: Pillar[] = [
     {
@@ -54,74 +54,73 @@ export default function PillarGrid({ isSingle }: PillarGridProps) {
     },
   ];
 
-  const VISIBLE_COUNT = 3;
+  // Auto-collapse when user scrolls the parent container
+  const handleScroll = useCallback(() => {
+    if (activePillar) setActivePillar(null);
+  }, [activePillar]);
+
+  useEffect(() => {
+    const scrollParent = ref.current?.closest("[data-scroll-container]") || ref.current?.closest(".overflow-y-auto, .overflow-auto");
+    if (!scrollParent) return;
+    scrollParent.addEventListener("scroll", handleScroll, { passive: true });
+    return () => scrollParent.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  const active = pillars.find((p) => p.id === activePillar);
 
   return (
-    <div>
-      {/* Section header — tap to collapse/expand entire section */}
-      <button
-        onClick={() => setSectionOpen(!sectionOpen)}
-        className="flex items-center gap-1 px-1 mb-1.5 w-full"
-      >
-        <span className="text-sm font-bold text-foreground">Life Pillars</span>
-        <motion.div animate={{ rotate: sectionOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-          <ChevronDown size={14} className="text-muted-foreground" />
-        </motion.div>
-      </button>
+    <div ref={ref}>
+      <p className="text-sm font-bold text-foreground px-1 mb-2">Life Pillars</p>
 
-      <motion.div
-        initial={false}
-        animate={{ height: sectionOpen ? "auto" : 0, opacity: sectionOpen ? 1 : 0 }}
-        transition={{ duration: 0.25, ease: "easeInOut" }}
-        className="overflow-hidden"
-      >
-        <div className="space-y-2">
-          {pillars.map((pillar) => {
-            const PillarIcon = pillar.icon;
-            const isExpanded = expanded === pillar.id;
-            const hasOverflow = pillar.children.length > VISIBLE_COUNT;
-            const visible = isExpanded ? pillar.children : pillar.children.slice(0, VISIBLE_COUNT);
-            const hiddenCount = pillar.children.length - VISIBLE_COUNT;
-
-            return (
-              <div key={pillar.id} className="rounded-xl bg-card/60 border border-border/30 px-2.5 py-2">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <PillarIcon size={14} className={pillar.color} />
-                  <span className={`text-xs font-semibold ${pillar.color}`}>{pillar.label}</span>
-                </div>
-                <div className={`flex gap-2 items-center ${isExpanded ? "flex-wrap" : "overflow-hidden"}`}>
-                  {visible.map((feat) => {
-                    const Icon = feat.icon;
-                    return (
-                      <button
-                        key={feat.to}
-                        onClick={() => navigate(feat.to)}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/50 hover:bg-muted/80 active:scale-95 transition-all shrink-0"
-                      >
-                        <Icon size={14} className="text-foreground" />
-                        <span className="text-[11px] font-medium text-foreground whitespace-nowrap">{feat.label}</span>
-                      </button>
-                    );
-                  })}
-                  {hasOverflow && (
-                    <button
-                      onClick={() => setExpanded(isExpanded ? null : pillar.id)}
-                      className="flex items-center gap-0.5 px-2 py-1.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors shrink-0"
-                    >
-                      <span className="text-[11px] font-medium text-muted-foreground">
-                        {isExpanded ? "Less" : `+${hiddenCount}`}
-                      </span>
-                      <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                        <ChevronDown size={12} className="text-muted-foreground" />
-                      </motion.div>
-                    </button>
-                  )}
-                </div>
+      {/* 4 pillar buttons in one row */}
+      <div className="flex justify-between px-1">
+        {pillars.map((pillar) => {
+          const Icon = pillar.icon;
+          const isActive = activePillar === pillar.id;
+          return (
+            <button
+              key={pillar.id}
+              onClick={() => setActivePillar(isActive ? null : pillar.id)}
+              className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all active:scale-95 ${isActive ? "bg-muted/80" : "hover:bg-muted/40"}`}
+            >
+              <div className={`w-10 h-10 rounded-full bg-muted/60 flex items-center justify-center ${isActive ? "ring-2 ring-primary/40" : ""}`}>
+                <Icon size={18} className={pillar.color} />
               </div>
-            );
-          })}
-        </div>
-      </motion.div>
+              <span className={`text-[10px] font-semibold ${pillar.color}`}>{pillar.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Expanded children */}
+      <AnimatePresence initial={false}>
+        {active && (
+          <motion.div
+            key={active.id}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="flex flex-wrap gap-2 px-1 pt-3">
+              {active.children.map((feat) => {
+                const FeatIcon = feat.icon;
+                return (
+                  <button
+                    key={feat.to}
+                    onClick={() => navigate(feat.to)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-card/60 border border-border/30 hover:bg-muted/80 active:scale-95 transition-all"
+                  >
+                    <FeatIcon size={14} className="text-foreground" />
+                    <span className="text-[11px] font-medium text-foreground whitespace-nowrap">{feat.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
