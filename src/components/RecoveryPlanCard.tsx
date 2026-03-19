@@ -132,24 +132,11 @@ export default function RecoveryPlanCard({ exercise, accentColor = "emerald", on
             <div className="rounded-xl overflow-hidden">
               <img src={imageUrl} alt={exercise.name} className="w-full h-40 object-cover rounded-xl" />
             </div>
-          ) : onGenerateImage ? (
-            <button
-              onClick={handleGenerateImage}
-              disabled={imageLoading}
-              className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors disabled:opacity-50`}
-            >
-              {imageLoading ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" />
-                  Generating illustration...
-                </>
-              ) : (
-                <>
-                  <ImageIcon size={14} />
-                  Show exercise illustration
-                </>
-              )}
-            </button>
+          ) : imageLoading ? (
+            <div className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium border border-dashed border-border text-muted-foreground">
+              <Loader2 size={14} className="animate-spin" />
+              Generating illustration...
+            </div>
           ) : null}
         </motion.div>
       )}

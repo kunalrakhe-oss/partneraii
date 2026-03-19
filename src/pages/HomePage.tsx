@@ -399,8 +399,8 @@ export default function HomePage() {
             <AICoachCard
               preferences={userPreferences}
               activePlans={[
-                ...(activePlan ? [activePlan] : []),
-                ...(activeDietPlan ? [{ plan_type: "diet", title: activeDietPlan.title, started_at: activeDietPlan.started_at }] : []),
+                ...(activePlan ? [{ id: activePlan.id, plan_type: activePlan.plan_type, title: activePlan.title, started_at: activePlan.started_at }] : []),
+                ...(activeDietPlan ? [{ id: activeDietPlan.id, plan_type: "diet", title: activeDietPlan.title, started_at: activeDietPlan.started_at }] : []),
               ]}
             />
           </motion.div>
