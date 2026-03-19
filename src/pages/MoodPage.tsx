@@ -136,7 +136,6 @@ export default function MoodPage() {
   const [partnerName, setPartnerName] = useState("Partner");
 
 
-  // Swipe-down dismiss
   const dragY = useMotionValue(0);
   const sheetOpacity = useTransform(dragY, [0, 300], [1, 0.3]);
 
