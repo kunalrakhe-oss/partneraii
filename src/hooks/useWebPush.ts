@@ -2,8 +2,6 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "";
-
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -15,6 +13,22 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
+let vapidKeyCache: string | null = null;
+
+async function getVapidPublicKey(): Promise<string> {
+  if (vapidKeyCache) return vapidKeyCache;
+  try {
+    const { data, error } = await supabase.functions.invoke("vapid-public-key");
+    if (!error && data?.publicKey) {
+      vapidKeyCache = data.publicKey;
+      return data.publicKey;
+    }
+  } catch (e) {
+    console.error("[WebPush] Failed to fetch VAPID key:", e);
+  }
+  return "";
+}
+
 export function useWebPush() {
   const { user } = useAuth();
   const registered = useRef(false);
@@ -23,29 +37,30 @@ export function useWebPush() {
   );
 
   const subscribe = useCallback(async () => {
-    if (!user || !VAPID_PUBLIC_KEY) return false;
+    if (!user) return false;
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) return false;
+
+    const vapidPublicKey = await getVapidPublicKey();
+    if (!vapidPublicKey) return false;
 
     try {
       const result = await Notification.requestPermission();
       setPermission(result);
       if (result !== "granted") return false;
 
-      // Register dedicated push service worker
       const reg = await navigator.serviceWorker.register("/sw-push.js");
       await navigator.serviceWorker.ready;
 
       let subscription = await reg.pushManager.getSubscription();
       if (!subscription) {
-      subscription = await reg.pushManager.subscribe({
+        subscription = await reg.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY).buffer as ArrayBuffer,
+          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey).buffer as ArrayBuffer,
         });
       }
 
       const subJSON = subscription.toJSON();
 
-      // Upsert subscription to database
       await supabase.from("push_subscriptions").upsert(
         {
           user_id: user.id,
@@ -63,10 +78,9 @@ export function useWebPush() {
     }
   }, [user]);
 
-  // Auto-subscribe if permission already granted
   useEffect(() => {
     if (!user || registered.current) return;
-    if (permission === "granted" && VAPID_PUBLIC_KEY) {
+    if (permission === "granted") {
       registered.current = true;
       subscribe();
     }
