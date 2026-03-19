@@ -790,22 +790,26 @@ export default function ChoresPage() {
                     <div className="border-t border-border/40 mx-4" />
                     <div className="px-4 py-3 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        {chore.assigned_to ? (
+                        {!isSingle && (
                           <>
-                            <AvatarCircle profile={assignedProfile} />
-                            {isExpanded && (
-                              <span className="text-xs text-muted-foreground">
-                                Assigned to {assignedName}
-                              </span>
+                            {chore.assigned_to ? (
+                              <>
+                                <AvatarCircle profile={assignedProfile} />
+                                {isExpanded && (
+                                  <span className="text-xs text-muted-foreground">
+                                    Assigned to {assignedName}
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <div className="flex items-center">
+                                <AvatarCircle profile={myProfile} />
+                                {partnerProfile && (
+                                  <AvatarCircle profile={partnerProfile} className="-ml-2 border-2 border-card" />
+                                )}
+                              </div>
                             )}
                           </>
-                        ) : (
-                          <div className="flex items-center">
-                            <AvatarCircle profile={myProfile} />
-                            {partnerProfile && (
-                              <AvatarCircle profile={partnerProfile} className="-ml-2 border-2 border-card" />
-                            )}
-                          </div>
                         )}
                       </div>
                       <div className="flex items-center gap-3">
