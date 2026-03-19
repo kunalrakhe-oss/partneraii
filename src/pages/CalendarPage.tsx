@@ -837,6 +837,7 @@ function WeekView({ currentDate, selectedDate, events, onSelectDate, onEditEvent
   onToggle: (e: CalendarEvent) => void;
   onAddEvent: () => void;
 }) {
+  const { isSingle } = useAppMode();
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = eachDayOfInterval({ start: weekStart, end: addDays(weekStart, 6) });
 
