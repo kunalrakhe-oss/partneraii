@@ -490,7 +490,7 @@ export const en = {
 
   // Onboarding
   onboarding: {
-    loveList: "PartnerAI",
+    loveList: "PAI",
     buildRelationship: "Build your relationship, not just tasks",
     startTogether: "Start Together",
     stayConnected: "Stay connected daily",
