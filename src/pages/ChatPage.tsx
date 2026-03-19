@@ -15,6 +15,7 @@ import AIChatbot from "@/components/AIChatbot";
 import aiAssistantIcon from "@/assets/ai-assistant-icon.png";
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_CHAT_MESSAGES, DEMO_PARTNER2 } from "@/lib/demoData";
+import { useAppMode } from "@/hooks/useAppMode";
 
 interface ChatMsg {
   id: string;
