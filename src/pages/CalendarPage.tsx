@@ -927,7 +927,7 @@ function WeekView({ currentDate, selectedDate, events, onSelectDate, onEditEvent
                   <div className="flex items-center gap-1.5">
                     <p className="text-[10px] text-muted-foreground">
                       {evt.event_time || "All day"} • {CATEGORY_LABEL[evt.category] || evt.category}
-                      {evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
+                      {!isSingle && evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
                     </p>
                     {countdownBadge(evt) && (
                       <span className="text-[9px] font-bold bg-primary/15 text-primary px-1.5 py-0.5 rounded-full">
