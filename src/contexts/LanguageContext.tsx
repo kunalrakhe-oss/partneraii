@@ -8,10 +8,12 @@ interface LanguageContextType {
   translations: TranslationKeys;
 }
 
+const defaultT = (key: string) => getTranslation(translations.en, key);
+
 const LanguageContext = createContext<LanguageContextType>({
   language: "en",
   setLanguage: () => {},
-  t: (key) => key,
+  t: defaultT,
   translations: translations.en,
 });
 
