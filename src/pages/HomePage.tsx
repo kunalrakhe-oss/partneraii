@@ -60,8 +60,8 @@ export default function HomePage() {
   const [newChoreTitle, setNewChoreTitle] = useState("");
   const unreadCount = useNotificationCount();
   const [visibleWidgets, setVisibleWidgets] = useState<HomeWidgetId[]>(getHomeWidgets);
-  const [activePlan, setActivePlan] = useState<{ plan_type: string; title: string; started_at: string } | null>(null);
-  const [activeDietPlan, setActiveDietPlan] = useState<{ title: string; goal: string; started_at: string } | null>(null);
+  const [activePlan, setActivePlan] = useState<{ id?: string; plan_type: string; title: string; started_at: string } | null>(null);
+  const [activeDietPlan, setActiveDietPlan] = useState<{ id?: string; title: string; goal: string; started_at: string } | null>(null);
   const [userPreferences, setUserPreferences] = useState<{ priorities: string[]; morning_routine: string | null; life_goals: string[]; daily_goals: string[] } | null>(null);
   useEffect(() => {
     const onUpdate = () => setVisibleWidgets(getHomeWidgets());
