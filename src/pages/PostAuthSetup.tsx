@@ -64,7 +64,7 @@ export default function PostAuthSetup() {
             className="w-full max-w-sm space-y-6 text-center"
           >
             <div>
-              <h1 className="text-2xl font-bold text-foreground mb-2">How will you use LoveList?</h1>
+              <h1 className="text-2xl font-bold text-foreground mb-2">How will you use PartnerAI?</h1>
               <p className="text-sm text-muted-foreground">You can change this anytime in settings</p>
             </div>
 
