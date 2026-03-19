@@ -277,6 +277,7 @@ function CategorySection({
   onAdd,
   expanded,
   onExpand,
+  isSingle = false,
 }: {
   category: typeof CATEGORIES[0];
   items: DietItem[];
@@ -288,6 +289,7 @@ function CategorySection({
   onAdd: () => void;
   expanded: boolean;
   onExpand: () => void;
+  isSingle?: boolean;
 }) {
   const done = items.filter(i => i.is_completed).length;
 
