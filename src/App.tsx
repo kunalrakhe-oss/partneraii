@@ -50,6 +50,8 @@ function AppRoutes() {
   // Authenticated — clean up onboarding state (must be before early returns)
   useEffect(() => {
     if (!user) return;
+    // Force all returning users through setup by clearing cached flag
+    localStorage.removeItem("lovelist-setup-done");
     const onboardIntent = localStorage.getItem("lovelist-onboard-intent");
     if (onboardIntent === "real") {
       localStorage.removeItem("lovelist-onboard-intent");
