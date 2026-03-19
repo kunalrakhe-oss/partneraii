@@ -12,7 +12,7 @@ type Pillar = { id: string; label: string; icon: typeof Heart; color: string; ch
 
 export default function PillarGrid({ isSingle }: PillarGridProps) {
   const navigate = useNavigate();
-  const [open, setOpen] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const pillars: Pillar[] = [
     {
@@ -53,56 +53,58 @@ export default function PillarGrid({ isSingle }: PillarGridProps) {
     },
   ];
 
+  const VISIBLE_COUNT = 4;
+
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <p className="text-sm font-bold text-foreground px-1">Life Pillars</p>
-      <div className="space-y-1">
+      <div className="space-y-2">
         {pillars.map((pillar) => {
           const PillarIcon = pillar.icon;
-          const isOpen = open === pillar.id;
+          const isExpanded = expanded === pillar.id;
+          const hasOverflow = pillar.children.length > VISIBLE_COUNT;
+          const visible = isExpanded ? pillar.children : pillar.children.slice(0, VISIBLE_COUNT);
+          const hiddenCount = pillar.children.length - VISIBLE_COUNT;
+
           return (
-            <div key={pillar.id}>
-              <button
-                onClick={() => setOpen(isOpen ? null : pillar.id)}
-                className="flex items-center gap-1.5 w-full px-2 py-1.5 rounded-lg hover:bg-muted/40 transition-colors"
-              >
+            <div key={pillar.id} className="rounded-xl bg-card/60 border border-border/30 p-2.5">
+              {/* Header */}
+              <div className="flex items-center gap-1.5 mb-2">
                 <PillarIcon size={14} className={pillar.color} />
-                <span className={`text-xs font-semibold ${pillar.color} flex-1 text-left`}>{pillar.label}</span>
-                <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                  <ChevronDown size={14} className="text-muted-foreground" />
-                </motion.div>
-              </button>
-              <AnimatePresence initial={false}>
-                {isOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
+                <span className={`text-xs font-semibold ${pillar.color}`}>{pillar.label}</span>
+              </div>
+
+              {/* Feature items */}
+              <div className="flex flex-wrap gap-2 items-start">
+                {visible.map((feat) => {
+                  const Icon = feat.icon;
+                  return (
+                    <button
+                      key={feat.to}
+                      onClick={() => navigate(feat.to)}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/50 hover:bg-muted/80 active:scale-95 transition-all"
+                    >
+                      <Icon size={14} className="text-foreground" />
+                      <span className="text-[11px] font-medium text-foreground">{feat.label}</span>
+                    </button>
+                  );
+                })}
+
+                {/* Expand/collapse toggle */}
+                {hasOverflow && (
+                  <button
+                    onClick={() => setExpanded(isExpanded ? null : pillar.id)}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
                   >
-                    <div className="flex flex-wrap gap-3 px-2 py-2">
-                      {pillar.children.map((feat) => {
-                        const Icon = feat.icon;
-                        return (
-                          <button
-                            key={feat.to}
-                            onClick={() => navigate(feat.to)}
-                            className="flex flex-col items-center gap-1 w-[60px] active:scale-95 transition-transform"
-                          >
-                            <div className="w-10 h-10 rounded-full bg-muted/60 flex items-center justify-center">
-                              <Icon size={18} className="text-foreground" />
-                            </div>
-                            <span className="text-[10px] font-medium text-muted-foreground leading-tight text-center">
-                              {feat.label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
+                    <span className="text-[11px] font-medium text-muted-foreground">
+                      {isExpanded ? "Less" : `+${hiddenCount}`}
+                    </span>
+                    <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                      <ChevronDown size={12} className="text-muted-foreground" />
+                    </motion.div>
+                  </button>
                 )}
-              </AnimatePresence>
+              </div>
             </div>
           );
         })}
