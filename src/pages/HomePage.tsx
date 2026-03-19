@@ -231,6 +231,19 @@ export default function HomePage() {
       });
   }, [user]);
 
+  // Fetch user preferences
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("user_preferences")
+      .select("priorities, morning_routine")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setUserPreferences(data as any);
+      });
+  }, [user]);
+
   // Fetch AI insight
   const fetchInsight = useCallback(async () => {
     if (insightLoading) return;
@@ -238,10 +251,16 @@ export default function HomePage() {
     try {
       const hour = new Date().getHours();
       const timeOfDay = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+      const dailyIntent = sessionStorage.getItem("partnerai-daily-intent") || null;
 
       const { data, error } = await supabase.functions.invoke("daily-insight", {
         body: {
           language: localStorage.getItem("lovelist-language") || "en",
+          preferences: userPreferences ? {
+            priorities: userPreferences.priorities,
+            morning_routine: userPreferences.morning_routine,
+            daily_intent: dailyIntent,
+          } : undefined,
           stats: {
             daysTogether,
             pendingChores,
@@ -259,11 +278,11 @@ export default function HomePage() {
       if (data?.insight) setAiInsight(data.insight);
     } catch (e) {
       console.error("Insight error:", e);
-      setAiInsight("Keep building your love story together! 💕");
+      setAiInsight("Keep building your best life! 💕");
     } finally {
       setInsightLoading(false);
     }
-  }, [daysTogether, pendingChores, completedChores, uncheckedGroceries, todayEvents.length, totalMemories, messageCount, partnerMood]);
+  }, [daysTogether, pendingChores, completedChores, uncheckedGroceries, todayEvents.length, totalMemories, messageCount, partnerMood, userPreferences]);
 
   // Auto-fetch insight once data is loaded
   useEffect(() => {
