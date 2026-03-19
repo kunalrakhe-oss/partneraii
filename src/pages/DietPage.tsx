@@ -15,6 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
+import { useAppMode } from "@/hooks/useAppMode";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
