@@ -73,7 +73,7 @@ const SUGGESTIONS = [
   "🍽️ Meal planning help",
 ];
 
-export default function AIChatbot({ embedded }: { embedded?: boolean }) {
+export default function AIChatbot({ embedded, initialContext }: { embedded?: boolean; initialContext?: string | null }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
