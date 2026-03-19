@@ -431,7 +431,7 @@ export default function HealthPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="h-[320px] overflow-y-auto space-y-3 pr-1">
+                <div className="h-[calc(100dvh-22rem)] min-h-[200px] max-h-[500px] overflow-y-auto space-y-3 pr-1">
                   {chatMessages.length === 0 && (
                     <p className="text-center text-muted-foreground text-sm py-8">Ask anything about your health data!</p>
                   )}
