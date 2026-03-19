@@ -1,77 +1,128 @@
-import { useState } from "react";
-import { Sparkles, Mail, Lock, User, Users, ArrowRight, Loader2, Phone } from "lucide-react";
-import { motion } from "framer-motion";
+import { useState, useRef, useEffect } from "react";
+import { Sparkles, Mail, ArrowRight, Loader2, User, Users, ShieldCheck } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useToast } from "@/hooks/use-toast";
-
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function AuthPage() {
-  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
+  const [step, setStep] = useState<"email" | "otp">("email");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [appMode, setAppMode] = useState<"single" | "couple">(() => (localStorage.getItem("lovelist-app-mode") as "single" | "couple") || "single");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [appMode, setAppMode] = useState<"single" | "couple">(
+    () => (localStorage.getItem("lovelist-app-mode") as "single" | "couple") || "single"
+  );
   const { toast } = useToast();
   const { t, language, setLanguage } = useLanguage();
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Countdown timer for resend
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim()) return;
     setLoading(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email, password,
-          options: {
-            data: { display_name: displayName, phone },
-            emailRedirectTo: window.location.origin,
-          },
-        });
-        if (error) throw error;
-        toast({ title: t("auth.accountCreated"), description: t("auth.checkEmail") });
-      } else if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
-        if (error) throw error;
-        toast({ title: t("auth.resetLinkSent"), description: t("auth.checkEmailReset") });
-      }
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: { shouldCreateUser: true },
+      });
+      if (error) throw error;
+      setStep("otp");
+      setCountdown(60);
+      toast({ title: "Code sent!", description: `Check ${email} for your 6-digit code.` });
     } catch (err: any) {
-      toast({ title: t("auth.oops"), description: err.message || t("auth.somethingWrong"), variant: "destructive" });
+      toast({ title: "Oops", description: err.message || "Failed to send code", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleVerifyOtp = async () => {
+    const code = otp.join("");
+    if (code.length !== 6) return;
     setLoading(true);
     try {
-      const { error } = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin, extraParams: { prompt: "select_account" } });
+      const { error } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token: code,
+        type: "email",
+      });
       if (error) throw error;
+      // Auth context will pick up the session automatically
     } catch (err: any) {
-      toast({ title: t("auth.oops"), description: err.message || t("auth.googleFailed"), variant: "destructive" });
+      toast({ title: "Invalid code", description: err.message || "Please check and try again", variant: "destructive" });
+      setOtp(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
+    } finally {
       setLoading(false);
     }
   };
 
-  const handleAppleSignIn = async () => {
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1);
+    setOtp(newOtp);
+
+    // Auto-advance
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+    // Auto-submit when all filled
+    if (value && index === 5 && newOtp.every(d => d)) {
+      setTimeout(() => handleVerifyOtp(), 100);
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (pasted.length === 6) {
+      e.preventDefault();
+      const newOtp = pasted.split("");
+      setOtp(newOtp);
+      inputRefs.current[5]?.focus();
+      setTimeout(() => {
+        // auto-submit
+        handleVerifyOtp();
+      }, 200);
+    }
+  };
+
+  const handleResend = async () => {
+    if (countdown > 0) return;
     setLoading(true);
     try {
-      const { error } = await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: { shouldCreateUser: true },
+      });
       if (error) throw error;
+      setCountdown(60);
+      setOtp(["", "", "", "", "", ""]);
+      toast({ title: "Code resent!", description: `Check ${email} again.` });
     } catch (err: any) {
-      toast({ title: t("auth.oops"), description: err.message || "Apple sign-in failed", variant: "destructive" });
+      toast({ title: "Failed to resend", description: err.message, variant: "destructive" });
+    } finally {
       setLoading(false);
     }
   };
 
-  const inputClass = "w-full h-12 pl-11 pr-4 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30";
+  const inputClass =
+    "w-full h-12 pl-11 pr-4 rounded-xl bg-card/50 backdrop-blur-sm border border-border/40 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all";
 
   return (
     <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto">
@@ -80,116 +131,169 @@ export default function AuthPage() {
         <div className="w-full flex justify-end mb-2">
           <button
             onClick={() => setLanguage(language === "en" ? "hi" : "en")}
-            className="px-3 py-1.5 rounded-full bg-card border border-border text-xs font-medium text-foreground flex items-center gap-1.5 shadow-sm"
+            className="px-3 py-1.5 rounded-full bg-card/50 backdrop-blur-sm border border-border/40 text-xs font-medium text-foreground flex items-center gap-1.5 shadow-sm"
           >
             🌐 {language === "en" ? "हिन्दी" : "English"}
           </button>
         </div>
+
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 mb-6">
           <Sparkles size={24} className="text-primary" />
-          <span className="text-xl font-bold text-foreground font-sans">Partner<span className="love-gradient-text">AI</span></span>
+          <span className="text-xl font-bold text-foreground font-sans">
+            Partner<span className="love-gradient-text">AI</span>
+          </span>
         </motion.div>
 
-
-        <h1 className="text-2xl font-bold text-foreground text-center mb-1">Welcome to Partner<span className="love-gradient-text">AI</span></h1>
+        <h1 className="text-2xl font-bold text-foreground text-center mb-1">
+          Welcome to Partner<span className="love-gradient-text">AI</span>
+        </h1>
         <p className="text-sm text-muted-foreground text-center mb-6">
-          {mode === "login" ? "Your AI-powered path to a better life" : mode === "signup" ? "Start your journey to being healthier, happier & wealthier" : t("auth.resetPassword")}
+          {step === "email"
+            ? "Sign in with a magic code — no password needed"
+            : `Enter the 6-digit code sent to ${email}`}
         </p>
 
         {/* Me / We Mode Toggle */}
-        <div className="flex gap-0.5 bg-muted rounded-full p-0.5 w-fit mx-auto mb-2">
-          {([{ value: "single", label: "Me Mode", icon: User }, { value: "couple", label: "We Mode", icon: Users }] as const).map(({ value, label, icon: Icon }) => (
-            <button key={value} type="button" onClick={() => { setAppMode(value); localStorage.setItem("lovelist-app-mode", value); }}
-              className={`flex items-center justify-center gap-1 text-[11px] font-medium px-4 py-1.5 rounded-full transition-colors ${appMode === value ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
-              <Icon size={12} />
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {/* Mode tabs */}
-        <div className="flex gap-1 bg-muted rounded-xl p-1 w-full mb-4">
-          {(["login", "signup"] as const).map((m) => (
-            <button key={m} onClick={() => setMode(m)}
-              className={`flex-1 text-xs font-medium py-2 rounded-lg transition-colors ${mode === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>
-              {m === "login" ? t("auth.signIn") : t("auth.signUp")}
-            </button>
-          ))}
-        </div>
-
-        <form onSubmit={handleSubmit} className="w-full space-y-3">
-          {mode === "signup" && (
-            <>
-              <div className="relative">
-                <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder={t("auth.yourName")} required className={inputClass} />
-              </div>
-              <div className="relative">
-                <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
-                  placeholder={t("auth.phoneOptional")} className={inputClass} />
-              </div>
-            </>
-          )}
-          <div className="relative">
-            <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              placeholder={t("auth.email")} required className={inputClass} />
+        {step === "email" && (
+          <div className="flex gap-0.5 bg-muted/60 backdrop-blur-sm rounded-full p-0.5 w-fit mx-auto mb-5">
+            {([
+              { value: "single" as const, label: "Me Mode", icon: User },
+              { value: "couple" as const, label: "We Mode", icon: Users },
+            ]).map(({ value, label, icon: Icon }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => {
+                  setAppMode(value);
+                  localStorage.setItem("lovelist-app-mode", value);
+                }}
+                className={`flex items-center justify-center gap-1 text-[11px] font-medium px-4 py-1.5 rounded-full transition-colors ${
+                  appMode === value
+                    ? "bg-card/70 backdrop-blur-sm text-foreground shadow-sm"
+                    : "text-muted-foreground"
+                }`}
+              >
+                <Icon size={12} />
+                {label}
+              </button>
+            ))}
           </div>
-          {mode !== "forgot" && (
-            <div className="relative">
-              <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                placeholder={t("auth.password")} required minLength={6} className={inputClass} />
-            </div>
-          )}
-          {mode === "login" && (
-            <button type="button" onClick={() => setMode("forgot")}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-              {t("auth.forgotPassword")}
-            </button>
-          )}
-          <button type="submit" disabled={loading}
-            className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-soft disabled:opacity-60">
-            {loading ? <Loader2 size={18} className="animate-spin" /> : (
-              <>{mode === "login" ? t("auth.signIn") : mode === "signup" ? t("auth.createAccountBtn") : t("auth.sendResetLink")} <ArrowRight size={16} /></>
-            )}
-          </button>
-        </form>
+        )}
 
-        {/* Divider */}
-        <div className="flex items-center gap-3 my-5 w-full">
-          <div className="flex-1 h-px bg-border" />
-          <span className="text-xs text-muted-foreground">{t("auth.orContinueWith")}</span>
-          <div className="flex-1 h-px bg-border" />
+        <AnimatePresence mode="wait">
+          {step === "email" ? (
+            <motion.form
+              key="email-step"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              onSubmit={handleSendOtp}
+              className="w-full space-y-4"
+            >
+              <div className="relative">
+                <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                  autoFocus
+                  className={inputClass}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={loading || !email.trim()}
+                className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-soft disabled:opacity-60 transition-all"
+              >
+                {loading ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <>
+                    Send Magic Code <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            </motion.form>
+          ) : (
+            <motion.div
+              key="otp-step"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="w-full space-y-5"
+            >
+              {/* OTP Input */}
+              <div className="flex justify-center gap-2.5" onPaste={handleOtpPaste}>
+                {otp.map((digit, i) => (
+                  <input
+                    key={i}
+                    ref={(el) => { inputRefs.current[i] = el; }}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(i, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                    autoFocus={i === 0}
+                    className="w-12 h-14 text-center text-xl font-bold rounded-xl bg-card/50 backdrop-blur-sm border border-border/40 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
+                  />
+                ))}
+              </div>
+
+              {/* Verify button */}
+              <button
+                onClick={handleVerifyOtp}
+                disabled={loading || otp.join("").length !== 6}
+                className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-soft disabled:opacity-60 transition-all"
+              >
+                {loading ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <>
+                    <ShieldCheck size={16} /> Verify & Sign In
+                  </>
+                )}
+              </button>
+
+              {/* Resend / Back */}
+              <div className="flex items-center justify-between text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("email");
+                    setOtp(["", "", "", "", "", ""]);
+                  }}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  ← Change email
+                </button>
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={countdown > 0 || loading}
+                  className="text-primary font-medium disabled:text-muted-foreground transition-colors"
+                >
+                  {countdown > 0 ? `Resend in ${countdown}s` : "Resend code"}
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Security note */}
+        <div className="mt-8 flex items-center gap-2 text-[11px] text-muted-foreground">
+          <ShieldCheck size={14} />
+          <span>Passwordless login — secure, fast, no password to remember</span>
         </div>
-
-        {/* Google */}
-        <button type="button" onClick={handleGoogleSignIn} disabled={loading}
-          className="w-full h-12 rounded-xl bg-card border border-border text-sm font-medium text-foreground flex items-center justify-center gap-3 hover:bg-accent transition-colors disabled:opacity-60">
-          <svg width="18" height="18" viewBox="0 0 18 18">
-            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
-            <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
-            <path d="M3.964 10.706A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.038l3.007-2.332z" fill="#FBBC05"/>
-            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.962L3.964 7.294C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
-          </svg>
-          {t("auth.continueWithGoogle")}
-        </button>
-
-        {/* Apple */}
-        <button type="button" onClick={handleAppleSignIn} disabled={loading}
-          className="w-full h-12 rounded-xl bg-black text-white text-sm font-medium flex items-center justify-center gap-3 hover:bg-black/90 transition-colors disabled:opacity-60">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="white">
-            <path d="M13.71 9.04c-.02-2.08 1.7-3.08 1.78-3.13-0.97-1.42-2.48-1.61-3.01-1.63-1.28-.13-2.5.75-3.15.75-.65 0-1.65-.73-2.71-.71-1.4.02-2.68.81-3.4 2.06-1.45 2.52-.37 6.25 1.04 8.3.69 1 1.51 2.12 2.59 2.08 1.04-.04 1.43-.67 2.69-.67 1.25 0 1.61.67 2.71.65 1.12-.02 1.83-.99 2.51-1.99.79-1.15 1.12-2.27 1.14-2.33-.02-.01-2.18-.84-2.2-3.33zM11.63 3.16c.57-.7.96-1.66.85-2.63-.82.03-1.82.55-2.41 1.24-.53.61-.99 1.59-.87 2.53.92.07 1.86-.47 2.43-1.14z"/>
-          </svg>
-          Continue with Apple
-        </button>
       </div>
 
       <div className="px-6 pb-8 pt-4">
         <p className="text-[10px] text-muted-foreground text-center">
-          {t("auth.termsText")} <span className="underline">{t("auth.termsOfService")}</span>{" & "}<span className="underline">{t("auth.privacyPolicy")}</span>
+          {t("auth.termsText")} <span className="underline">{t("auth.termsOfService")}</span>
+          {" & "}
+          <span className="underline">{t("auth.privacyPolicy")}</span>
         </p>
       </div>
     </div>
