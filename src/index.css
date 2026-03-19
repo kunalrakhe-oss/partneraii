@@ -131,10 +131,30 @@
     @apply border-border;
   }
 
+  html {
+    height: 100dvh;
+    height: 100vh;
+    overflow: hidden;
+    touch-action: pan-x pan-y;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    height: 100dvh;
+    height: 100vh;
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #root {
+    height: 100dvh;
+    height: 100vh;
+    overflow: hidden;
   }
 
   /* Subtle mesh background for depth */
