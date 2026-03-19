@@ -455,7 +455,7 @@ export const en = {
   // Partner Connect
   partner: {
     betterTogether: "Better Together",
-    loveListWorksBest: "PartnerAI works best when shared. Connect with your partner to start syncing your life.",
+    loveListWorksBest: "PAI works best when shared. Connect with your partner to start syncing your life.",
     createStep: "Create",
     connectStep: "Connect",
     yourUniqueCode: "Your Unique Link Code",
