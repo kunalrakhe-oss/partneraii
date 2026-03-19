@@ -819,6 +819,149 @@ export default function CalendarPage() {
   );
 }
 
+/* ─────────────── WEEK VIEW (horizontal strip + day event list) ─────────────── */
+
+function WeekView({ currentDate, selectedDate, events, onSelectDate, onEditEvent, onToggle, onAddEvent }: {
+  currentDate: Date;
+  selectedDate: Date;
+  events: CalendarEvent[];
+  onSelectDate: (d: Date) => void;
+  onEditEvent: (e: CalendarEvent) => void;
+  onToggle: (e: CalendarEvent) => void;
+  onAddEvent: () => void;
+}) {
+  const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+  const weekDays = eachDayOfInterval({ start: weekStart, end: addDays(weekStart, 6) });
+
+  const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
+  const selectedEvents = events
+    .filter((e) => e.event_date === selectedDateStr)
+    .sort((a, b) => (a.event_time || "").localeCompare(b.event_time || ""));
+
+  // Upcoming events after selected date
+  const upcomingEvents = events.filter(e => e.event_date > selectedDateStr);
+
+  return (
+    <div>
+      {/* Week strip */}
+      <div className="px-3 pb-3">
+        <div className="flex gap-1">
+          {weekDays.map((day) => {
+            const dateStr = format(day, "yyyy-MM-dd");
+            const dayEvts = events.filter((e) => e.event_date === dateStr);
+            const isSelected = isSameDay(day, selectedDate);
+            const today = isToday(day);
+
+            return (
+              <button
+                key={day.toISOString()}
+                onClick={() => onSelectDate(day)}
+                className={`flex-1 flex flex-col items-center py-2 rounded-xl transition-all ${
+                  isSelected
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : today
+                    ? "bg-primary/10"
+                    : "hover:bg-muted"
+                }`}
+              >
+                <span className={`text-[10px] font-semibold uppercase ${
+                  isSelected ? "text-primary-foreground/80" : "text-muted-foreground"
+                }`}>
+                  {format(day, "EEE")}
+                </span>
+                <span className={`text-base font-bold mt-0.5 ${
+                  isSelected ? "text-primary-foreground" : today ? "text-primary" : "text-foreground"
+                }`}>
+                  {format(day, "d")}
+                </span>
+                {/* Event dots */}
+                {dayEvts.length > 0 && (
+                  <div className="flex gap-0.5 mt-1">
+                    {dayEvts.slice(0, 3).map((evt, i) => (
+                      <div
+                        key={i}
+                        className={`w-1 h-1 rounded-full ${
+                          isSelected ? "bg-primary-foreground/60" :
+                          evt.category === "date-night" ? "bg-secondary" :
+                          evt.category === "groceries" ? "bg-success" :
+                          evt.category === "chore" ? "bg-orange-400" :
+                          evt.category === "birthday" ? "bg-pink-400" :
+                          "bg-primary"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Selected day events */}
+      {selectedEvents.length > 0 ? (
+        <div className="px-5 pb-2">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">
+            {isToday(selectedDate) ? "Today's Events" : format(selectedDate, "EEEE's Events")}
+          </p>
+          <div className="space-y-1.5">
+            {selectedEvents.map((evt) => (
+              <div
+                key={evt.id}
+                onClick={() => onEditEvent(evt)}
+                className={`w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-card shadow-soft border border-border cursor-pointer ${evt.is_completed ? "opacity-50" : ""}`}
+              >
+                <div className={`w-1 self-stretch rounded-full ${CATEGORY_COLORS[evt.category] || "bg-primary/50"}`} />
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-semibold text-foreground ${evt.is_completed ? "line-through" : ""}`}>
+                    {evt.title}
+                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[10px] text-muted-foreground">
+                      {evt.event_time || "All day"} • {CATEGORY_LABEL[evt.category] || evt.category}
+                      {evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
+                    </p>
+                    {countdownBadge(evt) && (
+                      <span className="text-[9px] font-bold bg-primary/15 text-primary px-1.5 py-0.5 rounded-full">
+                        {countdownBadge(evt)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onToggle(evt); }}
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                    evt.is_completed ? "bg-success border-success" : "border-border"
+                  }`}
+                >
+                  {evt.is_completed && <Check size={10} className="text-success-foreground" />}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="px-5 py-8 text-center">
+          <CalendarPlus size={28} className="text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm font-semibold text-foreground mb-1">No events {isToday(selectedDate) ? "today" : "this day"}</p>
+          <p className="text-xs text-muted-foreground">Tap + to add one</p>
+        </div>
+      )}
+
+      {/* Upcoming Events */}
+      <div className="mt-4">
+        <p className="px-5 text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Upcoming Events</p>
+        <ListView
+          events={upcomingEvents}
+          onEditEvent={onEditEvent}
+          onToggle={onToggle}
+          onAddEvent={onAddEvent}
+        />
+      </div>
+    </div>
+  );
+}
+
 /* ─────────────── DAY VIEW (MS Calendar-style: parked strip + timeline) ─────────────── */
 
 const EVENT_DEFAULT_DURATION = 60; // default 60 min display height
