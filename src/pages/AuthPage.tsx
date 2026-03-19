@@ -60,6 +60,17 @@ export default function AuthPage() {
     }
   };
 
+  const handleAppleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
+      if (error) throw error;
+    } catch (err: any) {
+      toast({ title: t("auth.oops"), description: err.message || "Apple sign-in failed", variant: "destructive" });
+      setLoading(false);
+    }
+  };
+
   const inputClass = "w-full h-12 pl-11 pr-4 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30";
 
   return (
