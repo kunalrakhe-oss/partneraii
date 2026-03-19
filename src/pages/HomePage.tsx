@@ -419,11 +419,11 @@ export default function HomePage() {
           {showWidget("mood-check") && (() => {
             const MOOD_EMOJI: Record<string, string> = { happy: "😊", excited: "🤩", neutral: "🥰", calm: "😌", grateful: "🙏", silly: "🤪", tired: "😵‍💫", sad: "😢", stressed: "😫", anxious: "😰", angry: "😠", furious: "🤬", lonely: "🥺", hopeful: "🌟", confused: "😕" };
             return (
-              <motion.div key="mood-check" variants={item} className="space-y-2 -mx-1">
-                <div className="flex gap-2 px-1">
-                  <button onClick={() => navigate("/mood")} className="flex-1 bg-gradient-to-br from-secondary/15 to-secondary/5 rounded-2xl p-4 border border-secondary/20 text-left">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{myMood ? (MOOD_EMOJI[myMood.mood] || "✨") : "🌤️"}</span>
+              <motion.div key="mood-check" variants={item} className="space-y-2">
+                <div className="flex gap-2">
+                  <button onClick={() => navigate("/mood")} className="flex-1 bg-gradient-to-br from-secondary/15 to-secondary/5 rounded-2xl p-3 border border-secondary/20 text-left">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xl">{myMood ? (MOOD_EMOJI[myMood.mood] || "✨") : "🌤️"}</span>
                       <div className="min-w-0 flex-1">
                         <p className="text-[10px] text-muted-foreground">{t("home.yourMoodToday")}</p>
                         <p className="text-sm font-bold text-foreground truncate">
@@ -433,9 +433,9 @@ export default function HomePage() {
                     </div>
                   </button>
                   {!isSingle && (
-                    <button onClick={() => partnerMood ? setShowMoodPopup(true) : navigate("/mood")} className="flex-1 bg-gradient-to-br from-primary/15 to-primary/5 rounded-2xl p-4 border border-primary/20 text-left">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{partnerMood ? (MOOD_EMOJI[partnerMood.mood] || "✨") : "✨"}</span>
+                    <button onClick={() => partnerMood ? setShowMoodPopup(true) : navigate("/mood")} className="flex-1 bg-gradient-to-br from-primary/15 to-primary/5 rounded-2xl p-3 border border-primary/20 text-left">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xl">{partnerMood ? (MOOD_EMOJI[partnerMood.mood] || "✨") : "✨"}</span>
                         <div className="min-w-0 flex-1">
                           <p className="text-[10px] text-muted-foreground">{t("home.partnerFeeling")}</p>
                           <p className="text-sm font-bold text-foreground truncate">
