@@ -1,50 +1,65 @@
 
 
-# Plan: Replace AI Chat Onboarding with Selectable Options + "Other"
+# Plan: Move Login After Onboarding Data Collection
 
-## Current state
-The `ai-interview` step is a free-form chat where users type answers to the AI. This is slow (API calls per message), awkward on mobile, and most users have common goals anyway.
+## Current flow
+1. **Onboarding** (unauthenticated): Language → Slides → Mode → redirects to `/auth`
+2. **Auth**: Email magic link login
+3. **PostAuthSetup** (authenticated): Language → Mode → Name → Priorities → Life Goals → Daily Habits → AI Profile → Confirm
 
-## What we'll build
-Replace the single `ai-interview` chat step with **3 quick tap-to-select screens**, each with predefined options as selectable chips and an "Other" text input. Then the AI generates a profile summary from the selections (one API call at the end).
+Problem: User hits a login wall before giving any preferences. The selection screens in PostAuthSetup duplicate some onboarding steps.
 
-### Flow
+## New flow
+
 ```text
-Language → Mode → Name → Priorities → Life Goals → Daily Habits → AI generates profile summary → Done
+Onboarding (no login required):
+  Language → Entry → Slides → Mode → Name → Priorities → Life Goals → Daily Habits
+  → "Save your progress!" login prompt (email magic link inline)
+
+After auth:
+  → Auto-save all cached data to DB → Generate AI profile → Home
 ```
 
-### Step 1: Priorities (multi-select chips + Other)
-Predefined: Health & Fitness, Financial Freedom, Career Growth, Relationships, Mental Wellness, Productivity, Education, Spirituality
+## Changes
 
-### Step 2: Life Goals (multi-select chips + Other)  
-Predefined: Become debt free, Earn first million, Run a marathon, Lose weight, Build a business, Learn a new skill, Travel the world, Buy a home, Get promoted
+### 1. `src/pages/OnboardingFlow.tsx` — Add selection steps + inline login
 
-### Step 3: Daily Habits (multi-select chips + Other)
-Predefined: Morning workout, Meditate 10 min, Track expenses, Read 30 min, Meal prep, Journal, Walk 10k steps, No screen before bed
+- Add 4 new steps after `mode`: `name`, `priorities`, `life-goals`, `daily-habits`, then `save-progress` (login prompt)
+- Reuse the same `ChipSelector` component and option arrays from PostAuthSetup
+- Store all selections in localStorage as JSON (`lovelist-onboard-data`: `{ name, priorities, lifeGoals, dailyHabits }`)
+- The `save-progress` step shows: "Want to save your progress? Sign in with a quick email link" with the email input + send magic link button (same logic as AuthPage)
+- After mode selection, instead of redirecting to `/auth`, proceed to `name` step
+- Remove the old `setup-names`, `setup-relationship`, `setup-connect`, `setup-start` steps (these will move to post-auth or be handled differently)
 
-After step 3, one API call to `ai-coach` with `onboarding: true` sends all selections. The AI returns a `build_profile` with a motivational `profile_summary` and recommended `morning_routine`. Show the profile card, user confirms, done.
+### 2. `src/pages/PostAuthSetup.tsx` — Simplify to data-saving + AI profile generation
 
-### Changes
+- On mount, read `lovelist-onboard-data` from localStorage
+- If data exists: auto-save name/mode to `profiles`, call AI to generate profile, save to `user_preferences`, clear localStorage, navigate to home (or `/connect` for couple mode)
+- If no cached data: fall back to existing selection flow (for users who somehow skip onboarding)
+- Remove the language/mode steps (already done in onboarding)
 
-1. **`src/pages/PostAuthSetup.tsx`** — Replace `ai-interview` step with 3 new steps: `priorities`, `life-goals`, `daily-habits`. Each step:
-   - Grid of selectable chip buttons (multi-select, toggle on/off)
-   - "Other" input field at the bottom to type custom entries
-   - Continue button (require at least 1 selection)
-   - After the last step, call AI once to generate `profile_summary` and `morning_routine`, show confirmation card
+### 3. `src/pages/AuthPage.tsx` — Keep as fallback route
 
-2. **`supabase/functions/ai-coach/index.ts`** — Simplify onboarding mode: instead of conversational back-and-forth, accept pre-selected `priorities`, `life_goals`, `daily_goals` arrays in the request body. AI just generates a `profile_summary` and `morning_routine` recommendation in one shot.
+- Still accessible at `/auth` for direct navigation
+- No changes needed
 
-3. **Remove** unused chat UI code (ChatMessage interface, scrollRef, chatInput state, etc.)
+### 4. `src/App.tsx` — Minor routing adjustment
 
-### UX details
-- Chips use the same card styling as language/mode selection (rounded, border highlight on select, checkmark)
-- "Other" field: small text input with a "+" button to add custom items as chips
-- Each screen has a progress indicator (dots or step count)
-- Minimum 1 selection per step to continue
-- Final AI call shows a brief loading state, then the profile card
+- Unauthenticated users can access `/onboarding` (already works)
+- After auth, the `needsSetup` check still routes to `/setup` which now auto-processes cached data
 
-### Technical details
-- No streaming needed — single request/response
-- Edge function onboarding mode becomes simpler: receives structured data, generates summary
-- All selections saved to `user_preferences` table (priorities, life_goals, daily_goals, morning_routine, profile_summary)
+### UX of the login prompt step
+
+The "save-progress" step will show:
+- Headline: "Save your progress"
+- Subtext: "Sign in with a quick email link to keep your personalized plan"
+- Email input + "Send Sign-In Link" button (reuses AuthPage magic link logic)
+- After sending: "Check your inbox" confirmation with resend option
+- Small "Skip for now" link that enters demo mode
+
+### Data flow
+
+- All selections cached in `localStorage` under `lovelist-onboard-data`
+- After successful auth → redirect to `/setup` → PostAuthSetup reads cache → saves to DB → generates AI profile → navigates to home
+- Cache is cleared after successful save
 
