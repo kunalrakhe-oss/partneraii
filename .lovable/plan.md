@@ -1,40 +1,46 @@
 
 
-## Add Language Selection to Setup Screen
+## Fix App Layout to Be Rock-Solid in Both Fullscreen and Browser
 
-### Approach
-Add a new **first step** ("language") to the setup flow where users pick English or Hindi. The chosen language is saved via `useLanguage()` and persists as the primary language. All subsequent setup steps render using the `t()` function from `LanguageContext`.
+### Problem
+The app has layout glitches — unwanted scrolling, content enlarging, and inconsistent sizing — caused by:
+1. **`App.css`** applies `max-width: 1280px`, `padding: 2rem`, and `text-align: center` to `#root` — this is leftover Vite boilerplate that fights the mobile-first layout
+2. **`html` and `body`** lack fixed viewport constraints (`height: 100dvh`, `overflow: hidden`) so the browser chrome and content can cause layout shifts
+3. No `overscroll-behavior: none` to prevent pull-to-refresh / bounce effects in browsers
+4. No `touch-action` constraints to prevent accidental zoom on double-tap
 
 ### Changes
 
-**1. `src/pages/PostAuthSetup.tsx`**
-- Import `useLanguage` and `LANGUAGE_OPTIONS` 
-- Add a new step type `"language"` before `"mode"`
-- New "language" step UI: two large buttons (English / हिन्दी) styled like the existing mode cards, with a flag or globe icon
-- On selection, call `setLanguage(lang)` which persists to localStorage and sets `document.documentElement.lang`
-- All hardcoded strings in the setup steps replaced with `t("setup.xxx")` calls
+**1. Delete `src/App.css`** — it's unused Vite boilerplate conflicting with the layout
 
-**2. `src/lib/translations/en.ts`**
-- Add a `setup` section with all setup screen strings:
-  - `setup.chooseLang` — "Choose your language"
-  - `setup.howUse` — "How will you use PartnerAI?"
-  - `setup.meMode` / `setup.weMode` — mode labels and descriptions
-  - `setup.whatsName` — "What's your name?"
-  - `setup.priorities` — "What matters most to you?"
-  - `setup.morning` — "What's your morning like?"
-  - `setup.goals` — "What do you want to achieve?"
-  - Priority labels, morning option labels, goal suggestions, button text
+**2. Update `src/index.css`** — add viewport-locking rules to `html`, `body`, and `#root`:
+```css
+html, body, #root {
+  height: 100dvh;
+  height: 100vh; /* fallback */
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
 
-**3. `src/lib/translations/hi.ts`**
-- Add matching Hindi `setup` section with all translated strings
-
-**4. `src/pages/PostAuthSetup.tsx` — save language to profile**
-- In `handleFinish`, also save the selected language to `user_preferences` so it can be restored on future logins
-
-### Flow
-```text
-Language → Mode → Name → Priorities → Morning → Goals → Done
+html {
+  touch-action: pan-x pan-y; /* prevent double-tap zoom */
+  -webkit-text-size-adjust: 100%; /* prevent text enlarging */
+  text-size-adjust: 100%;
+}
 ```
 
-The language can be changed later in Profile/Settings (already supported via `LanguageContext`).
+**3. Update `src/main.tsx`** — remove `import "./App.css"` if present (it's not currently imported, but verify)
+
+**4. Update `src/components/AppLayout.tsx`** — ensure the main container uses `h-[100dvh]` with `overflow-hidden`, and the scrollable content area uses `overflow-y-auto` with `-webkit-overflow-scrolling: touch`:
+- Change outer div from `min-h-[100dvh]` to `h-[100dvh] overflow-hidden` (fixed frame, no grow)
+- The inner content div already has `overflow-y-auto` which is correct
+
+**5. Update `index.html`** — add `user-scalable=no` to viewport meta to prevent pinch-zoom layout shifts on mobile browsers:
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+```
+
+### Result
+The app will behave like a fixed native app shell in both browser and fullscreen — no bounce, no zoom, no content shift. Only the designated content area scrolls.
 
