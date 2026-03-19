@@ -231,7 +231,7 @@ export default function HealthPage() {
           {/* LOG TAB */}
           <TabsContent value="log" className="space-y-4 mt-4">
             <p className="text-sm font-medium text-muted-foreground">Today — {format(new Date(), "MMM d, yyyy")}</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {metricFields.map(f => {
                 const Icon = f.icon;
                 return (
