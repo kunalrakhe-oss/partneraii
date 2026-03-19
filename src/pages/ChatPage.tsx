@@ -327,22 +327,7 @@ export default function ChatPage() {
         </div>
 
         {activeTab === "ai" ? (
-          canAccess("lovebot") ? (
             <AIChatbot embedded initialContext={moodContext} />
-          ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center p-8">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mx-auto mb-4">
-                  <Lock size={28} className="text-primary-foreground" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground mb-1">{t("chat.loveBotPremium")}</h3>
-                <p className="text-sm text-muted-foreground mb-5">{t("chat.upgradeForLoveBot")}</p>
-                <button onClick={() => navigate("/upgrade")} className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-primary-foreground font-semibold text-sm">
-                  {t("chat.upgradeToPremium")}
-                </button>
-              </div>
-            </div>
-          )
         ) : (
         <>
         {/* Messages */}
