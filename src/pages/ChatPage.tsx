@@ -282,6 +282,7 @@ export default function ChatPage() {
                 className="flex items-center justify-between w-full">
                 <h1 className="text-lg font-bold text-foreground shrink-0">{t("chat.chat")}</h1>
 
+                {!isSingle && (
                 <div className="flex bg-muted rounded-2xl p-1 gap-1">
                   <button
                     onClick={() => setActiveTab("partner")}
@@ -312,6 +313,7 @@ export default function ChatPage() {
                     <span>{t("chat.yourAI")}</span>
                   </button>
                 </div>
+                )}
 
                 <button
                   onClick={() => { setSearchOpen(true); setTimeout(() => searchInputRef.current?.focus(), 100); }}
