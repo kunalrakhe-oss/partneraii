@@ -348,7 +348,7 @@ function CategorySection({
                         {item.description}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="text-[10px] text-muted-foreground">{assignLabel}</span>
+                        {!isSingle && <span className="text-[10px] text-muted-foreground">{assignLabel}</span>}
                         {item.event_time && <span className="text-[10px] text-muted-foreground">· 🕐 {item.event_time}</span>}
                         {item.recurrence === "daily" && <span className="text-[10px] font-semibold text-primary">· 🔁 Daily</span>}
                         {item.recurrence === "weekly" && <span className="text-[10px] font-semibold text-primary">· 🔁 Weekly · {DAY_NAMES[item.recurrence_day ?? 0]}</span>}
