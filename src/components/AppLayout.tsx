@@ -70,8 +70,8 @@ export default function AppLayout() {
       
       <GatedVoiceAssistant />
       <CompletedTasksCleanup />
-      <SmartCommandBar />
       <PageFabProvider>
+        <SmartCommandBar />
         <div className="flex-1 overflow-y-auto pb-nav">
           <Outlet />
         </div>
