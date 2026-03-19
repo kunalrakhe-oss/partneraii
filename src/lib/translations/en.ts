@@ -6,6 +6,7 @@ export const en = {
     lists: "Lists",
     chat: "Chat",
     chores: "Chores",
+    memories: "Memories",
   },
 
   // Common

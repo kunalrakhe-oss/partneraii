@@ -8,6 +8,7 @@ export const hi: TranslationKeys = {
     lists: "सूची",
     chat: "चैट",
     chores: "काम",
+    memories: "यादें",
   },
 
   // Common

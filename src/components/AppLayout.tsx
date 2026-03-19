@@ -22,6 +22,7 @@ const tabMeta: Record<string, { icon: typeof Home; labelKey: string; to: string 
   lists: { to: "/lists", icon: ShoppingCart, labelKey: "nav.lists" },
   chat: { to: "/chat", icon: MessageCircle, labelKey: "nav.chat" },
   chores: { to: "/chores", icon: ClipboardList, labelKey: "nav.chores" },
+  memories: { to: "/memories", icon: Camera, labelKey: "nav.memories" },
 };
 
 function GatedVoiceAssistant() {

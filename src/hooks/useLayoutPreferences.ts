@@ -7,6 +7,7 @@ export const ALL_NAV_TABS = [
   { id: "lists", to: "/lists", label: "Lists" },
   { id: "chat", to: "/chat", label: "Chat" },
   { id: "chores", to: "/chores", label: "Chores" },
+  { id: "memories", to: "/memories", label: "Memories" },
 ] as const;
 
 // Home screen widget definitions
