@@ -554,7 +554,7 @@ export default function HomePage() {
                             <span className="text-2xl">{MOOD_EMOJI[myMood.mood] || "✨"}</span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs text-muted-foreground">{t("home.yourMoodToday")}</p>
+                            <p className="text-xs text-muted-foreground">{t("home.yourMoodToday") === "home.yourMoodToday" ? "Your mood today" : t("home.yourMoodToday")}</p>
                             <p className="text-sm font-bold text-foreground">{myMood.mood.charAt(0).toUpperCase() + myMood.mood.slice(1)}</p>
                             {myMood.note && <p className="text-xs text-muted-foreground mt-0.5 truncate">"{myMood.note}"</p>}
                           </div>
