@@ -60,6 +60,17 @@ export default function AuthPage() {
     }
   };
 
+  const handleAppleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await lovable.auth.signInWithOAuth("apple", { redirect_uri: window.location.origin });
+      if (error) throw error;
+    } catch (err: any) {
+      toast({ title: t("auth.oops"), description: err.message || "Apple sign-in failed", variant: "destructive" });
+      setLoading(false);
+    }
+  };
+
   const inputClass = "w-full h-12 pl-11 pr-4 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30";
 
   return (
@@ -164,6 +175,15 @@ export default function AuthPage() {
             <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.962L3.964 7.294C4.672 5.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
           </svg>
           {t("auth.continueWithGoogle")}
+        </button>
+
+        {/* Apple */}
+        <button type="button" onClick={handleAppleSignIn} disabled={loading}
+          className="w-full h-12 rounded-xl bg-black text-white text-sm font-medium flex items-center justify-center gap-3 hover:bg-black/90 transition-colors disabled:opacity-60">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="white">
+            <path d="M13.71 9.04c-.02-2.08 1.7-3.08 1.78-3.13-0.97-1.42-2.48-1.61-3.01-1.63-1.28-.13-2.5.75-3.15.75-.65 0-1.65-.73-2.71-.71-1.4.02-2.68.81-3.4 2.06-1.45 2.52-.37 6.25 1.04 8.3.69 1 1.51 2.12 2.59 2.08 1.04-.04 1.43-.67 2.69-.67 1.25 0 1.61.67 2.71.65 1.12-.02 1.83-.99 2.51-1.99.79-1.15 1.12-2.27 1.14-2.33-.02-.01-2.18-.84-2.2-3.33zM11.63 3.16c.57-.7.96-1.66.85-2.63-.82.03-1.82.55-2.41 1.24-.53.61-.99 1.59-.87 2.53.92.07 1.86-.47 2.43-1.14z"/>
+          </svg>
+          Continue with Apple
         </button>
       </div>
 
