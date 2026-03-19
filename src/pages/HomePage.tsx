@@ -394,9 +394,15 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          {/* Day Intent Picker */}
+          {/* AI Coach Card */}
           <motion.div variants={item}>
-            <DayIntentPicker isSingle={isSingle} />
+            <AICoachCard
+              preferences={userPreferences}
+              activePlans={[
+                ...(activePlan ? [activePlan] : []),
+                ...(activeDietPlan ? [{ plan_type: "diet", title: activeDietPlan.title, started_at: activeDietPlan.started_at }] : []),
+              ]}
+            />
           </motion.div>
 
 
