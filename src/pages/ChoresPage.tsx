@@ -565,7 +565,7 @@ export default function ChoresPage() {
 
         {/* Filter tabs */}
         <div className="flex gap-2 mb-5 overflow-x-auto no-scrollbar">
-          {([["all", "All Chores"], ["me", "Assigned to Me"], ["pending", "Pending"]] as [FilterMode, string][]).map(([key, label]) => (
+          {([["all", "All Chores"], ...(isSingle ? [] : [["me", "Assigned to Me"]]), ["pending", "Pending"]] as [FilterMode, string][]).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setFilter(key)}
