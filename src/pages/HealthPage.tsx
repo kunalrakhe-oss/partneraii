@@ -307,7 +307,7 @@ export default function HealthPage() {
 
                 <Card className="p-4">
                   <p className="text-sm font-semibold mb-2 flex items-center gap-2"><Scale size={14} className="text-emerald-500" /> Weight & <Flame size={14} className="text-orange-500" /> Calories</p>
-                  <div className="h-40">
+                  <div className="h-40 sm:h-56">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
