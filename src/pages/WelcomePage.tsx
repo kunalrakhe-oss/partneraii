@@ -1,7 +1,7 @@
 import { Sparkles, Users, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import onboardingHero from "@/assets/onboarding-hero.jpg";
+
 
 interface WelcomePageProps {
   onComplete: () => void;
@@ -30,18 +30,8 @@ export default function WelcomePage({ onComplete }: WelcomePageProps) {
         </motion.div>
 
         {/* Hero Image */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1, duration: 0.5 }}
-          className="w-56 h-56 rounded-full overflow-hidden mb-8 shadow-elevated border-4 border-card"
-        >
-          <img
-            src={onboardingHero}
-            alt="Get started"
-            className="w-full h-full object-cover"
-          />
-        </motion.div>
+
+
 
         {/* Headline */}
         <motion.h1
