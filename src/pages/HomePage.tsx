@@ -191,11 +191,6 @@ export default function HomePage() {
             </button>
           </motion.div>
 
-          {/* AI Coach Strip */}
-          <motion.div variants={item}>
-            <AICoachStrip greeting={greeting} firstName={firstName} />
-          </motion.div>
-
           {/* Today's Focus */}
           <motion.div variants={item}>
             <TodayFocusRing dailyGoals={dailyGoals} />
@@ -227,6 +222,11 @@ export default function HomePage() {
               </div>
             </motion.div>
           )}
+
+          {/* AI Coach — inline chat at bottom */}
+          <motion.div variants={item}>
+            <AICoachStrip greeting={greeting} firstName={firstName} />
+          </motion.div>
         </motion.div>
       </div>
 
