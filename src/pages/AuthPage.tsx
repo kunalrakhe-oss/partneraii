@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Sparkles, Mail, ArrowRight, Loader2, User, Users, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,9 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function AuthPage() {
-  const [step, setStep] = useState<"email" | "otp">("email");
+  const [step, setStep] = useState<"email" | "sent">("email");
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [appMode, setAppMode] = useState<"single" | "couple">(
@@ -16,109 +15,53 @@ export default function AuthPage() {
   );
   const { toast } = useToast();
   const { t, language, setLanguage } = useLanguage();
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Countdown timer for resend
   useEffect(() => {
     if (countdown <= 0) return;
-    const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
+    const timer = setTimeout(() => setCountdown((current) => current - 1), 1000);
     return () => clearTimeout(timer);
   }, [countdown]);
 
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const sendMagicLink = async () => {
     if (!email.trim()) return;
+
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
-        options: { shouldCreateUser: true },
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: window.location.origin,
+        },
       });
+
       if (error) throw error;
-      setStep("otp");
+
+      setStep("sent");
       setCountdown(60);
-      toast({ title: "Code sent!", description: `Check ${email} for your 6-digit code.` });
-    } catch (err: any) {
-      toast({ title: "Oops", description: err.message || "Failed to send code", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    const code = otp.join("");
-    if (code.length !== 6) return;
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.verifyOtp({
-        email: email.trim(),
-        token: code,
-        type: "email",
+      toast({
+        title: "Sign-in link sent!",
+        description: `Open the email we sent to ${email.trim()} and tap the link to continue.`,
       });
-      if (error) throw error;
-      // Auth context will pick up the session automatically
     } catch (err: any) {
-      toast({ title: "Invalid code", description: err.message || "Please check and try again", variant: "destructive" });
-      setOtp(["", "", "", "", "", ""]);
-      inputRefs.current[0]?.focus();
+      toast({
+        title: "Could not send email",
+        description: err.message || "Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
-    const newOtp = [...otp];
-    newOtp[index] = value.slice(-1);
-    setOtp(newOtp);
-
-    // Auto-advance
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
-    // Auto-submit when all filled
-    if (value && index === 5 && newOtp.every(d => d)) {
-      setTimeout(() => handleVerifyOtp(), 100);
-    }
-  };
-
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleOtpPaste = (e: React.ClipboardEvent) => {
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-    if (pasted.length === 6) {
-      e.preventDefault();
-      const newOtp = pasted.split("");
-      setOtp(newOtp);
-      inputRefs.current[5]?.focus();
-      setTimeout(() => {
-        // auto-submit
-        handleVerifyOtp();
-      }, 200);
-    }
+  const handleSendMagicLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await sendMagicLink();
   };
 
   const handleResend = async () => {
     if (countdown > 0) return;
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
-        options: { shouldCreateUser: true },
-      });
-      if (error) throw error;
-      setCountdown(60);
-      setOtp(["", "", "", "", "", ""]);
-      toast({ title: "Code resent!", description: `Check ${email} again.` });
-    } catch (err: any) {
-      toast({ title: "Failed to resend", description: err.message, variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
+    await sendMagicLink();
   };
 
   const inputClass =
@@ -127,7 +70,6 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto">
       <div className="flex-1 flex flex-col items-center pt-10 px-6">
-        {/* Language switcher */}
         <div className="w-full flex justify-end mb-2">
           <button
             onClick={() => setLanguage(language === "en" ? "hi" : "en")}
@@ -139,21 +81,16 @@ export default function AuthPage() {
 
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 mb-6">
           <Sparkles size={24} className="text-primary" />
-          <span className="text-xl font-bold text-foreground font-sans">
-            Partner<span className="love-gradient-text">AI</span>
-          </span>
+          <span className="text-xl font-bold text-foreground font-sans">PAI</span>
         </motion.div>
 
-        <h1 className="text-2xl font-bold text-foreground text-center mb-1">
-          Welcome to Partner<span className="love-gradient-text">AI</span>
-        </h1>
+        <h1 className="text-2xl font-bold text-foreground text-center mb-1">Welcome to PAI</h1>
         <p className="text-sm text-muted-foreground text-center mb-6">
           {step === "email"
-            ? "Sign in with a magic code — no password needed"
-            : `Enter the 6-digit code sent to ${email}`}
+            ? "Sign in with a secure email link — no password needed"
+            : `We sent a sign-in link to ${email.trim()}`}
         </p>
 
-        {/* Me / We Mode Toggle */}
         {step === "email" && (
           <div className="flex gap-0.5 bg-muted/60 backdrop-blur-sm rounded-full p-0.5 w-fit mx-auto mb-5">
             {([
@@ -187,7 +124,7 @@ export default function AuthPage() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              onSubmit={handleSendOtp}
+              onSubmit={handleSendMagicLink}
               className="w-full space-y-4"
             >
               <div className="relative">
@@ -211,78 +148,57 @@ export default function AuthPage() {
                   <Loader2 size={18} className="animate-spin" />
                 ) : (
                   <>
-                    Send Magic Code <ArrowRight size={16} />
+                    Send Sign-In Link <ArrowRight size={16} />
                   </>
                 )}
               </button>
             </motion.form>
           ) : (
             <motion.div
-              key="otp-step"
+              key="sent-step"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               className="w-full space-y-5"
             >
-              {/* OTP Input */}
-              <div className="flex justify-center gap-2.5" onPaste={handleOtpPaste}>
-                {otp.map((digit, i) => (
-                  <input
-                    key={i}
-                    ref={(el) => { inputRefs.current[i] = el; }}
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(i, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                    autoFocus={i === 0}
-                    className="w-12 h-14 text-center text-xl font-bold rounded-xl bg-card/50 backdrop-blur-sm border border-border/40 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/50 transition-all"
-                  />
-                ))}
+              <div className="rounded-2xl border border-border/40 bg-card/50 backdrop-blur-sm p-5 text-center space-y-3">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Mail size={20} />
+                </div>
+                <div className="space-y-1">
+                  <h2 className="text-lg font-semibold text-foreground">Check your inbox</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Tap the sign-in link in the email to continue. Once you open it, you’ll be signed in automatically.
+                  </p>
+                </div>
               </div>
 
-              {/* Verify button */}
               <button
-                onClick={handleVerifyOtp}
-                disabled={loading || otp.join("").length !== 6}
+                type="button"
+                onClick={handleResend}
+                disabled={countdown > 0 || loading}
                 className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-soft disabled:opacity-60 transition-all"
               >
                 {loading ? (
                   <Loader2 size={18} className="animate-spin" />
+                ) : countdown > 0 ? (
+                  `Resend link in ${countdown}s`
                 ) : (
-                  <>
-                    <ShieldCheck size={16} /> Verify & Sign In
-                  </>
+                  "Resend Sign-In Link"
                 )}
               </button>
 
-              {/* Resend / Back */}
-              <div className="flex items-center justify-between text-xs">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStep("email");
-                    setOtp(["", "", "", "", "", ""]);
-                  }}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  ← Change email
-                </button>
-                <button
-                  type="button"
-                  onClick={handleResend}
-                  disabled={countdown > 0 || loading}
-                  className="text-primary font-medium disabled:text-muted-foreground transition-colors"
-                >
-                  {countdown > 0 ? `Resend in ${countdown}s` : "Resend code"}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setStep("email")}
+                className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ← Change email address
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Security note */}
         <div className="mt-8 flex items-center gap-2 text-[11px] text-muted-foreground">
           <ShieldCheck size={14} />
           <span>Passwordless login — secure, fast, no password to remember</span>
