@@ -17,12 +17,14 @@ export default function PostAuthSetup() {
     const saved = localStorage.getItem("lovelist-app-mode");
     return saved === "single" || saved === "couple" ? saved : null;
   });
-  const [name, setName] = useState(
+  const rawName =
     user?.user_metadata?.full_name ||
     user?.user_metadata?.display_name ||
     user?.user_metadata?.name ||
-    ""
-  );
+    "";
+  // Apple relay emails produce gibberish prefixes – detect and clear them
+  const looksLikeRealName = rawName.length > 0 && /[a-zA-Z]{2,}/.test(rawName) && !/^[a-z0-9]{8,}$/i.test(rawName);
+  const [name, setName] = useState(looksLikeRealName ? rawName : "");
   const [saving, setSaving] = useState(false);
 
   const handleFinish = async () => {
