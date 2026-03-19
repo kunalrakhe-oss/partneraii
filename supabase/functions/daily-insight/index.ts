@@ -49,7 +49,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a warm, encouraging AI life coach for PartnerAI — an app that helps people manage their day, health, finances, and relationships. Generate a short, personalized daily insight (2-3 sentences max) based on the user's stats and preferences. Be specific, warm, and actionable. Use emojis sparingly. Never be generic — reference the actual numbers and their stated priorities.${prefContext}${langInstruction}`,
+            content: `You are a warm, encouraging AI life coach for PAI — an app that helps people manage their day, health, finances, and relationships. Generate a short, personalized daily insight (2-3 sentences max) based on the user's stats and preferences. Be specific, warm, and actionable. Use emojis sparingly. Never be generic — reference the actual numbers and their stated priorities.${prefContext}${langInstruction}`,
           },
           {
             role: "user",

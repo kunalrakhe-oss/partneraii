@@ -53,7 +53,7 @@ export const en = {
 
   // Auth Page
   auth: {
-    welcomeTo: "Welcome to PartnerAI",
+    welcomeTo: "Welcome to PAI",
     signIn: "Sign In",
     signUp: "Sign Up",
     signInToAccount: "Sign in to your account",
@@ -120,7 +120,7 @@ export const en = {
     quickAddChore: "Quick add chore...",
     dueNow: "Due now",
     once: "Once",
-    aiInsight: "PartnerAI Insight",
+    aiInsight: "PAI Insight",
     upgradeForInsight: "Upgrade to Pro for daily AI-powered insights.",
     upgradeNow: "Upgrade now →",
     refreshInsight: "New Insight",
@@ -395,7 +395,7 @@ export const en = {
     voiceDisabled: "Voice assistant disabled",
 
     // Install
-    installLoveLists: "Install PartnerAI",
+    installLoveLists: "Install PAI",
     installSafari: "Tap Share → Add to Home Screen in Safari",
     alreadyAvailable: "Already available",
     useBrowserMenu: "Use your browser menu to install the app",
@@ -455,7 +455,7 @@ export const en = {
   // Partner Connect
   partner: {
     betterTogether: "Better Together",
-    loveListWorksBest: "PartnerAI works best when shared. Connect with your partner to start syncing your life.",
+    loveListWorksBest: "PAI works best when shared. Connect with your partner to start syncing your life.",
     createStep: "Create",
     connectStep: "Connect",
     yourUniqueCode: "Your Unique Link Code",
@@ -490,7 +490,7 @@ export const en = {
 
   // Onboarding
   onboarding: {
-    loveList: "PartnerAI",
+    loveList: "PAI",
     buildRelationship: "Build your relationship, not just tasks",
     startTogether: "Start Together",
     stayConnected: "Stay connected daily",
@@ -536,7 +536,7 @@ export const en = {
   setup: {
     chooseLang: "Choose your language",
     chooseLangDesc: "You can change this anytime in settings",
-    howUse: "How will you use PartnerAI?",
+    howUse: "How will you use PAI?",
     howUseDesc: "You can change this anytime in settings",
     meMode: "Me Mode",
     meModeDesc: "Personal productivity & wellness",

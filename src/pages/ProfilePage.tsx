@@ -652,7 +652,7 @@ export default function ProfilePage() {
         </button>
 
         <p className="text-center text-[10px] text-muted-foreground mt-5 mb-2">
-          PartnerAI v1.0.4 • {t("profile.madeWithLove")}
+          PAI v1.0.4 • {t("profile.madeWithLove")}
         </p>
       </div>
 
@@ -728,7 +728,7 @@ export default function ProfilePage() {
       {/* App Mode Sheet */}
       <BottomSheet open={activeSheet === "app-mode"} onClose={() => setActiveSheet(null)} title="App Mode">
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground mb-1">Choose how you want to use PartnerAI</p>
+          <p className="text-xs text-muted-foreground mb-1">Choose how you want to use PAI</p>
           {([
             { value: "single", label: "Me Mode", desc: "Personal productivity & wellness", icon: User },
             { value: "couple", label: "We Mode", desc: "Shared with your partner", icon: Users },

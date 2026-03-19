@@ -273,7 +273,7 @@ Deno.serve(async (req) => {
           payload,
           vapidPrivateKey,
           vapidPublicKey,
-          "mailto:push@partnerai.app"
+          "mailto:push@pai.app"
         );
         if (resp.ok || resp.status === 201) {
           sent++;

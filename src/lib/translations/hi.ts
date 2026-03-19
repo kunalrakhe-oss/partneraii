@@ -55,7 +55,7 @@ export const hi: TranslationKeys = {
 
   // Auth Page
   auth: {
-    welcomeTo: "PartnerAI में आपका स्वागत है",
+    welcomeTo: "PAI में आपका स्वागत है",
     signIn: "साइन इन",
     signUp: "साइन अप",
     signInToAccount: "अपने अकाउंट में साइन इन करें",
@@ -122,7 +122,7 @@ export const hi: TranslationKeys = {
     quickAddChore: "जल्दी काम जोड़ें...",
     dueNow: "अभी करना है",
     once: "एक बार",
-    aiInsight: "LoveList AI इनसाइट",
+    aiInsight: "PAI इनसाइट",
     upgradeForInsight: "दैनिक AI-संचालित इनसाइट के लिए प्रो में अपग्रेड करें।",
     upgradeNow: "अभी अपग्रेड करें →",
     refreshInsight: "नई इनसाइट",
@@ -397,7 +397,7 @@ export const hi: TranslationKeys = {
     voiceDisabled: "वॉइस असिस्टेंट निष्क्रिय",
 
     // Install
-    installLoveLists: "PartnerAI इंस्टॉल करें",
+    installLoveLists: "PAI इंस्टॉल करें",
     installSafari: "Safari में शेयर → होम स्क्रीन में जोड़ें टैप करें",
     alreadyAvailable: "पहले से उपलब्ध",
     useBrowserMenu: "ऐप इंस्टॉल करने के लिए ब्राउज़र मेनू का उपयोग करें",
@@ -456,7 +456,7 @@ export const hi: TranslationKeys = {
   // Partner Connect
   partner: {
     betterTogether: "साथ में बेहतर",
-    loveListWorksBest: "PartnerAI शेयर करने पर सबसे अच्छा काम करता है। अपने पार्टनर से जुड़ कर लाइफ सिंक करना शुरू करें।",
+    loveListWorksBest: "PAI शेयर करने पर सबसे अच्छा काम करता है। अपने पार्टनर से जुड़ कर लाइफ सिंक करना शुरू करें।",
     createStep: "बनाएं",
     connectStep: "जोड़ें",
     yourUniqueCode: "आपका यूनिक लिंक कोड",
@@ -491,7 +491,7 @@ export const hi: TranslationKeys = {
 
   // Onboarding
   onboarding: {
-    loveList: "PartnerAI",
+    loveList: "PAI",
     buildRelationship: "अपने रिश्ते को बनाएं, न कि सिर्फ़ काम",
     startTogether: "साथ में शुरू करें",
     stayConnected: "रोज़ जुड़े रहें",
@@ -537,7 +537,7 @@ export const hi: TranslationKeys = {
   setup: {
     chooseLang: "अपनी भाषा चुनें",
     chooseLangDesc: "आप इसे सेटिंग्स में कभी भी बदल सकते हैं",
-    howUse: "आप PartnerAI कैसे इस्तेमाल करेंगे?",
+    howUse: "आप PAI कैसे इस्तेमाल करेंगे?",
     howUseDesc: "आप इसे सेटिंग्स में कभी भी बदल सकते हैं",
     meMode: "मैं मोड",
     meModeDesc: "व्यक्तिगत उत्पादकता और कल्याण",
