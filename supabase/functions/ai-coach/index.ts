@@ -210,7 +210,7 @@ const coachTools = [
 // ── System prompts ──
 function getOnboardingPrompt(userName: string, appMode: string, language: string) {
   const langInstruction = language === "hi" ? "\nIMPORTANT: Respond in Hindi (Devanagari script)." : "";
-  return `You are PartnerAI — a warm, motivational AI Life Coach. You're onboarding a new user named "${userName}" who chose "${appMode}" mode.
+  return `You are PAI — a warm, motivational AI Life Coach. You're onboarding a new user named "${userName}" who chose "${appMode}" mode.
 
 Your job: Ask 3-5 conversational questions to understand their life situation, then build their profile using the build_profile tool.
 
