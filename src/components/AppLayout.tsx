@@ -6,6 +6,7 @@ import DemoBanner from "@/components/DemoBanner";
 
 import VoiceAssistant from "@/components/VoiceAssistant";
 import CompletedTasksCleanup from "@/components/CompletedTasksCleanup";
+import SmartCommandBar from "@/components/SmartCommandBar";
 import { getNavTabs, type NavTabId } from "@/hooks/useLayoutPreferences";
 import { useState, useEffect } from "react";
 
