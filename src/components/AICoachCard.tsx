@@ -65,7 +65,10 @@ export default function AICoachCard({ preferences, activePlans }: AICoachCardPro
 
     try {
       const planSummary = activePlans.map(p => ({
-        ...p,
+        id: p.id,
+        plan_type: p.plan_type,
+        title: p.title,
+        started_at: p.started_at,
         day: Math.max(1, Math.floor((Date.now() - new Date(p.started_at).getTime()) / (1000 * 60 * 60 * 24)) + 1),
       }));
 

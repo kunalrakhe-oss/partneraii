@@ -37,6 +37,7 @@ export default function RecoveryPlanCard({ exercise, accentColor = "emerald", on
   const [expanded, setExpanded] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
+  const [imageTriggered, setImageTriggered] = useState(false);
 
   const handleGenerateImage = async () => {
     if (imageUrl || imageLoading || !onGenerateImage) return;
@@ -49,6 +50,12 @@ export default function RecoveryPlanCard({ exercise, accentColor = "emerald", on
     }
     setImageLoading(false);
   };
+
+  // Auto-trigger image generation when expanded
+  if (expanded && !imageTriggered && onGenerateImage && !imageUrl && !imageLoading) {
+    setImageTriggered(true);
+    handleGenerateImage();
+  }
 
   return (
     <motion.div
