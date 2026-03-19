@@ -52,16 +52,15 @@ Deno.serve(async (req) => {
       ...(todayPastEvents || []),
     ];
 
-    // Use link field to encode source item ID for dedup.
-    // Check ALL existing overdue notifications (not just today's) to prevent 
-    // re-creating deleted ones. We use the link+message combo as a unique key.
+    // Dedup by user_id + title (not per-item-ID) to avoid spamming 
+    // multiple notifications for recurring items with the same name.
     const { data: existingNotifs } = await supabase
       .from("notifications")
-      .select("link, message, user_id")
+      .select("title, user_id")
       .eq("type", "overdue");
 
     const existingSet = new Set(
-      (existingNotifs || []).map((n) => `${n.user_id}:${n.link}:${n.message}`)
+      (existingNotifs || []).map((n) => `${n.user_id}:${n.title}`)
     );
 
     const notifications: Array<{
@@ -73,6 +72,9 @@ Deno.serve(async (req) => {
       link: string;
     }> = [];
 
+    // Track titles we've already queued in this run to avoid duplicates
+    const queuedSet = new Set<string>();
+
     const addNotif = (
       userId: string,
       partnerPair: string,
@@ -80,9 +82,9 @@ Deno.serve(async (req) => {
       message: string,
       link: string
     ) => {
-      const key = `${userId}:${link}:${message}`;
-      if (!existingSet.has(key)) {
-        existingSet.add(key);
+      const key = `${userId}:${title}`;
+      if (!existingSet.has(key) && !queuedSet.has(key)) {
+        queuedSet.add(key);
         notifications.push({
           user_id: userId,
           partner_pair: partnerPair,
@@ -94,23 +96,22 @@ Deno.serve(async (req) => {
       }
     };
 
-    // Process chores
+    // Process chores — one notification per title per user
     for (const chore of overdueChores || []) {
       const title = `⏰ Overdue: ${chore.title}`;
       const msg = `Due ${chore.due_date}`;
-      // Include chore ID in link for unique dedup
-      const link = `/chores#${chore.id}`;
+      const link = `/chores`;
       addNotif(chore.user_id, chore.partner_pair, title, msg, link);
       if (chore.assigned_to && chore.assigned_to !== chore.user_id) {
         addNotif(chore.assigned_to, chore.partner_pair, title, msg, link);
       }
     }
 
-    // Process events
+    // Process events — one notification per title per user
     for (const evt of allOverdueEvents) {
       const title = `⏰ Overdue: ${evt.title}`;
       const msg = `Scheduled ${evt.event_date}${evt.event_time ? " at " + evt.event_time : ""}`;
-      const link = `/calendar#${evt.id}`;
+      const link = `/calendar`;
       addNotif(evt.user_id, evt.partner_pair, title, msg, link);
     }
 
