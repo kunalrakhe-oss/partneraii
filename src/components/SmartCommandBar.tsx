@@ -163,7 +163,7 @@ export default function SmartCommandBar() {
               setExpanded(true);
               setTimeout(() => inputRef.current?.focus(), 100);
             }}
-            className="ml-auto flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-2.5 shadow-lg text-sm font-medium active:scale-95 transition-transform"
+            className="mr-auto flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-2.5 shadow-lg text-sm font-medium active:scale-95 transition-transform"
           >
             <Sparkles size={16} />
             <span>Quick Add</span>
