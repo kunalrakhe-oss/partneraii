@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { Home, CalendarDays, ShoppingCart, MessageCircle, ClipboardList } from "lucide-react";
+import { Home, CalendarDays, ShoppingCart, MessageCircle, ClipboardList, Camera } from "lucide-react";
 import { motion } from "framer-motion";
 import PartnerNotifications from "@/components/PartnerNotifications";
 import DemoBanner from "@/components/DemoBanner";
