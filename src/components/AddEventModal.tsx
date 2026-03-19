@@ -306,16 +306,18 @@ export default function AddEventModal({
                   )}
                   {/* Assign & Priority - event only */}
                   {formType === "event" && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="mb-1 block text-xs font-semibold text-muted-foreground">Assign</label>
-                        <select value={formAssigned} onChange={(e) => setFormAssigned(e.target.value)}
-                          className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
-                          <option value="both">Both</option>
-                          <option value="me">Me</option>
-                          <option value="partner">Partner</option>
-                        </select>
-                      </div>
+                    <div className={isSingle ? "" : "grid grid-cols-2 gap-3"}>
+                      {!isSingle && (
+                        <div>
+                          <label className="mb-1 block text-xs font-semibold text-muted-foreground">Assign</label>
+                          <select value={formAssigned} onChange={(e) => setFormAssigned(e.target.value)}
+                            className="h-11 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
+                            <option value="both">Both</option>
+                            <option value="me">Me</option>
+                            <option value="partner">Partner</option>
+                          </select>
+                        </div>
+                      )}
                       <div>
                         <label className="mb-1 block text-xs font-semibold text-muted-foreground">Priority</label>
                         <select value={formPriority} onChange={(e) => setFormPriority(e.target.value)}
