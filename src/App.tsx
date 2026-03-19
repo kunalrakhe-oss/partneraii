@@ -33,7 +33,7 @@ import EventPlannerPage from "@/pages/EventPlannerPage";
 import PartnerConnectPage from "@/pages/PartnerConnectPage";
 import CoupleProfilePage from "@/pages/CoupleProfilePage";
 import AuthPage from "@/pages/AuthPage";
-import ResetPasswordPage from "@/pages/ResetPasswordPage";
+// ResetPasswordPage removed — using email OTP login
 import NotFound from "@/pages/NotFound";
 import OnboardingFlow from "@/pages/OnboardingFlow";
 import UpgradePage from "@/pages/UpgradePage";
