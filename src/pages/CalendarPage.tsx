@@ -679,6 +679,9 @@ export default function CalendarPage() {
               onEditEvent={openEditForm}
               onToggle={toggleComplete}
               onAddEvent={() => openAddForm()}
+              choreLinkedItems={choreLinkedItems}
+              expandedChores={expandedChores}
+              onToggleLinkedItem={toggleLinkedItem}
             />
           )}
 
