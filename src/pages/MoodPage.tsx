@@ -362,25 +362,7 @@ export default function MoodPage() {
         </>
         )}
 
-        {/* Weekly Harmony */}
-        <div className="bg-card rounded-2xl p-5 shadow-card border border-border mb-5">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-bold text-foreground">{t("mood.weeklyHarmony")}</p>
-            <Sparkles size={16} className="text-muted-foreground" />
-          </div>
-          <p className="text-xs text-muted-foreground mb-4">{t("mood.moodOverWeek")}</p>
-          <div className="flex items-end justify-between h-24 gap-1 px-1">
-            {last7.map((day, i) => {
-              const h = day.me ? moodToHeight[day.me.mood] || 50 : 30;
-              return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="w-full rounded-t-lg bg-primary/30 transition-all" style={{ height: `${h}%` }} />
-                  <span className="text-[10px] text-muted-foreground">{day.day}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+
 
         <GatedAiMoodTip
           myMood={todayLog?.mood || null}
