@@ -111,7 +111,6 @@ function AppRoutes() {
     return (
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/onboarding" element={<OnboardingFlow />} />
         <Route path="*" element={<Navigate to="/onboarding" replace />} />
       </Routes>
