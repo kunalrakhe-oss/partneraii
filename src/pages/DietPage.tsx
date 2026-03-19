@@ -1168,6 +1168,7 @@ export default function DietPage() {
             defaultDate={today}
             onSave={editingItem ? updateItem : addItem}
             onClose={() => { setShowForm(false); setEditingItem(null); }}
+            isSingle={isSingle}
           />
         )}
       </AnimatePresence>
