@@ -9,7 +9,7 @@ import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { uploadAttachment } from "@/components/MediaPicker";
 import AIChatbot from "@/components/AIChatbot";
 import aiAssistantIcon from "@/assets/ai-assistant-icon.png";
