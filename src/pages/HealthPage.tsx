@@ -1,532 +1,390 @@
 import { useState, useEffect, useCallback } from "react";
-import { Activity, Heart, Moon, Flame, Scale, Droplets, Footprints, TrendingUp, TrendingDown, Bot, Send, Loader2, Plus, ArrowUp, ArrowDown, Minus, Target } from "lucide-react";
-import { motion } from "framer-motion";
+import { Plus, Minus, Loader2, Check, Flame, BarChart3, Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { format, subDays } from "date-fns";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
-import ReactMarkdown from "react-markdown";
+import { format, subDays, eachDayOfInterval, differenceInCalendarDays } from "date-fns";
 import PageTransition from "@/components/PageTransition";
 
-type HealthMetric = {
-  id: string;
-  user_id: string;
-  metric_date: string;
-  steps: number | null;
-  heart_rate: number | null;
-  sleep_hours: number | null;
-  calories_burned: number | null;
-  weight: number | null;
-  water_glasses: number | null;
-  notes: string | null;
+const EMOJI_OPTIONS = ["✅", "💧", "🏃", "📖", "🧘", "💪", "🍎", "😴", "🎯", "🧹", "💊", "🚶"];
+const COLOR_OPTIONS = ["cyan", "violet", "rose", "amber", "emerald", "blue", "orange", "pink"];
+
+const colorMap: Record<string, { bg: string; text: string; ring: string; fill: string }> = {
+  cyan: { bg: "bg-cyan-500/10", text: "text-cyan-500", ring: "ring-cyan-500/40", fill: "bg-cyan-500" },
+  violet: { bg: "bg-violet-500/10", text: "text-violet-500", ring: "ring-violet-500/40", fill: "bg-violet-500" },
+  rose: { bg: "bg-rose-500/10", text: "text-rose-500", ring: "ring-rose-500/40", fill: "bg-rose-500" },
+  amber: { bg: "bg-amber-500/10", text: "text-amber-500", ring: "ring-amber-500/40", fill: "bg-amber-500" },
+  emerald: { bg: "bg-emerald-500/10", text: "text-emerald-500", ring: "ring-emerald-500/40", fill: "bg-emerald-500" },
+  blue: { bg: "bg-blue-500/10", text: "text-blue-500", ring: "ring-blue-500/40", fill: "bg-blue-500" },
+  orange: { bg: "bg-orange-500/10", text: "text-orange-500", ring: "ring-orange-500/40", fill: "bg-orange-500" },
+  pink: { bg: "bg-pink-500/10", text: "text-pink-500", ring: "ring-pink-500/40", fill: "bg-pink-500" },
 };
 
-type ChatMsg = { role: "user" | "assistant"; content: string };
+type Habit = {
+  id: string;
+  user_id: string;
+  partner_pair: string;
+  name: string;
+  icon: string;
+  color: string;
+  frequency: string;
+  target_per_day: number;
+  is_active: boolean;
+};
 
-type HealthAnalysis = {
-  healthScore: number;
-  summary: string;
-  trends: Array<{ metric: string; direction: string; insight: string; icon: string }>;
-  recommendations: Array<{ title: string; description: string; icon: string; priority: string }>;
-  predictions: Array<{ prediction: string; icon: string }>;
-  partnerTips: Array<{ tip: string; icon: string }>;
+type HabitLog = {
+  id: string;
+  habit_id: string;
+  user_id: string;
+  log_date: string;
+  count: number;
 };
 
 export default function HealthPage() {
   const { user } = useAuth();
   const { partnerPair } = usePartnerPair();
-  const [metrics, setMetrics] = useState<HealthMetric[]>([]);
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [logs, setLogs] = useState<HabitLog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [newHabit, setNewHabit] = useState({ name: "", icon: "✅", color: "cyan", target_per_day: 1 });
 
   const today = format(new Date(), "yyyy-MM-dd");
-  const [form, setForm] = useState({ steps: "", heart_rate: "", sleep_hours: "", calories_burned: "", weight: "", water_glasses: "", notes: "" });
 
-  const [aiTab, setAiTab] = useState<"analytics" | "chat">("analytics");
-  const [analysis, setAnalysis] = useState<HealthAnalysis | null>(null);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [chatMessages, setChatMessages] = useState<ChatMsg[]>([]);
-  const [chatInput, setChatInput] = useState("");
-  const [chatLoading, setChatLoading] = useState(false);
-
-  const fetchMetrics = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     if (!partnerPair) return;
     setLoading(true);
     const since = format(subDays(new Date(), 30), "yyyy-MM-dd");
-    const { data } = await supabase
-      .from("health_metrics")
-      .select("*")
-      .eq("partner_pair", partnerPair)
-      .gte("metric_date", since)
-      .order("metric_date", { ascending: true });
-    if (data) {
-      setMetrics(data as HealthMetric[]);
-      const todayEntry = data.find((m: any) => m.metric_date === today && m.user_id === user?.id);
-      if (todayEntry) {
-        setForm({
-          steps: todayEntry.steps?.toString() || "",
-          heart_rate: todayEntry.heart_rate?.toString() || "",
-          sleep_hours: todayEntry.sleep_hours?.toString() || "",
-          calories_burned: todayEntry.calories_burned?.toString() || "",
-          weight: todayEntry.weight?.toString() || "",
-          water_glasses: todayEntry.water_glasses?.toString() || "",
-          notes: todayEntry.notes || "",
-        });
-      }
-    }
+    const [habitsRes, logsRes] = await Promise.all([
+      supabase.from("habits").select("*").eq("partner_pair", partnerPair).eq("is_active", true).order("created_at"),
+      supabase.from("habit_logs").select("*").eq("partner_pair", partnerPair).gte("log_date", since),
+    ]);
+    if (habitsRes.data) setHabits(habitsRes.data as Habit[]);
+    if (logsRes.data) setLogs(logsRes.data as HabitLog[]);
     setLoading(false);
-  }, [partnerPair, today, user?.id]);
+  }, [partnerPair]);
 
-  useEffect(() => { fetchMetrics(); }, [fetchMetrics]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  const saveToday = async () => {
+  const todayLog = (habitId: string) => logs.find(l => l.habit_id === habitId && l.log_date === today && l.user_id === user?.id);
+
+  const incrementHabit = async (habit: Habit) => {
     if (!user || !partnerPair) return;
-    setSaving(true);
-    const payload = {
-      user_id: user.id,
-      partner_pair: partnerPair,
-      metric_date: today,
-      steps: form.steps ? parseInt(form.steps) : null,
-      heart_rate: form.heart_rate ? parseInt(form.heart_rate) : null,
-      sleep_hours: form.sleep_hours ? parseFloat(form.sleep_hours) : null,
-      calories_burned: form.calories_burned ? parseInt(form.calories_burned) : null,
-      weight: form.weight ? parseFloat(form.weight) : null,
-      water_glasses: form.water_glasses ? parseInt(form.water_glasses) : null,
-      notes: form.notes || null,
-    };
-    const { error } = await supabase.from("health_metrics").upsert(payload, { onConflict: "user_id,metric_date" });
-    if (error) toast.error("Failed to save");
-    else { toast.success("Saved!"); fetchMetrics(); }
-    setSaving(false);
-  };
-
-  // Streaming helper for chat
-  const streamResponse = async (body: object, onDelta: (t: string) => void, onDone: () => void) => {
-    const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/health-analytics`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-      body: JSON.stringify(body),
-    });
-    if (!resp.ok) { const e = await resp.json().catch(() => ({})); throw new Error(e.error || "AI error"); }
-    const reader = resp.body!.getReader();
-    const decoder = new TextDecoder();
-    let buf = "";
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf += decoder.decode(value, { stream: true });
-      let idx;
-      while ((idx = buf.indexOf("\n")) !== -1) {
-        let line = buf.slice(0, idx); buf = buf.slice(idx + 1);
-        if (line.endsWith("\r")) line = line.slice(0, -1);
-        if (!line.startsWith("data: ")) continue;
-        const json = line.slice(6).trim();
-        if (json === "[DONE]") { onDone(); return; }
-        try { const p = JSON.parse(json); const c = p.choices?.[0]?.delta?.content; if (c) onDelta(c); } catch {}
-      }
+    const existing = todayLog(habit.id);
+    if (existing) {
+      const newCount = existing.count + 1;
+      await supabase.from("habit_logs").update({ count: newCount }).eq("id", existing.id);
+      setLogs(prev => prev.map(l => l.id === existing.id ? { ...l, count: newCount } : l));
+    } else {
+      const { data } = await supabase.from("habit_logs").insert({
+        habit_id: habit.id, user_id: user.id, partner_pair: partnerPair, log_date: today, count: 1,
+      }).select().single();
+      if (data) setLogs(prev => [...prev, data as HabitLog]);
     }
-    onDone();
   };
 
-  const runAnalysis = async () => {
-    setAnalyzing(true);
-    setAnalysis(null);
-    try {
-      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/health-analytics`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
-        body: JSON.stringify({ type: "analyze", metrics }),
-      });
-      if (!resp.ok) { const e = await resp.json().catch(() => ({})); throw new Error(e.error || "AI error"); }
-      const data = await resp.json();
-      setAnalysis(data.analysis);
-    } catch (e: any) { toast.error(e.message); }
-    setAnalyzing(false);
+  const decrementHabit = async (habit: Habit) => {
+    const existing = todayLog(habit.id);
+    if (!existing || existing.count <= 0) return;
+    if (existing.count === 1) {
+      await supabase.from("habit_logs").delete().eq("id", existing.id);
+      setLogs(prev => prev.filter(l => l.id !== existing.id));
+    } else {
+      const newCount = existing.count - 1;
+      await supabase.from("habit_logs").update({ count: newCount }).eq("id", existing.id);
+      setLogs(prev => prev.map(l => l.id === existing.id ? { ...l, count: newCount } : l));
+    }
   };
 
-  const sendChat = async () => {
-    if (!chatInput.trim()) return;
-    const userMsg: ChatMsg = { role: "user", content: chatInput };
-    const contextMsg: ChatMsg = { role: "user", content: `My health data (last 30 days): ${JSON.stringify(metrics.slice(-14))}` };
-    const allMsgs = chatMessages.length === 0 ? [contextMsg, userMsg] : [...chatMessages, userMsg];
-    setChatMessages(prev => [...prev, userMsg]);
-    setChatInput("");
-    setChatLoading(true);
-    let assistantText = "";
-    try {
-      await streamResponse(
-        { type: "chat", messages: allMsgs },
-        (d) => {
-          assistantText += d;
-          setChatMessages(prev => {
-            const last = prev[prev.length - 1];
-            if (last?.role === "assistant") return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantText } : m);
-            return [...prev, { role: "assistant", content: assistantText }];
-          });
-        },
-        () => setChatLoading(false),
-      );
-    } catch (e: any) { toast.error(e.message); setChatLoading(false); }
+  const addHabit = async () => {
+    if (!user || !partnerPair || !newHabit.name.trim()) return;
+    const { error } = await supabase.from("habits").insert({
+      user_id: user.id, partner_pair: partnerPair, name: newHabit.name.trim(),
+      icon: newHabit.icon, color: newHabit.color, target_per_day: Math.max(1, newHabit.target_per_day),
+    });
+    if (error) toast.error("Failed to add habit");
+    else { toast.success("Habit added!"); setAddOpen(false); setNewHabit({ name: "", icon: "✅", color: "cyan", target_per_day: 1 }); fetchData(); }
   };
 
-  const myMetrics = metrics.filter(m => m.user_id === user?.id);
-  const chartData = myMetrics.map(m => ({
-    date: format(new Date(m.metric_date), "MMM d"),
-    steps: m.steps,
-    hr: m.heart_rate,
-    sleep: m.sleep_hours,
-    cal: m.calories_burned,
-    weight: m.weight,
-    water: m.water_glasses,
-  }));
-
-  const metricFields = [
-    { key: "steps", label: "Steps", icon: Footprints, color: "text-blue-500", unit: "" },
-    { key: "heart_rate", label: "Heart Rate", icon: Heart, color: "text-red-500", unit: "bpm" },
-    { key: "sleep_hours", label: "Sleep", icon: Moon, color: "text-indigo-500", unit: "hrs" },
-    { key: "calories_burned", label: "Calories", icon: Flame, color: "text-orange-500", unit: "kcal" },
-    { key: "weight", label: "Weight", icon: Scale, color: "text-emerald-500", unit: "kg" },
-  ] as const;
-
-  const waterCount = form.water_glasses ? parseInt(form.water_glasses) : 0;
-  const WATER_GOAL = 8;
-  const waterPercent = Math.min((waterCount / WATER_GOAL) * 100, 100);
-
-  const directionIcon = (dir: string) => {
-    if (dir === "up") return <ArrowUp size={14} className="text-green-500" />;
-    if (dir === "down") return <ArrowDown size={14} className="text-red-500" />;
-    return <Minus size={14} className="text-muted-foreground" />;
+  const deleteHabit = async (id: string) => {
+    await supabase.from("habits").update({ is_active: false }).eq("id", id);
+    setHabits(prev => prev.filter(h => h.id !== id));
+    toast.success("Habit removed");
   };
 
-  const priorityColors: Record<string, string> = {
-    High: "bg-red-500/10 text-red-600 border-red-500/20",
-    Medium: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-    Low: "bg-green-500/10 text-green-600 border-green-500/20",
+  // Streak calculation
+  const getStreak = (habitId: string) => {
+    const habitLogs = logs.filter(l => l.habit_id === habitId && l.user_id === user?.id && l.count > 0);
+    const dates = new Set(habitLogs.map(l => l.log_date));
+    let streak = 0;
+    let d = new Date();
+    // If not logged today, start from yesterday
+    if (!dates.has(format(d, "yyyy-MM-dd"))) {
+      d = subDays(d, 1);
+    }
+    while (dates.has(format(d, "yyyy-MM-dd"))) {
+      streak++;
+      d = subDays(d, 1);
+    }
+    return streak;
   };
+
+  // Stats: last 7 days
+  const last7 = eachDayOfInterval({ start: subDays(new Date(), 6), end: new Date() });
+
+  const getCompletionForDay = (habitId: string, date: string) => {
+    const log = logs.find(l => l.habit_id === habitId && l.log_date === date && l.user_id === user?.id);
+    return log?.count || 0;
+  };
+
+  const colors = (c: string) => colorMap[c] || colorMap.cyan;
 
   return (
     <PageTransition>
       <div className="max-w-2xl mx-auto px-4 pb-28 space-y-5">
         <div className="sticky top-0 z-20 bg-background -mx-4 px-4 pt-6 pb-3 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Activity size={20} className="text-primary" />
+            <Check size={20} className="text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">Health Tracker</h1>
-            <p className="text-xs text-muted-foreground">Manual entry + AI analytics</p>
+            <h1 className="text-xl font-bold text-foreground">Habit Tracker</h1>
+            <p className="text-xs text-muted-foreground">Build consistency, one tap at a time</p>
           </div>
         </div>
 
-        <Tabs defaultValue="log" className="w-full">
-          <TabsList className="grid grid-cols-3 w-full">
-            <TabsTrigger value="log">Log</TabsTrigger>
-            <TabsTrigger value="trends">Trends</TabsTrigger>
-            <TabsTrigger value="ai">AI Insights</TabsTrigger>
+        <Tabs defaultValue="today" className="w-full">
+          <TabsList className="grid grid-cols-2 w-full">
+            <TabsTrigger value="today">✅ Today</TabsTrigger>
+            <TabsTrigger value="stats">📊 Stats</TabsTrigger>
           </TabsList>
 
-          {/* LOG TAB */}
-          <TabsContent value="log" className="space-y-4 mt-4">
-            <p className="text-sm font-medium text-muted-foreground">Today — {format(new Date(), "MMM d, yyyy")}</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {metricFields.map(f => {
-                const Icon = f.icon;
-                return (
-                  <Card key={f.key} className="p-3 space-y-1">
-                    <div className="flex items-center gap-2">
-                      <Icon size={16} className={f.color} />
-                      <span className="text-xs font-medium text-muted-foreground">{f.label}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Input
-                        type="number"
-                        placeholder="—"
-                        value={form[f.key]}
-                        onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
-                        className="h-8 text-sm"
-                      />
-                      {f.unit && <span className="text-xs text-muted-foreground whitespace-nowrap">{f.unit}</span>}
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-
-            {/* Water Intake Tap Widget */}
-            <Card className="p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Droplets size={18} className="text-cyan-500" />
-                  <span className="text-sm font-semibold text-foreground">Water Intake</span>
-                </div>
-                <span className="text-xs text-muted-foreground">{waterCount} × 250ml = {waterCount * 250}ml</span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="flex flex-1 gap-1.5 flex-wrap">
-                  {Array.from({ length: WATER_GOAL }).map((_, i) => (
-                    <motion.button
-                      key={i}
-                      type="button"
-                      whileTap={{ scale: 1.3 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                      onClick={() => {
-                        const newVal = i < waterCount ? i : i + 1;
-                        setForm(p => ({ ...p, water_glasses: newVal.toString() }));
-                      }}
-                      className="focus:outline-none"
-                    >
-                      <Droplets
-                        size={28}
-                        className={i < waterCount ? "text-cyan-500 fill-cyan-500/30" : "text-muted-foreground/30"}
-                      />
-                    </motion.button>
-                  ))}
-                </div>
-                <div className="flex flex-col gap-1">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => setForm(p => ({ ...p, water_glasses: Math.min(waterCount + 1, 20).toString() }))}
-                  >
-                    <Plus size={14} />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="h-8 w-8"
-                    disabled={waterCount <= 0}
-                    onClick={() => setForm(p => ({ ...p, water_glasses: Math.max(waterCount - 1, 0).toString() }))}
-                  >
-                    <Minus size={14} />
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Progress value={waterPercent} className="h-2" />
-                <p className="text-xs text-muted-foreground text-right">
-                  {waterPercent >= 100 ? "🎉 Goal reached!" : `${Math.round(waterPercent)}% of 2L goal`}
-                </p>
-              </div>
-            </Card>
-            <Input
-              placeholder="Notes (optional)"
-              value={form.notes}
-              onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
-            />
-            <Button onClick={saveToday} disabled={saving} className="w-full">
-              {saving ? <Loader2 className="animate-spin mr-2" size={16} /> : <Plus size={16} className="mr-2" />}
-              {metrics.find(m => m.metric_date === today && m.user_id === user?.id) ? "Update Today" : "Save Today"}
-            </Button>
-          </TabsContent>
-
-          {/* TRENDS TAB */}
-          <TabsContent value="trends" className="space-y-4 mt-4">
+          {/* TODAY TAB */}
+          <TabsContent value="today" className="space-y-3 mt-4">
             {loading ? (
               <div className="flex justify-center py-12"><Loader2 className="animate-spin text-muted-foreground" /></div>
-            ) : chartData.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">No data yet. Start logging!</p>
+            ) : habits.length === 0 ? (
+              <div className="text-center py-12 space-y-3">
+                <p className="text-muted-foreground">No habits yet. Add your first one!</p>
+              </div>
             ) : (
-              <>
-                <Card className="p-4">
-                  <p className="text-sm font-semibold mb-2 flex items-center gap-2"><Footprints size={14} className="text-blue-500" /> Steps</p>
-                  <div className="h-40 sm:h-56">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={chartData}>
-                        <defs><linearGradient id="stepsGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} /><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} /></linearGradient></defs>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10 }} className="text-muted-foreground" />
-                        <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" />
-                        <Tooltip />
-                        <Area type="monotone" dataKey="steps" stroke="hsl(var(--primary))" fill="url(#stepsGrad)" strokeWidth={2} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </Card>
+              <AnimatePresence>
+                {habits.map(habit => {
+                  const log = todayLog(habit.id);
+                  const count = log?.count || 0;
+                  const target = habit.target_per_day;
+                  const pct = Math.min((count / target) * 100, 100);
+                  const done = count >= target;
+                  const c = colors(habit.color);
+                  const streak = getStreak(habit.id);
 
-                <Card className="p-4">
-                  <p className="text-sm font-semibold mb-2 flex items-center gap-2"><Heart size={14} className="text-red-500" /> Heart Rate & <Moon size={14} className="text-indigo-500" /> Sleep</p>
-                  <div className="h-40 sm:h-56">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 10 }} />
-                        <Tooltip />
-                        <Line type="monotone" dataKey="hr" name="Heart Rate" stroke="#ef4444" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="sleep" name="Sleep (hrs)" stroke="#6366f1" strokeWidth={2} dot={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </Card>
+                  return (
+                    <motion.div
+                      key={habit.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                    >
+                      <Card className={`p-4 transition-all ${done ? "ring-2 " + c.ring : ""}`}>
+                        <div className="flex items-center gap-3">
+                          {/* Tap area */}
+                          <motion.button
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => incrementHabit(habit)}
+                            className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 ${c.bg} ${done ? "ring-2 " + c.ring : ""}`}
+                          >
+                            {habit.icon}
+                          </motion.button>
 
-                <Card className="p-4">
-                  <p className="text-sm font-semibold mb-2 flex items-center gap-2"><Scale size={14} className="text-emerald-500" /> Weight & <Flame size={14} className="text-orange-500" /> Calories</p>
-                  <div className="h-40 sm:h-56">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={chartData}>
-                        <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
-                        <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-                        <YAxis yAxisId="left" tick={{ fontSize: 10 }} />
-                        <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} />
-                        <Tooltip />
-                        <Line yAxisId="left" type="monotone" dataKey="weight" name="Weight (kg)" stroke="#10b981" strokeWidth={2} dot={false} />
-                        <Line yAxisId="right" type="monotone" dataKey="cal" name="Calories" stroke="#f97316" strokeWidth={2} dot={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </Card>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-semibold text-foreground truncate">{habit.name}</span>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                {streak > 0 && (
+                                  <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+                                    <Flame size={12} className="text-orange-500" />{streak}d
+                                  </span>
+                                )}
+                                <span className={`text-xs font-bold ${done ? c.text : "text-muted-foreground"}`}>
+                                  {count}/{target}
+                                </span>
+                              </div>
+                            </div>
 
-                <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-3">
-                  {[
-                    { label: "Avg Steps", val: Math.round(myMetrics.reduce((s, m) => s + (m.steps || 0), 0) / (myMetrics.filter(m => m.steps).length || 1)), color: "text-blue-500" },
-                    { label: "Avg Sleep", val: (myMetrics.reduce((s, m) => s + (m.sleep_hours || 0), 0) / (myMetrics.filter(m => m.sleep_hours).length || 1)).toFixed(1) + "h", color: "text-indigo-500" },
-                    { label: "Avg HR", val: Math.round(myMetrics.reduce((s, m) => s + (m.heart_rate || 0), 0) / (myMetrics.filter(m => m.heart_rate).length || 1)) + " bpm", color: "text-red-500" },
-                  ].map(s => (
-                    <Card key={s.label} className="p-3 text-center">
-                      <p className="text-xs text-muted-foreground">{s.label}</p>
-                      <p className={`text-lg font-bold ${s.color}`}>{s.val}</p>
-                    </Card>
-                  ))}
-                </div>
-              </>
+                            {/* Progress dots */}
+                            <div className="flex items-center gap-1 mt-1.5">
+                              {Array.from({ length: target }).map((_, i) => (
+                                <motion.div
+                                  key={i}
+                                  initial={false}
+                                  animate={{ scale: i < count ? 1 : 0.8 }}
+                                  className={`w-3 h-3 rounded-full ${i < count ? c.fill : "bg-muted"}`}
+                                />
+                              ))}
+                              {target > 8 && <span className="text-[10px] text-muted-foreground ml-1">{Math.round(pct)}%</span>}
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex flex-col gap-1 shrink-0">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => incrementHabit(habit)}>
+                              <Plus size={14} />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" disabled={count <= 0} onClick={() => decrementHabit(habit)}>
+                              <Minus size={14} />
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
             )}
+
+            {/* Add Habit Button */}
+            <Dialog open={addOpen} onOpenChange={setAddOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  <Plus size={16} className="mr-2" /> Add Habit
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader><DialogTitle>New Habit</DialogTitle></DialogHeader>
+                <div className="space-y-4">
+                  <Input
+                    placeholder="Habit name (e.g. Drink Water)"
+                    value={newHabit.name}
+                    onChange={e => setNewHabit(p => ({ ...p, name: e.target.value }))}
+                  />
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Icon</p>
+                    <div className="flex flex-wrap gap-2">
+                      {EMOJI_OPTIONS.map(emoji => (
+                        <button
+                          key={emoji}
+                          onClick={() => setNewHabit(p => ({ ...p, icon: emoji }))}
+                          className={`w-10 h-10 rounded-lg text-lg flex items-center justify-center border transition-all ${newHabit.icon === emoji ? "border-primary bg-primary/10 ring-2 ring-primary/30" : "border-border/30 hover:bg-muted/40"}`}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Color</p>
+                    <div className="flex flex-wrap gap-2">
+                      {COLOR_OPTIONS.map(c => (
+                        <button
+                          key={c}
+                          onClick={() => setNewHabit(p => ({ ...p, color: c }))}
+                          className={`w-8 h-8 rounded-full ${colorMap[c].fill} transition-all ${newHabit.color === c ? "ring-2 ring-offset-2 ring-primary" : "opacity-60 hover:opacity-100"}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Daily target</p>
+                    <div className="flex items-center gap-3">
+                      <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setNewHabit(p => ({ ...p, target_per_day: Math.max(1, p.target_per_day - 1) }))}>
+                        <Minus size={14} />
+                      </Button>
+                      <span className="text-lg font-bold w-8 text-center">{newHabit.target_per_day}</span>
+                      <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setNewHabit(p => ({ ...p, target_per_day: Math.min(20, p.target_per_day + 1) }))}>
+                        <Plus size={14} />
+                      </Button>
+                    </div>
+                  </div>
+                  <Button onClick={addHabit} disabled={!newHabit.name.trim()} className="w-full">Create Habit</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
-          {/* AI TAB — structured cards */}
-          <TabsContent value="ai" className="space-y-4 mt-4">
-            <div className="flex gap-2">
-              <Button variant={aiTab === "analytics" ? "default" : "outline"} size="sm" onClick={() => setAiTab("analytics")}>
-                <TrendingUp size={14} className="mr-1" /> Analytics
-              </Button>
-              <Button variant={aiTab === "chat" ? "default" : "outline"} size="sm" onClick={() => setAiTab("chat")}>
-                <Bot size={14} className="mr-1" /> Ask AI
-              </Button>
-            </div>
-
-            {aiTab === "analytics" ? (
-              <div className="space-y-4">
-                <Button onClick={runAnalysis} disabled={analyzing || metrics.length === 0} className="w-full">
-                  {analyzing ? <Loader2 className="animate-spin mr-2" size={16} /> : <TrendingUp size={16} className="mr-2" />}
-                  {metrics.length === 0 ? "Log data first" : "Generate AI Analysis"}
-                </Button>
-
-                {analysis && (
-                  <div className="space-y-4">
-                    {/* Health Score */}
-                    <Card className="p-4 text-center">
-                      <p className="text-xs font-bold text-primary mb-2">💚 Health Score</p>
-                      <div className="text-4xl font-black text-foreground mb-1">{analysis.healthScore}<span className="text-lg text-muted-foreground">/10</span></div>
-                      <Progress value={analysis.healthScore * 10} className="h-2 mt-2" />
-                      <p className="text-xs text-muted-foreground mt-3 leading-relaxed">{analysis.summary}</p>
-                    </Card>
-
-                    {/* Trends */}
-                    {analysis.trends.length > 0 && (
-                      <div className="space-y-2">
-                        <h3 className="text-sm font-bold text-foreground">📈 Key Trends</h3>
-                        {analysis.trends.map((t, i) => (
-                          <Card key={i} className="p-3 flex items-start gap-3">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-sm">{t.icon}</span>
-                              {directionIcon(t.direction)}
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-xs font-semibold text-foreground">{t.metric}</p>
-                              <p className="text-[11px] text-muted-foreground leading-relaxed">{t.insight}</p>
-                            </div>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Recommendations */}
-                    {analysis.recommendations.length > 0 && (
-                      <div className="space-y-2">
-                        <h3 className="text-sm font-bold text-foreground flex items-center gap-2"><Target size={14} /> Recommendations</h3>
-                        {analysis.recommendations.map((r, i) => (
-                          <Card key={i} className="p-3">
-                            <div className="flex items-start justify-between mb-1">
-                              <p className="text-xs font-semibold text-foreground">{r.icon} {r.title}</p>
-                              <Badge variant="outline" className={`text-[10px] ${priorityColors[r.priority] || ""}`}>{r.priority}</Badge>
-                            </div>
-                            <p className="text-[11px] text-muted-foreground leading-relaxed">{r.description}</p>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Predictions */}
-                    {analysis.predictions.length > 0 && (
-                      <div className="space-y-2">
-                        <h3 className="text-sm font-bold text-foreground">🔮 Predictions</h3>
-                        {analysis.predictions.map((p, i) => (
-                          <Card key={i} className="p-3 flex items-start gap-2">
-                            <span>{p.icon}</span>
-                            <p className="text-xs text-foreground leading-relaxed">{p.prediction}</p>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Partner Tips */}
-                    {analysis.partnerTips.length > 0 && (
-                      <div className="space-y-2">
-                        <h3 className="text-sm font-bold text-foreground">💕 Partner Support Tips</h3>
-                        {analysis.partnerTips.map((pt, i) => (
-                          <Card key={i} className="p-3 flex items-start gap-2">
-                            <span>{pt.icon}</span>
-                            <p className="text-xs text-foreground leading-relaxed">{pt.tip}</p>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+          {/* STATS TAB */}
+          <TabsContent value="stats" className="space-y-4 mt-4">
+            {loading ? (
+              <div className="flex justify-center py-12"><Loader2 className="animate-spin text-muted-foreground" /></div>
+            ) : habits.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">Add habits to see stats.</p>
             ) : (
-              <div className="space-y-3">
-                <div className="h-[calc(100dvh-22rem)] min-h-[200px] max-h-[500px] overflow-y-auto space-y-3 pr-1">
-                  {chatMessages.length === 0 && (
-                    <p className="text-center text-muted-foreground text-sm py-8">Ask anything about your health data!</p>
-                  )}
-                  {chatMessages.map((m, i) => (
-                    <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
-                        {m.role === "assistant" ? (
-                          <div className="prose prose-sm dark:prose-invert max-w-none"><ReactMarkdown>{m.content}</ReactMarkdown></div>
-                        ) : m.content}
+              <>
+                {/* Overall today summary */}
+                <Card className="p-4">
+                  <p className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+                    <BarChart3 size={16} className="text-primary" /> Today's Progress
+                  </p>
+                  {(() => {
+                    const completed = habits.filter(h => {
+                      const log = todayLog(h.id);
+                      return (log?.count || 0) >= h.target_per_day;
+                    }).length;
+                    const pct = habits.length > 0 ? Math.round((completed / habits.length) * 100) : 0;
+                    return (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>{completed}/{habits.length} habits done</span>
+                          <span>{pct}%</span>
+                        </div>
+                        <Progress value={pct} className="h-2" />
                       </div>
-                    </div>
-                  ))}
-                  {chatLoading && chatMessages[chatMessages.length - 1]?.role !== "assistant" && (
-                    <div className="flex justify-start"><div className="bg-muted rounded-2xl px-3 py-2"><Loader2 className="animate-spin" size={14} /></div></div>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="E.g. How's my sleep trend?"
-                    value={chatInput}
-                    onChange={e => setChatInput(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendChat()}
-                    disabled={chatLoading}
-                  />
-                  <Button size="icon" onClick={sendChat} disabled={chatLoading || !chatInput.trim()}>
-                    <Send size={16} />
-                  </Button>
-                </div>
-              </div>
+                    );
+                  })()}
+                </Card>
+
+                {/* 7-day grid per habit */}
+                {habits.map(habit => {
+                  const c = colors(habit.color);
+                  const streak = getStreak(habit.id);
+                  return (
+                    <Card key={habit.id} className="p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">{habit.icon}</span>
+                          <span className="text-sm font-semibold text-foreground">{habit.name}</span>
+                          {streak > 0 && (
+                            <span className="text-xs text-muted-foreground flex items-center gap-0.5">
+                              <Flame size={12} className="text-orange-500" />{streak}d streak
+                            </span>
+                          )}
+                        </div>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => deleteHabit(habit.id)}>
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
+
+                      {/* 7 day heatmap */}
+                      <div className="flex gap-1.5">
+                        {last7.map(day => {
+                          const dateStr = format(day, "yyyy-MM-dd");
+                          const count = getCompletionForDay(habit.id, dateStr);
+                          const filled = count >= habit.target_per_day;
+                          const partial = count > 0 && !filled;
+                          return (
+                            <div key={dateStr} className="flex-1 flex flex-col items-center gap-1">
+                              <div
+                                className={`w-full aspect-square rounded-lg flex items-center justify-center text-[10px] font-bold ${
+                                  filled ? c.fill + " text-white" : partial ? c.bg + " " + c.text : "bg-muted text-muted-foreground"
+                                }`}
+                              >
+                                {count > 0 ? count : ""}
+                              </div>
+                              <span className="text-[9px] text-muted-foreground">{format(day, "EEE")}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </Card>
+                  );
+                })}
+              </>
             )}
           </TabsContent>
         </Tabs>
