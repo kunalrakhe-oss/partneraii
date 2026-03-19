@@ -376,6 +376,23 @@ export default function CalendarPage() {
       _source: "grocery" as const,
       _sourceId: item.id,
     }));
+    // Fetch linked items for chores
+    const choreIds = (choresRes.data || []).map((c: any) => c.id);
+    const linkedMap: Record<string, any[]> = {};
+    if (choreIds.length > 0) {
+      const { data: linked } = await supabase
+        .from("chore_linked_items")
+        .select("chore_id, grocery_items(*)")
+        .in("chore_id", choreIds);
+      if (linked) {
+        for (const row of linked as any[]) {
+          if (!linkedMap[row.chore_id]) linkedMap[row.chore_id] = [];
+          if (row.grocery_items) linkedMap[row.chore_id].push(row.grocery_items);
+        }
+      }
+    }
+    setChoreLinkedItems(linkedMap);
+
     const baseEvents = [...calEvents, ...choreEvents, ...groceryEvents];
     setEvents(expandRecurringEvents(baseEvents));
   };
