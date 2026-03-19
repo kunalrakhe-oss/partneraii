@@ -545,7 +545,8 @@ export default function CalendarPage() {
 
   const viewIcons: { mode: ViewMode; icon: any; label: string }[] = [
     { mode: "day" as ViewMode, icon: Calendar, label: "Day" },
-    { mode: "multiday" as ViewMode, icon: CalendarDays, label: "3 Day" },
+    { mode: "week" as ViewMode, icon: CalendarDays, label: "Week" },
+    { mode: "multiday" as ViewMode, icon: List, label: "3 Day" },
     { mode: "month" as ViewMode, icon: LayoutGrid, label: "Month" },
   ];
 
