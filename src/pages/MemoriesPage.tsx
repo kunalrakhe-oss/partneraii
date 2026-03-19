@@ -68,6 +68,7 @@ export default function MemoriesPage() {
   const [expandedMemory, setExpandedMemory] = useState<string | null>(null);
   const [commentText, setCommentText] = useState("");
   const [sendingComment, setSendingComment] = useState(false);
+  const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
 
   // Open add modal from URL param (e.g. from home page)
   useEffect(() => {
@@ -293,9 +294,9 @@ export default function MemoriesPage() {
         </div>
 
         {/* Stats banner */}
-        <div className="bg-[hsl(100,20%,72%)] rounded-2xl p-4 mt-5 mb-5 flex items-center gap-4">
+        <div className="bg-primary/15 rounded-2xl p-4 mt-5 mb-5 flex items-center gap-4">
           <div className="flex-1">
-            <p className="text-xs text-foreground/70">Total Memories</p>
+            <p className="text-xs text-muted-foreground">Total Memories</p>
             <p className="text-base font-bold text-foreground">{memories.length} moments captured</p>
           </div>
           <div className="flex gap-4">
@@ -349,156 +350,202 @@ export default function MemoriesPage() {
             </button>
           </div>
         ) : (
-          <div className="space-y-6">
-            {Object.entries(grouped).map(([monthYear, monthMemories]) => (
+          <div className="relative">
+            {/* Central vine line */}
+            <div className="absolute left-1/2 top-0 bottom-0 w-0.5 -translate-x-1/2 bg-gradient-to-b from-primary/60 via-primary/40 to-primary/20 rounded-full" />
+
+            {/* Top seed */}
+            <div className="flex justify-center mb-6 relative z-10">
+              <div className="bg-primary/15 border border-primary/30 rounded-full px-3 py-1 text-xs font-semibold text-primary flex items-center gap-1">
+                🌱 Today
+              </div>
+            </div>
+
+            {Object.entries(grouped).map(([monthYear, monthMemories], groupIdx) => (
               <div key={monthYear}>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                  <h2 className="text-sm font-bold text-foreground">{monthYear}</h2>
-                  <div className="flex-1 h-px bg-border" />
+                {/* Month growth marker */}
+                <div className="flex justify-center my-5 relative z-10">
+                  <div className="bg-card border border-border rounded-full px-3 py-1 text-[11px] font-bold text-foreground shadow-sm flex items-center gap-1">
+                    {groupIdx % 2 === 0 ? "🌿" : "🌸"} {monthYear}
+                  </div>
                 </div>
 
-                <div className="space-y-3 pl-4 border-l-2 border-border ml-0.5">
-                  {monthMemories.map(memory => {
-                    const memReactions = reactions[memory.id] || [];
-                    const emojiReactions = memReactions.filter(r => r.type === "reaction");
-                    const comments = memReactions.filter(r => r.type === "comment");
-                    const isExpanded = expandedMemory === memory.id;
+                {monthMemories.map((memory, memIdx) => {
+                  const isLeft = memIdx % 2 === 0;
+                  const memReactions = reactions[memory.id] || [];
+                  const emojiReactions = memReactions.filter(r => r.type === "reaction");
+                  const comments = memReactions.filter(r => r.type === "comment");
+                  const isExpanded = expandedMemory === memory.id;
+                  const typeEmoji = memory.type === "milestone" ? "💐" : memory.type === "photo" ? "📷" : "🍃";
 
-                    return (
+                  return (
+                    <div key={memory.id} className={`flex items-start gap-0 mb-4 ${isLeft ? "flex-row" : "flex-row-reverse"}`}>
+                      {/* Card side */}
                       <motion.div
-                        key={memory.id}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-card rounded-2xl shadow-card border border-border overflow-hidden relative"
+                        initial={{ opacity: 0, x: isLeft ? -20 : 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: memIdx * 0.05 }}
+                        className="w-[52%] shrink-0"
                       >
-                        {memory.photo_url && (
-                          <div className="h-44 overflow-hidden">
-                            <img src={memory.photo_url} alt={memory.title} className="w-full h-full object-cover" />
-                          </div>
-                        )}
-
-                        <div className="p-4">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1">
-                              {memory.type === "milestone" && (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full mb-2">
-                                  ⭐ Milestone
-                                </span>
-                              )}
-                              {memory.type === "photo" && (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-success bg-success/10 px-2 py-0.5 rounded-full mb-2">
-                                  📷 Photo
-                                </span>
-                              )}
-                              {memory.type === "note" && (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full mb-2">
-                                  ✏️ Note
-                                </span>
-                              )}
-                              <p className="text-sm font-bold text-foreground">{memory.title}</p>
-                              {memory.description && (
-                                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{memory.description}</p>
-                              )}
-                            </div>
+                        <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
+                          {/* Compact photo thumbnail */}
+                          {memory.photo_url && (
                             <button
-                              onClick={() => deleteMemory(memory.id)}
-                              className="text-muted-foreground hover:text-destructive shrink-0 mt-1"
+                              onClick={() => setViewingPhoto(memory.photo_url)}
+                              className="w-full h-20 overflow-hidden block"
                             >
-                              <X size={14} />
+                              <img src={memory.photo_url} alt={memory.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
                             </button>
-                          </div>
-                          <div className="flex items-center gap-2 mt-2.5">
-                            <Calendar size={10} className="text-muted-foreground" />
-                            <span className="text-[10px] text-muted-foreground">
-                              {format(parseISO(memory.memory_date), "EEEE, MMMM d, yyyy")}
-                            </span>
-                          </div>
+                          )}
 
-                          {/* Reaction bar */}
-                          <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border">
-                            {REACTION_EMOJIS.map(emoji => {
-                              const count = emojiReactions.filter(r => r.emoji === emoji).length;
-                              const myReaction = emojiReactions.find(r => r.emoji === emoji && r.user_id === userId);
-                              return (
-                                <button
-                                  key={emoji}
-                                  onClick={() => addReaction(memory.id, emoji)}
-                                  className={`h-7 px-1.5 rounded-full text-xs flex items-center gap-0.5 transition-colors ${
-                                    myReaction
-                                      ? "bg-primary/15 ring-1 ring-primary/40"
-                                      : "bg-muted hover:bg-muted/80"
-                                  }`}
-                                >
-                                  <span className="text-sm">{emoji}</span>
-                                  {count > 0 && <span className="text-[10px] font-medium text-foreground">{count}</span>}
-                                </button>
-                              );
-                            })}
-                            <button
-                              onClick={() => setExpandedMemory(isExpanded ? null : memory.id)}
-                              className={`ml-auto h-7 px-2 rounded-full text-xs flex items-center gap-1 transition-colors ${
-                                isExpanded ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
-                              }`}
-                            >
-                              <MessageCircle size={12} />
-                              {comments.length > 0 && <span className="text-[10px] font-medium">{comments.length}</span>}
-                            </button>
-                          </div>
-
-                          {/* Comments section */}
-                          <AnimatePresence>
-                            {isExpanded && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden"
+                          <div className="p-3">
+                            <div className="flex items-start justify-between gap-1">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-bold text-foreground truncate">{memory.title}</p>
+                                {memory.description && (
+                                  <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{memory.description}</p>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => deleteMemory(memory.id)}
+                                className="text-muted-foreground hover:text-destructive shrink-0"
                               >
-                                <div className="mt-3 space-y-2">
-                                  {comments.map(c => (
-                                    <div key={c.id} className="flex gap-2">
-                                      <div className="w-6 h-6 rounded-full bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
-                                        <span className="text-[10px]">{c.user_id === userId ? "Me" : "💕"}</span>
+                                <X size={12} />
+                              </button>
+                            </div>
+                            <p className="text-[9px] text-muted-foreground mt-1.5">
+                              {format(parseISO(memory.memory_date), "MMM d, yyyy")}
+                            </p>
+
+                            {/* Compact reactions */}
+                            <div className="flex items-center gap-1 mt-2 pt-2 border-t border-border flex-wrap">
+                              {REACTION_EMOJIS.slice(0, 4).map(emoji => {
+                                const count = emojiReactions.filter(r => r.emoji === emoji).length;
+                                const myReaction = emojiReactions.find(r => r.emoji === emoji && r.user_id === userId);
+                                return (
+                                  <button
+                                    key={emoji}
+                                    onClick={() => addReaction(memory.id, emoji)}
+                                    className={`h-6 px-1 rounded-full text-[10px] flex items-center gap-0.5 transition-colors ${
+                                      myReaction ? "bg-primary/15 ring-1 ring-primary/40" : "bg-muted"
+                                    }`}
+                                  >
+                                    <span>{emoji}</span>
+                                    {count > 0 && <span className="text-[9px] font-medium text-foreground">{count}</span>}
+                                  </button>
+                                );
+                              })}
+                              <button
+                                onClick={() => setExpandedMemory(isExpanded ? null : memory.id)}
+                                className={`ml-auto h-6 px-1.5 rounded-full text-[10px] flex items-center gap-0.5 transition-colors ${
+                                  isExpanded ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                                }`}
+                              >
+                                <MessageCircle size={10} />
+                                {comments.length > 0 && <span>{comments.length}</span>}
+                              </button>
+                            </div>
+
+                            {/* Expandable comments */}
+                            <AnimatePresence>
+                              {isExpanded && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  className="overflow-hidden"
+                                >
+                                  <div className="mt-2 space-y-1.5">
+                                    {comments.map(c => (
+                                      <div key={c.id} className="flex gap-1.5">
+                                        <div className="w-5 h-5 rounded-full bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
+                                          <span className="text-[8px]">{c.user_id === userId ? "Me" : "💕"}</span>
+                                        </div>
+                                        <div className="bg-muted rounded-lg px-2 py-1.5 flex-1">
+                                          <p className="text-[10px] text-foreground">{c.comment}</p>
+                                          <p className="text-[8px] text-muted-foreground mt-0.5">
+                                            {format(new Date(c.created_at), "MMM d, h:mm a")}
+                                          </p>
+                                        </div>
                                       </div>
-                                      <div className="bg-muted rounded-xl px-3 py-2 flex-1">
-                                        <p className="text-xs text-foreground">{c.comment}</p>
-                                        <p className="text-[9px] text-muted-foreground mt-0.5">
-                                          {format(new Date(c.created_at), "MMM d, h:mm a")}
-                                        </p>
-                                      </div>
+                                    ))}
+                                    <div className="flex gap-1.5 mt-1">
+                                      <input
+                                        value={commentText}
+                                        onChange={e => setCommentText(e.target.value)}
+                                        onKeyDown={e => e.key === "Enter" && addComment(memory.id)}
+                                        placeholder="Comment..."
+                                        className="flex-1 h-7 px-2 rounded-lg bg-muted text-[10px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                                      />
+                                      <button
+                                        onClick={() => addComment(memory.id)}
+                                        disabled={!commentText.trim() || sendingComment}
+                                        className="w-7 h-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40"
+                                      >
+                                        <Send size={10} />
+                                      </button>
                                     </div>
-                                  ))}
-                                  <div className="flex gap-2 mt-1">
-                                    <input
-                                      value={commentText}
-                                      onChange={e => setCommentText(e.target.value)}
-                                      onKeyDown={e => e.key === "Enter" && addComment(memory.id)}
-                                      placeholder="Write a comment..."
-                                      className="flex-1 h-9 px-3 rounded-xl bg-muted text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                                    />
-                                    <button
-                                      onClick={() => addComment(memory.id)}
-                                      disabled={!commentText.trim() || sendingComment}
-                                      className="w-9 h-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40"
-                                    >
-                                      <Send size={14} />
-                                    </button>
                                   </div>
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
                         </div>
                       </motion.div>
-                    );
-                  })}
-                </div>
+
+                      {/* Branch node on the vine */}
+                      <div className="flex flex-col items-center relative z-10 mt-4 -mx-1.5">
+                        <div className={`w-3 h-3 rounded-full border-2 border-card shadow-sm ${
+                          memory.type === "milestone" ? "bg-primary" : memory.type === "photo" ? "bg-accent" : "bg-muted-foreground"
+                        }`} />
+                        <span className="text-[10px] mt-0.5">{typeEmoji}</span>
+                      </div>
+
+                      {/* Empty spacer for opposite side */}
+                      <div className="flex-1" />
+                    </div>
+                  );
+                })}
               </div>
             ))}
+
+            {/* Bottom root */}
+            <div className="flex justify-center mt-4 relative z-10">
+              <div className="bg-muted border border-border rounded-full px-3 py-1 text-[10px] font-medium text-muted-foreground">
+                🌸 Where it all began
+              </div>
+            </div>
           </div>
         )}
 
+        {/* Fullscreen Photo Lightbox */}
+        <AnimatePresence>
+          {viewingPhoto && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[70] bg-black/95 flex items-center justify-center"
+              onClick={() => setViewingPhoto(null)}
+            >
+              <button
+                onClick={() => setViewingPhoto(null)}
+                className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center"
+              >
+                <X size={20} className="text-white" />
+              </button>
+              <motion.img
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0.9 }}
+                src={viewingPhoto}
+                alt="Memory photo"
+                className="max-w-full max-h-full object-contain p-4"
+                onClick={e => e.stopPropagation()}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Add Memory Modal */}
         <AnimatePresence>
