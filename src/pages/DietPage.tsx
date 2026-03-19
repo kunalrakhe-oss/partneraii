@@ -773,6 +773,7 @@ export default function DietPage() {
   const { partnerPair } = usePartnerPair();
 
   const { toast } = useToast();
+  const { isSingle } = useAppMode();
 
   const [items, setItems] = useState<DietItem[]>([]);
   const [partnerName, setPartnerName] = useState("Partner");
