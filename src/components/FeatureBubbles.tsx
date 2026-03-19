@@ -53,7 +53,7 @@ export default function FeatureBubbles({ isSingle }: FeatureBubblesProps) {
     },
     {
       id: "happy",
-      label: "Stay Happy",
+      label: "Happy",
       icon: Sparkles,
       color: "text-warning",
       bgGradient: "from-warning/20 to-warning/5",
