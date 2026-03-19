@@ -68,6 +68,7 @@ export default function MemoriesPage() {
   const [expandedMemory, setExpandedMemory] = useState<string | null>(null);
   const [commentText, setCommentText] = useState("");
   const [sendingComment, setSendingComment] = useState(false);
+  const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
 
   // Open add modal from URL param (e.g. from home page)
   useEffect(() => {
