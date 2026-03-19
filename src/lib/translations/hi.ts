@@ -491,7 +491,7 @@ export const hi: TranslationKeys = {
 
   // Onboarding
   onboarding: {
-    loveList: "PartnerAI",
+    loveList: "PAI",
     buildRelationship: "अपने रिश्ते को बनाएं, न कि सिर्फ़ काम",
     startTogether: "साथ में शुरू करें",
     stayConnected: "रोज़ जुड़े रहें",
