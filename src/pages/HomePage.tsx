@@ -1,6 +1,6 @@
 import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send, Bell, Users, BookOpen, Rocket, BookHeart, Dumbbell, Apple, Baby, Shield, Activity, HeartPulse, MapPin, Wallet, PartyPopper, Flame, Brain, Target, Salad, Moon, CalendarPlus } from "lucide-react";
 import FeatureBubbles from "@/components/FeatureBubbles";
-import DayIntentPicker from "@/components/DayIntentPicker";
+import AICoachCard from "@/components/AICoachCard";
 import ProfileButton from "@/components/ProfileButton";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -62,7 +62,7 @@ export default function HomePage() {
   const [visibleWidgets, setVisibleWidgets] = useState<HomeWidgetId[]>(getHomeWidgets);
   const [activePlan, setActivePlan] = useState<{ plan_type: string; title: string; started_at: string } | null>(null);
   const [activeDietPlan, setActiveDietPlan] = useState<{ title: string; goal: string; started_at: string } | null>(null);
-  const [userPreferences, setUserPreferences] = useState<{ priorities: string[]; morning_routine: string | null } | null>(null);
+  const [userPreferences, setUserPreferences] = useState<{ priorities: string[]; morning_routine: string | null; life_goals: string[]; daily_goals: string[] } | null>(null);
   useEffect(() => {
     const onUpdate = () => setVisibleWidgets(getHomeWidgets());
     window.addEventListener("layout-prefs-changed", onUpdate);
@@ -236,11 +236,11 @@ export default function HomePage() {
     if (!user) return;
     supabase
       .from("user_preferences")
-      .select("priorities, morning_routine")
+      .select("priorities, morning_routine, daily_goals")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
-        if (data) setUserPreferences(data as any);
+        if (data) setUserPreferences({ ...(data as any), life_goals: (data as any).life_goals || [] });
       });
   }, [user]);
 
@@ -394,9 +394,15 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          {/* Day Intent Picker */}
+          {/* AI Coach Card */}
           <motion.div variants={item}>
-            <DayIntentPicker isSingle={isSingle} />
+            <AICoachCard
+              preferences={userPreferences}
+              activePlans={[
+                ...(activePlan ? [activePlan] : []),
+                ...(activeDietPlan ? [{ plan_type: "diet", title: activeDietPlan.title, started_at: activeDietPlan.started_at }] : []),
+              ]}
+            />
           </motion.div>
 
 
