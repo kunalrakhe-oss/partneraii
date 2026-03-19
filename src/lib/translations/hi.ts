@@ -122,7 +122,7 @@ export const hi: TranslationKeys = {
     quickAddChore: "जल्दी काम जोड़ें...",
     dueNow: "अभी करना है",
     once: "एक बार",
-    aiInsight: "LoveList AI इनसाइट",
+    aiInsight: "PAI इनसाइट",
     upgradeForInsight: "दैनिक AI-संचालित इनसाइट के लिए प्रो में अपग्रेड करें।",
     upgradeNow: "अभी अपग्रेड करें →",
     refreshInsight: "नई इनसाइट",
