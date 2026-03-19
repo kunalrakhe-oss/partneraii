@@ -124,6 +124,7 @@ function GatedAiMoodTip(props: { myMood: string | null; partnerMood: string | nu
 export default function MoodPage() {
   const { user } = useAuth();
   const { partnerPair, loading: ppLoading } = usePartnerPair();
+  const { isSingle } = useAppMode();
   const [logs, setLogs] = useState<MoodLog[]>([]);
   const [note, setNote] = useState("");
   const navigate = useNavigate();
