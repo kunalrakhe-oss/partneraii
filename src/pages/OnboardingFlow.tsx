@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDemo } from "@/contexts/DemoContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import onboardingHero from "@/assets/onboarding-hero.jpg";
+
 
 type Step = "language" | "entry" | "slides" | "mode" | "demo" | "setup-names" | "setup-relationship" | "setup-connect" | "setup-start" | "done";
 

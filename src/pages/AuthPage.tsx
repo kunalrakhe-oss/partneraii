@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useToast } from "@/hooks/use-toast";
-import onboardingHero from "@/assets/onboarding-hero.jpg";
+
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function AuthPage() {
