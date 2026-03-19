@@ -36,10 +36,17 @@ export default function PostAuthSetup() {
   const { t, language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [step, setStep] = useState<Step>("language");
   const [mode, setMode] = useState<"single" | "couple" | null>(() => {
     const saved = localStorage.getItem("lovelist-app-mode");
     return saved === "single" || saved === "couple" ? saved : null;
+  });
+  // Skip steps already completed during onboarding
+  const [step, setStep] = useState<Step>(() => {
+    const hasLanguage = localStorage.getItem("lovelist-language");
+    const hasMode = localStorage.getItem("lovelist-app-mode");
+    if (hasLanguage && hasMode) return "name";
+    if (hasLanguage) return "mode";
+    return "language";
   });
   const rawName =
     user?.user_metadata?.full_name ||
