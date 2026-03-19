@@ -748,15 +748,17 @@ export default function ChoresPage() {
                                   <option value="weekly">Weekly</option>
                                   <option value="monthly">Monthly</option>
                                 </select>
-                                <select
-                                  value={editAssign}
-                                  onChange={e => setEditAssign(e.target.value)}
-                                  className="flex-1 bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                                >
-                                  <option value="">Both</option>
-                                  <option value="me">Me</option>
-                                  <option value="partner">Partner</option>
-                                </select>
+                                {!isSingle && (
+                                  <select
+                                    value={editAssign}
+                                    onChange={e => setEditAssign(e.target.value)}
+                                    className="flex-1 bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                                  >
+                                    <option value="">Both</option>
+                                    <option value="me">Me</option>
+                                    <option value="partner">Partner</option>
+                                  </select>
+                                )}
                               </div>
                               <input
                                 type="date"
