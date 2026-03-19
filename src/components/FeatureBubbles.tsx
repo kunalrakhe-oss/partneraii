@@ -178,7 +178,7 @@ export default function FeatureBubbles({ isSingle }: FeatureBubblesProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="absolute left-1/2 -translate-x-1/2 mt-2 text-sm font-bold text-foreground whitespace-nowrap"
+                  className="absolute left-1/2 -translate-x-1/2 mt-3 text-base font-bold text-foreground whitespace-nowrap"
                 >
                   {activePillar.label}
                 </motion.p>
