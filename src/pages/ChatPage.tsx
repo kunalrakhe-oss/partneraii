@@ -51,6 +51,8 @@ export default function ChatPage() {
   const { isDemoMode } = useDemo();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { isSingle } = useAppMode();
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [input, setInput] = useState("");
@@ -60,13 +62,34 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [activeTab, setActiveTab] = useState<ChatTab>("partner");
+  const [activeTab, setActiveTab] = useState<ChatTab>(() => {
+    const tab = searchParams.get("tab");
+    return tab === "ai" ? "ai" : "partner";
+  });
+  const [moodContext, setMoodContext] = useState<string | null>(() => {
+    const mood = searchParams.get("mood");
+    const note = searchParams.get("note");
+    if (mood) return `I'm feeling ${mood} today.${note ? ` ${note}` : ""} Can you help me talk through this?`;
+    return null;
+  });
   const [selectedMsg, setSelectedMsg] = useState<ChatMsg | null>(null);
   const [replyTo, setReplyTo] = useState<ChatMsg | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Force AI tab in single mode
+  useEffect(() => {
+    if (isSingle && activeTab === "partner") setActiveTab("ai");
+  }, [isSingle, activeTab]);
+
+  // Clean up URL params after reading
+  useEffect(() => {
+    if (searchParams.has("tab") || searchParams.has("mood") || searchParams.has("note")) {
+      setSearchParams({}, { replace: true });
+    }
+  }, []);
 
   // Fetch partner profile
   useEffect(() => {

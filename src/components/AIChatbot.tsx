@@ -83,6 +83,15 @@ export default function AIChatbot({ embedded, initialContext }: { embedded?: boo
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  // Auto-send mood context from URL
+  const contextSent = useRef(false);
+  useEffect(() => {
+    if (initialContext && !contextSent.current && messages.length === 0 && !loading) {
+      contextSent.current = true;
+      send(initialContext);
+    }
+  }, [initialContext]);
+
   const send = async (text?: string) => {
     const msg = text || input.trim();
     if (!msg || loading) return;
