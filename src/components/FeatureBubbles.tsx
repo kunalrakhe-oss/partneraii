@@ -167,9 +167,9 @@ export default function FeatureBubbles({ isSingle }: FeatureBubblesProps) {
                   animate={{ scale: 1 }}
                   exit={{ scale: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  className={`w-20 h-20 rounded-full bg-gradient-to-br ${activePillar.bgGradient} ring-2 ${activePillar.ringColor} flex items-center justify-center ${activePillar.glowColor}`}
+                  className={`w-24 h-24 rounded-full bg-gradient-to-br ${activePillar.bgGradient} ring-2 ${activePillar.ringColor} flex items-center justify-center ${activePillar.glowColor}`}
                 >
-                  <PlanetIcon size={36} className={activePillar.color} />
+                  <PlanetIcon size={44} className={activePillar.color} />
                 </motion.div>
 
                 {/* Label below planet */}
