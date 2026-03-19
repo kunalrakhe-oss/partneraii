@@ -54,6 +54,7 @@ export default function AddEventModal({
 }: AddEventModalProps) {
   const { user } = useAuth();
   const { partnerPair } = usePartnerPair();
+  const { isSingle } = useAppMode();
 
   const [formTitle, setFormTitle] = useState("");
   const [formDesc, setFormDesc] = useState("");
