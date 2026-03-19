@@ -1,5 +1,6 @@
 import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send, Bell, Users, BookOpen, Rocket, BookHeart, Dumbbell, Apple, Baby, Shield, Activity, HeartPulse, MapPin, Wallet, PartyPopper, Flame, Brain, Target, Salad, Moon, CalendarPlus } from "lucide-react";
 import FeatureBubbles from "@/components/FeatureBubbles";
+import DayIntentPicker from "@/components/DayIntentPicker";
 import ProfileButton from "@/components/ProfileButton";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -61,6 +62,7 @@ export default function HomePage() {
   const [visibleWidgets, setVisibleWidgets] = useState<HomeWidgetId[]>(getHomeWidgets);
   const [activePlan, setActivePlan] = useState<{ plan_type: string; title: string; started_at: string } | null>(null);
   const [activeDietPlan, setActiveDietPlan] = useState<{ title: string; goal: string; started_at: string } | null>(null);
+  const [userPreferences, setUserPreferences] = useState<{ priorities: string[]; morning_routine: string | null } | null>(null);
   useEffect(() => {
     const onUpdate = () => setVisibleWidgets(getHomeWidgets());
     window.addEventListener("layout-prefs-changed", onUpdate);
@@ -229,6 +231,19 @@ export default function HomePage() {
       });
   }, [user]);
 
+  // Fetch user preferences
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("user_preferences")
+      .select("priorities, morning_routine")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setUserPreferences(data as any);
+      });
+  }, [user]);
+
   // Fetch AI insight
   const fetchInsight = useCallback(async () => {
     if (insightLoading) return;
@@ -236,10 +251,16 @@ export default function HomePage() {
     try {
       const hour = new Date().getHours();
       const timeOfDay = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+      const dailyIntent = sessionStorage.getItem("partnerai-daily-intent") || null;
 
       const { data, error } = await supabase.functions.invoke("daily-insight", {
         body: {
           language: localStorage.getItem("lovelist-language") || "en",
+          preferences: userPreferences ? {
+            priorities: userPreferences.priorities,
+            morning_routine: userPreferences.morning_routine,
+            daily_intent: dailyIntent,
+          } : undefined,
           stats: {
             daysTogether,
             pendingChores,
@@ -257,11 +278,11 @@ export default function HomePage() {
       if (data?.insight) setAiInsight(data.insight);
     } catch (e) {
       console.error("Insight error:", e);
-      setAiInsight("Keep building your love story together! 💕");
+      setAiInsight("Keep building your best life! 💕");
     } finally {
       setInsightLoading(false);
     }
-  }, [daysTogether, pendingChores, completedChores, uncheckedGroceries, todayEvents.length, totalMemories, messageCount, partnerMood]);
+  }, [daysTogether, pendingChores, completedChores, uncheckedGroceries, todayEvents.length, totalMemories, messageCount, partnerMood, userPreferences]);
 
   // Auto-fetch insight once data is loaded
   useEffect(() => {
@@ -373,7 +394,10 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-
+          {/* Day Intent Picker */}
+          <motion.div variants={item}>
+            <DayIntentPicker isSingle={isSingle} />
+          </motion.div>
 
 
           {/* ❤️ Make it Real - Getting Started (couple mode demo) */}

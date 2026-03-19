@@ -9,13 +9,31 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { stats, language } = await req.json();
+    const { stats, language, preferences } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const langInstruction = language === "hi"
       ? "\n\nIMPORTANT: The user's language is Hindi. You MUST respond entirely in Hindi (Devanagari script). Use natural Hindi, not transliteration."
       : "";
+
+    // Build preference context if available
+    let prefContext = "";
+    if (preferences) {
+      const parts: string[] = [];
+      if (preferences.priorities?.length > 0) {
+        parts.push(`Their top priorities: ${preferences.priorities.join(", ")}`);
+      }
+      if (preferences.morning_routine) {
+        parts.push(`Morning style: ${preferences.morning_routine}`);
+      }
+      if (preferences.daily_intent) {
+        parts.push(`Today's chosen focus: ${preferences.daily_intent}`);
+      }
+      if (parts.length > 0) {
+        prefContext = `\n\nUser preferences:\n${parts.join("\n")}`;
+      }
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -28,12 +46,12 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a warm, encouraging relationship AI assistant for a couple's app called LoveList. Generate a short, personalized daily insight (2-3 sentences max) based on the couple's stats. Be specific, warm, and actionable. Use emojis sparingly. Never be generic — reference the actual numbers.${langInstruction}`,
+            content: `You are a warm, encouraging AI life coach for PartnerAI — an app that helps people manage their day, health, finances, and relationships. Generate a short, personalized daily insight (2-3 sentences max) based on the user's stats and preferences. Be specific, warm, and actionable. Use emojis sparingly. Never be generic — reference the actual numbers and their stated priorities.${prefContext}${langInstruction}`,
           },
           {
             role: "user",
-            content: `Here are our couple stats for today:
-- Days together: ${stats.daysTogether}
+            content: `Here are my stats for today:
+- Days using app: ${stats.daysTogether}
 - Pending chores: ${stats.pendingChores}
 - Completed chores: ${stats.completedChores}
 - Grocery items left: ${stats.groceryItems}
@@ -68,7 +86,7 @@ Give me a personalized daily insight.`,
     }
 
     const data = await response.json();
-    const insight = data.choices?.[0]?.message?.content || "Keep building your love story together! 💕";
+    const insight = data.choices?.[0]?.message?.content || "Keep building your best life! 💕";
 
     return new Response(JSON.stringify({ insight }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
