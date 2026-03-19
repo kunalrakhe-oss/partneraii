@@ -24,6 +24,9 @@ serve(async (req) => {
       if (preferences.priorities?.length > 0) {
         parts.push(`Their top priorities: ${preferences.priorities.join(", ")}`);
       }
+      if (preferences.life_goals?.length > 0) {
+        parts.push(`Their life goals: ${preferences.life_goals.join(", ")}`);
+      }
       if (preferences.morning_routine) {
         parts.push(`Morning style: ${preferences.morning_routine}`);
       }
