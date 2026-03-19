@@ -935,6 +935,7 @@ export type Database = {
           life_goals: string[]
           morning_routine: string | null
           priorities: string[]
+          profile_summary: string | null
           updated_at: string
           user_id: string
         }
@@ -945,6 +946,7 @@ export type Database = {
           life_goals?: string[]
           morning_routine?: string | null
           priorities?: string[]
+          profile_summary?: string | null
           updated_at?: string
           user_id: string
         }
@@ -955,6 +957,7 @@ export type Database = {
           life_goals?: string[]
           morning_routine?: string | null
           priorities?: string[]
+          profile_summary?: string | null
           updated_at?: string
           user_id?: string
         }
