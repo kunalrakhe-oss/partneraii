@@ -68,7 +68,7 @@ export default function FeatureBubbles({ isSingle }: FeatureBubblesProps) {
     },
     {
       id: "wealthy",
-      label: "Stay Wealthy",
+      label: "Wealthy",
       icon: Wallet,
       color: "text-warning",
       bgGradient: "from-warning/20 to-amber-500/5",
