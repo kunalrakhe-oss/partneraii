@@ -134,6 +134,7 @@ export default function MoodPage() {
   const [moodReaction, setMoodReaction] = useState("");
   const [sendingReaction, setSendingReaction] = useState(false);
   const [partnerName, setPartnerName] = useState("Partner");
+  const [showMoodPicker, setShowMoodPicker] = useState(false);
 
   // Swipe-down dismiss
   const dragY = useMotionValue(0);
@@ -262,21 +263,60 @@ export default function MoodPage() {
           </button>
         </div>
 
+        {/* Single emoji trigger */}
         <p className="text-sm font-bold text-foreground mb-3">{t("mood.howFeeling")}</p>
-        {MOOD_GROUPS.map((group) => (
-          <div key={group.label} className="mb-4">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">{group.label}</p>
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-5 px-5">
-              {group.moods.map(mood => (
-                <motion.button key={mood.key} whileTap={{ scale: 0.9 }} onClick={() => logMood(mood.key)}
-                  className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all min-w-[60px] shrink-0 ${todayLog?.mood === mood.key ? "bg-primary/25 shadow-soft ring-2 ring-primary/40" : "hover:bg-muted"}`}>
-                  <span className="text-2xl">{mood.emoji}</span>
-                  <span className="text-[9px] font-medium text-muted-foreground leading-tight">{mood.label}</span>
-                </motion.button>
-              ))}
-            </div>
-          </div>
-        ))}
+        <div className="relative mb-4">
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setShowMoodPicker(!showMoodPicker)}
+            className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all ${todayLog ? "bg-primary/15 ring-2 ring-primary/30" : "bg-muted"}`}
+          >
+            <span className="text-3xl">{todayLog ? (MOOD_EMOJI_MAP[todayLog.mood] || "😊") : "🫠"}</span>
+          </motion.button>
+          {todayLog && (
+            <p className="text-[10px] font-medium text-muted-foreground mt-1 text-center w-16">
+              {todayLog.mood.charAt(0).toUpperCase() + todayLog.mood.slice(1)}
+            </p>
+          )}
+
+          {/* Floating emoji picker */}
+          <AnimatePresence>
+            {showMoodPicker && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowMoodPicker(false)}
+                />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                  transition={{ type: "spring", damping: 22, stiffness: 400 }}
+                  className="absolute left-0 top-full mt-2 z-50 bg-card rounded-2xl shadow-lg border border-border p-3 w-[min(340px,calc(100vw-40px))]"
+                >
+                  {MOOD_GROUPS.map((group) => (
+                    <div key={group.label} className="mb-2 last:mb-0">
+                      <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{group.label}</p>
+                      <div className="flex flex-wrap gap-1">
+                        {group.moods.map(mood => (
+                          <motion.button
+                            key={mood.key}
+                            whileTap={{ scale: 0.85 }}
+                            onClick={() => { logMood(mood.key); setShowMoodPicker(false); }}
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${todayLog?.mood === mood.key ? "bg-primary/25 ring-2 ring-primary/40 scale-110" : "hover:bg-muted active:bg-muted"}`}
+                          >
+                            <span className="text-xl">{mood.emoji}</span>
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
 
         <p className="text-sm font-semibold text-foreground mb-2">{t("mood.addNote")}</p>
         <textarea value={note} onChange={e => setNote(e.target.value)} placeholder={t("mood.whatsOnMind")} rows={2}
