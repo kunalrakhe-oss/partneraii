@@ -397,7 +397,7 @@ export default function CalendarPage() {
     } else {
       toast("No events today — enjoy your free time! ✨");
     }
-    if (viewMode === "month") setViewMode("day");
+    if (viewMode === "month") setViewMode("week");
   };
 
   const openAddForm = (date?: Date, time?: string) => {
