@@ -227,7 +227,7 @@ export default function OnboardingFlow() {
 
   const handleWhatsAppInvite = () => {
     const text = encodeURIComponent(
-      `Join me on PartnerAI! 💕 Use my code: ${inviteCode}\n\nDownload: ${window.location.origin}`
+      `Join me on PAI! 💕 Use my code: ${inviteCode}\n\nDownload: ${window.location.origin}`
     );
     const url = `https://wa.me/?text=${text}`;
     const a = document.createElement("a");

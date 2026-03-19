@@ -1,6 +1,6 @@
 {
-  "name": "PartnerAI",
-  "short_name": "PartnerAI",
+  "name": "PAI",
+  "short_name": "PAI",
   "description": "AI-powered life management for health, wealth, happiness & success",
   "start_url": "/",
   "display": "standalone",

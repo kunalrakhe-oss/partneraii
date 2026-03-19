@@ -536,7 +536,7 @@ export const en = {
   setup: {
     chooseLang: "Choose your language",
     chooseLangDesc: "You can change this anytime in settings",
-    howUse: "How will you use PartnerAI?",
+    howUse: "How will you use PAI?",
     howUseDesc: "You can change this anytime in settings",
     meMode: "Me Mode",
     meModeDesc: "Personal productivity & wellness",

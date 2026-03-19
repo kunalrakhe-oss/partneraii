@@ -537,7 +537,7 @@ export const hi: TranslationKeys = {
   setup: {
     chooseLang: "अपनी भाषा चुनें",
     chooseLangDesc: "आप इसे सेटिंग्स में कभी भी बदल सकते हैं",
-    howUse: "आप PartnerAI कैसे इस्तेमाल करेंगे?",
+    howUse: "आप PAI कैसे इस्तेमाल करेंगे?",
     howUseDesc: "आप इसे सेटिंग्स में कभी भी बदल सकते हैं",
     meMode: "मैं मोड",
     meModeDesc: "व्यक्तिगत उत्पादकता और कल्याण",
