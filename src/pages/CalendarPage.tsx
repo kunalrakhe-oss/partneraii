@@ -374,12 +374,14 @@ export default function CalendarPage() {
 
   const navigatePrev = () => {
     if (viewMode === "day") { setCurrentDate((d) => subDays(d, 1)); setSelectedDate((d) => subDays(d, 1)); }
+    else if (viewMode === "week") { setCurrentDate((d) => subDays(d, 7)); setSelectedDate((d) => subDays(d, 7)); }
     else if (viewMode === "multiday") { setCurrentDate((d) => subDays(d, 3)); setSelectedDate((d) => subDays(d, 3)); }
     else setCurrentDate((d) => subMonths(d, 1));
   };
 
   const navigateNext = () => {
     if (viewMode === "day") { setCurrentDate((d) => addDays(d, 1)); setSelectedDate((d) => addDays(d, 1)); }
+    else if (viewMode === "week") { setCurrentDate((d) => addDays(d, 7)); setSelectedDate((d) => addDays(d, 7)); }
     else if (viewMode === "multiday") { setCurrentDate((d) => addDays(d, 3)); setSelectedDate((d) => addDays(d, 3)); }
     else setCurrentDate((d) => addMonths(d, 1));
   };
