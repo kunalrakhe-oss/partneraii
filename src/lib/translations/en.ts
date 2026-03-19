@@ -120,7 +120,7 @@ export const en = {
     quickAddChore: "Quick add chore...",
     dueNow: "Due now",
     once: "Once",
-    aiInsight: "PartnerAI Insight",
+    aiInsight: "PAI Insight",
     upgradeForInsight: "Upgrade to Pro for daily AI-powered insights.",
     upgradeNow: "Upgrade now →",
     refreshInsight: "New Insight",
