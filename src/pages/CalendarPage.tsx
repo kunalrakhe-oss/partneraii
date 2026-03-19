@@ -163,6 +163,7 @@ function CalendarDietForm({ defaultDate, onClose, onSave, t }: {
   onSave: (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string; recurrence: string; recurrence_day: number | null }) => void;
   t: (key: string) => string;
 }) {
+  const { isSingle } = useAppMode();
   const [desc, setDesc] = useState("");
   const [notes, setNotes] = useState("");
   const [cal, setCal] = useState("");
