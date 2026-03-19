@@ -395,7 +395,7 @@ export const en = {
     voiceDisabled: "Voice assistant disabled",
 
     // Install
-    installLoveLists: "Install PartnerAI",
+    installLoveLists: "Install PAI",
     installSafari: "Tap Share → Add to Home Screen in Safari",
     alreadyAvailable: "Already available",
     useBrowserMenu: "Use your browser menu to install the app",
