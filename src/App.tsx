@@ -157,6 +157,13 @@ function AppRoutes() {
   );
 }
 
+function PushInit() {
+  // Initialize push notifications on native platforms
+  const { usePushNotifications } = require("@/hooks/usePushNotifications");
+  usePushNotifications();
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -168,6 +175,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <FullscreenExitButton />
+            <PushNotificationsInit />
             <BrowserRouter>
               <AppRoutes />
             </BrowserRouter>
