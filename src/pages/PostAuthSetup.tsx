@@ -31,11 +31,17 @@ export default function PostAuthSetup() {
     if (!user || !mode) return;
     setSaving(true);
     try {
+      const trimmedName = name.trim();
+      if (!trimmedName) {
+        toast({ title: "Please enter your name", variant: "destructive" });
+        setSaving(false);
+        return;
+      }
       const { error } = await supabase
         .from("profiles")
         .update({
           app_mode: mode,
-          display_name: name.trim() || undefined,
+          display_name: trimmedName,
         })
         .eq("user_id", user.id);
       if (error) throw error;
