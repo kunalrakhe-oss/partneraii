@@ -30,8 +30,7 @@ const WIDGETS_KEY = "lovelist-home-widgets";
 
 const DEFAULT_NAV: NavTabId[] = ["home", "calendar", "lists", "chat", "chores"];
 const DEFAULT_WIDGETS: HomeWidgetId[] = [
-  "next-event", "partnership-stats", "mood-check", "partner-mood",
-  "today-agenda", "add-memory", "quick-links", "urgent-chores", "ai-insight",
+  "next-event", "mood-check", "quick-links", "urgent-chores", "ai-insight",
 ];
 
 function load<T>(key: string, fallback: T): T {

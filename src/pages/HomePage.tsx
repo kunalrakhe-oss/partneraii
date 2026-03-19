@@ -377,50 +377,36 @@ export default function HomePage() {
 
 
           {/* ❤️ Make it Real - Getting Started (couple mode demo) */}
-          {isDemoMode && !isSingle && (
+          {isDemoMode && !isSingle && !localStorage.getItem("lovelist-onboard-dismissed") && (
             <motion.div variants={item}>
-              <div className="bg-gradient-to-br from-primary/10 via-secondary/5 to-primary/10 rounded-2xl p-5 border border-primary/20 shadow-soft">
-                <div className="flex items-center gap-2 mb-1">
-                  <Heart size={16} className="text-primary" fill="currentColor" />
-                   <p className="text-sm font-bold text-foreground">{t("home.makeItReal")}</p>
-                 </div>
-                 <p className="text-xs text-muted-foreground mb-4">{t("home.startJourney")}</p>
-
-                <div className="space-y-3 mb-5">
+              <div className="bg-gradient-to-br from-primary/10 via-secondary/5 to-primary/10 rounded-2xl p-4 border border-primary/20 shadow-soft relative">
+                <button
+                  onClick={() => { localStorage.setItem("lovelist-onboard-dismissed", "true"); }}
+                  className="absolute top-3 right-3 w-7 h-7 rounded-full bg-muted/60 flex items-center justify-center"
+                >
+                  <X size={12} className="text-muted-foreground" />
+                </button>
+                <div className="flex items-center gap-2 mb-2">
+                  <Heart size={14} className="text-primary" fill="currentColor" />
+                  <p className="text-sm font-bold text-foreground">{t("home.makeItReal")}</p>
+                </div>
+                <div className="flex flex-wrap gap-2 mb-3">
                   {[
-                    { step: 1, label: t("home.connectWithPartner"), icon: Users, done: false },
-                    { step: 2, label: t("home.addFirstMemory"), icon: Camera, done: false },
-                    { step: 3, label: t("home.startLoveJourney"), icon: Rocket, done: false },
+                    { label: t("home.connectWithPartner"), icon: Users },
+                    { label: t("home.addFirstMemory"), icon: Camera },
+                    { label: t("home.startLoveJourney"), icon: Rocket },
                   ].map(s => (
-                    <div key={s.step} className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                        s.done ? "bg-success/20" : "bg-primary/15"
-                      }`}>
-                        {s.done ? (
-                          <Check size={14} className="text-success" />
-                        ) : (
-                          <s.icon size={14} className="text-primary" />
-                        )}
-                      </div>
-                      <p className={`text-sm font-medium ${s.done ? "text-muted-foreground line-through" : "text-foreground"}`}>{s.label}</p>
-                    </div>
+                    <span key={s.label} className="inline-flex items-center gap-1.5 bg-card/60 px-2.5 py-1.5 rounded-full text-xs font-medium text-foreground">
+                      <s.icon size={11} className="text-primary" /> {s.label}
+                    </span>
                   ))}
                 </div>
-
                 <div className="flex gap-2">
-                  <Link
-                    to="/connect"
-                    className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 shadow-soft"
-                  >
-                    <Users size={13} />
-                     {t("home.connectPartner")}
-                   </Link>
-                   <Link
-                     to="/memories"
-                     className="flex-1 h-10 rounded-xl bg-card border border-border text-foreground text-xs font-bold flex items-center justify-center gap-1.5 shadow-card"
-                   >
-                     <Camera size={13} />
-                     {t("home.addMemory")}
+                  <Link to="/connect" className="flex-1 h-9 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5">
+                    <Users size={12} /> {t("home.connectPartner")}
+                  </Link>
+                  <Link to="/memories" className="flex-1 h-9 rounded-xl bg-card border border-border text-foreground text-xs font-bold flex items-center justify-center gap-1.5">
+                    <Camera size={12} /> {t("home.addMemory")}
                   </Link>
                 </div>
               </div>
@@ -487,200 +473,105 @@ export default function HomePage() {
           {visibleWidgets.map(widgetId => {
             switch (widgetId) {
               case "next-event":
-                return nextEvent ? (
+                return (
                   <motion.div key="next-event" variants={item}>
                     <Link to="/calendar" className="block love-gradient rounded-2xl p-4 shadow-elevated relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-primary-foreground/10 rounded-full -translate-y-8 translate-x-8" />
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">{t("home.nextUp")}</p>
-                        {getCountdownBadge(nextEvent) && (
-                          <span className="text-[10px] font-bold bg-primary-foreground/20 text-primary-foreground px-2 py-0.5 rounded-full">
-                            {getCountdownBadge(nextEvent)}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-lg font-bold text-primary-foreground leading-tight">{nextEvent.title}</p>
-                      <div className="flex items-center gap-3 mt-2">
-                        <div className="flex items-center gap-1.5">
-                          <CalendarDays size={13} className="text-primary-foreground/70" />
-                          <span className="text-xs font-medium text-primary-foreground/80">{formatEventDate(nextEvent.event_date)}</span>
-                        </div>
-                        {nextEvent.event_time && (
-                          <div className="flex items-center gap-1.5">
-                            <Clock size={13} className="text-primary-foreground/70" />
-                            <span className="text-xs font-medium text-primary-foreground/80">{nextEvent.event_time}</span>
+                      <div className="absolute top-0 right-0 w-20 h-20 bg-primary-foreground/10 rounded-full -translate-y-8 translate-x-8" />
+                      {nextEvent ? (
+                        <>
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">{t("home.nextUp")}</p>
+                            {getCountdownBadge(nextEvent) && (
+                              <span className="text-[10px] font-bold bg-primary-foreground/20 text-primary-foreground px-2 py-0.5 rounded-full">
+                                {getCountdownBadge(nextEvent)}
+                              </span>
+                            )}
                           </div>
-                        )}
-                      </div>
+                          <p className="text-base font-bold text-primary-foreground leading-tight">{nextEvent.title}</p>
+                          <div className="flex items-center gap-3 mt-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <CalendarDays size={12} className="text-primary-foreground/70" />
+                              <span className="text-xs font-medium text-primary-foreground/80">{formatEventDate(nextEvent.event_date)}</span>
+                            </div>
+                            {nextEvent.event_time && (
+                              <div className="flex items-center gap-1.5">
+                                <Clock size={12} className="text-primary-foreground/70" />
+                                <span className="text-xs font-medium text-primary-foreground/80">{nextEvent.event_time}</span>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-3">
+                          <CalendarDays size={18} className="text-primary-foreground/70" />
+                          <p className="text-sm font-medium text-primary-foreground/80">{t("home.noEventsToday")}</p>
+                        </div>
+                      )}
+                      {todayEvents.length > 0 && (
+                        <div className="mt-2 pt-2 border-t border-primary-foreground/15 flex items-center justify-between">
+                          <p className="text-xs font-medium text-primary-foreground/70">{todayEvents.length} {isSingle ? "events" : t("home.sharedEvents").toLowerCase()} {t("common.today").toLowerCase()}</p>
+                          <span className="text-[10px] font-semibold text-primary-foreground/60">{t("common.viewAll")} →</span>
+                        </div>
+                      )}
                     </Link>
                   </motion.div>
-                ) : null;
+                );
 
               case "partnership-stats":
-                return (
-                  <motion.div key="partnership-stats" variants={item}>
-                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">{isSingle ? "My Stats" : t("home.partnershipStats")}</p>
-                     <div className="grid grid-cols-2 gap-3">
-                       {[
-                         { label: isSingle ? "Day Streak" : t("home.daysTogether"), value: daysTogether, icon: Heart, gradient: "from-secondary/20 to-secondary/5", iconBg: "bg-secondary/20", iconColor: "text-secondary", link: "/memories" },
-                         { label: t("home.events"), value: totalEvents, icon: CalendarDays, gradient: "from-primary/20 to-primary/5", iconBg: "bg-primary/20", iconColor: "text-primary", link: "/calendar" },
-                         { label: t("home.memories"), value: totalMemories, icon: Image, gradient: "from-accent/20 to-accent/5", iconBg: "bg-accent/20", iconColor: "text-accent-foreground", link: "/memories" },
-                         { label: t("home.tasksDone"), value: completedChores, icon: Trophy, gradient: "from-success/20 to-success/5", iconBg: "bg-success/20", iconColor: "text-success", link: "/chores" },
-                      ].map(stat => (
-                        <button
-                          key={stat.label}
-                          onClick={() => navigate(stat.link)}
-                          className={`bg-gradient-to-br ${stat.gradient} rounded-2xl p-4 flex items-center gap-3 border border-border/30 hover:scale-[1.02] transition-transform active:scale-[0.98]`}
-                        >
-                          <div className={`w-10 h-10 rounded-xl ${stat.iconBg} flex items-center justify-center shrink-0`}>
-                            <stat.icon size={18} className={stat.iconColor} />
-                          </div>
-                          <div className="text-left">
-                            <p className="text-lg font-bold text-foreground leading-none">{stat.value}</p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">{stat.label}</p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </motion.div>
-                );
+                return null;
 
               case "mood-check": {
                 const MOOD_EMOJI: Record<string, string> = { happy: "😊", excited: "🤩", neutral: "🥰", calm: "😌", grateful: "🙏", silly: "🤪", tired: "😵‍💫", sad: "😢", stressed: "😫", anxious: "😰", angry: "😠", furious: "🤬", lonely: "🥺", hopeful: "🌟", confused: "😕" };
-                if (myMood && !isDemoMode) {
-                  return (
-                    <motion.div key="mood-check" variants={item} className="space-y-3">
-                      {/* User's logged mood */}
-                      <div className="bg-gradient-to-r from-secondary/20 via-primary/10 to-secondary/20 rounded-2xl p-4 border border-secondary/30">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center shrink-0">
-                            <span className="text-2xl">{MOOD_EMOJI[myMood.mood] || "✨"}</span>
+                return (
+                  <motion.div key="mood-check" variants={item} className="space-y-2">
+                    <div className="flex gap-2">
+                      <button onClick={() => navigate("/mood")} className="flex-1 bg-gradient-to-br from-secondary/15 to-secondary/5 rounded-2xl p-3 border border-secondary/20 text-left">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-xl">{myMood ? (MOOD_EMOJI[myMood.mood] || "✨") : "🌤️"}</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[10px] text-muted-foreground">{t("home.yourMoodToday")}</p>
+                            <p className="text-sm font-bold text-foreground truncate">
+                              {myMood ? myMood.mood.charAt(0).toUpperCase() + myMood.mood.slice(1) : t("home.tapToLogMood")}
+                            </p>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-muted-foreground">{t("home.yourMoodToday")}</p>
-                            <p className="text-sm font-bold text-foreground">{myMood.mood.charAt(0).toUpperCase() + myMood.mood.slice(1)}</p>
-                            {myMood.note && <p className="text-xs text-muted-foreground mt-0.5 truncate">"{myMood.note}"</p>}
-                          </div>
-                          <button onClick={() => navigate("/mood")} className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1.5 rounded-full shrink-0">
-                            {t("common.change")}
-                          </button>
                         </div>
-                      </div>
-
-                      {/* AI Mood Check-in */}
-                      <div className="bg-card rounded-2xl p-4 border border-border shadow-card">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Brain size={14} className="text-primary" />
-                          <span className="text-xs font-semibold text-primary">{t("home.aiCheckin")}</span>
-                        </div>
-                        {aiMoodLoading ? (
-                          <div className="flex items-center gap-2 py-1">
-                            <Loader2 size={12} className="animate-spin text-muted-foreground" />
-                            <span className="text-xs text-muted-foreground">Checking in…</span>
+                      </button>
+                      {!isSingle && (
+                        <button onClick={() => partnerMood ? setShowMoodPopup(true) : navigate("/mood")} className="flex-1 bg-gradient-to-br from-primary/15 to-primary/5 rounded-2xl p-3 border border-primary/20 text-left">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-xl">{partnerMood ? (MOOD_EMOJI[partnerMood.mood] || "✨") : "✨"}</span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[10px] text-muted-foreground">{t("home.partnerFeeling")}</p>
+                              <p className="text-sm font-bold text-foreground truncate">
+                                {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : t("home.noMoodYet")}
+                              </p>
+                            </div>
                           </div>
-                        ) : (
-                          <p className="text-xs text-muted-foreground leading-relaxed">{aiMoodCheckin || "Loading…"}</p>
-                        )}
-                        <button onClick={() => navigate(`/chat?tab=ai&mood=${encodeURIComponent(myMood.mood)}${myMood.note ? `&note=${encodeURIComponent(myMood.note)}` : ""}`)} className="text-xs font-semibold text-primary mt-2 flex items-center gap-1">
-                          {t("home.chatWithAi")}
                         </button>
-                      </div>
-                    </motion.div>
-                  );
-                }
-                return !myMood && !isDemoMode ? (
-                  <motion.div key="mood-check" variants={item}>
-                    <button onClick={() => navigate("/mood")} className="w-full bg-gradient-to-r from-secondary/20 via-primary/10 to-secondary/20 rounded-2xl p-4 border border-secondary/30 text-left">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center shrink-0">
-                          <span className="text-2xl">🌤️</span>
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-bold text-foreground">{t("home.howFeeling")}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{t("home.tapToLogMood")}</p>
-                        </div>
-                        <Heart size={16} className="text-secondary shrink-0" />
-                      </div>
-                    </button>
+                      )}
+                    </div>
+                    {myMood && (
+                      <button onClick={() => navigate(`/chat?tab=ai&mood=${encodeURIComponent(myMood.mood)}${myMood.note ? `&note=${encodeURIComponent(myMood.note)}` : ""}`)} className="w-full flex items-center gap-2 bg-card rounded-xl px-3 py-2 border border-border">
+                        <Brain size={12} className="text-primary shrink-0" />
+                        {aiMoodLoading ? (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Loader2 size={10} className="animate-spin" /> Checking in…</span>
+                        ) : (
+                          <p className="text-xs text-muted-foreground truncate flex-1 text-left">{aiMoodCheckin || "Take a moment to check in… 💕"}</p>
+                        )}
+                      </button>
+                    )}
                   </motion.div>
-                ) : null;
+                );
               }
 
               case "partner-mood":
-                if (isSingle) return null; // Hide partner mood for single users
-                return (
-                  <motion.div key="partner-mood" variants={item}>
-                    <p className="text-sm font-semibold text-foreground mb-2">{t("home.partnerMood")}</p>
-                    <button onClick={() => partnerMood ? setShowMoodPopup(true) : navigate("/mood")} className="w-full text-left">
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 bg-primary/20 rounded-2xl px-4 py-3 flex items-center gap-3">
-                          <span className="text-xl">
-                            {partnerMood ? ({ happy: "😊", excited: "🤩", neutral: "🥰", calm: "😌", grateful: "🙏", silly: "🤪", tired: "😵‍💫", sad: "😢", stressed: "😫", anxious: "😰", angry: "😠", furious: "🤬", lonely: "🥺", hopeful: "🌟", confused: "😕" }[partnerMood.mood] || "✨") : "✨"}
-                          </span>
-                          <div>
-                             <p className="text-xs text-foreground/70">{t("home.partnerFeeling")}</p>
-                             <p className="text-sm font-bold text-foreground">
-                               {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : t("home.noMoodYet")}
-                            </p>
-                            {partnerMood?.note && (
-                              <p className="text-xs text-foreground/50 mt-0.5">"{partnerMood.note}"</p>
-                            )}
-                            {!partnerMood && (
-                              <p className="text-xs text-muted-foreground mt-0.5">{t("home.nudgePartner")}</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  </motion.div>
-                );
+                return null;
 
               case "today-agenda":
-                return (
-                  <motion.div key="today-agenda" variants={item} className="bg-primary/25 rounded-card p-5 shadow-soft">
-                    <div className="flex items-center justify-between mb-1">
-                       <p className="text-xs font-medium text-foreground/70">{t("home.todayAgenda")}</p>
-                       <Link to="/calendar" className="text-xs font-medium bg-card/80 text-foreground px-3 py-1 rounded-full">{t("common.viewAll")}</Link>
-                    </div>
-                    <p className="text-xl font-bold text-foreground mb-4">{todayEvents.length} {isSingle ? "Events" : t("home.sharedEvents")}</p>
-                    <div className="space-y-2">
-                      {todayEvents.length === 0 ? (
-                        <p className="text-sm text-foreground/60">{t("home.noEventsToday")}</p>
-                      ) : (
-                        todayEvents.slice(0, 3).map(event => (
-                          <div key={event.id} className="flex items-center gap-3">
-                            <div className="w-0.5 h-8 bg-foreground/30 rounded-full" />
-                            <div>
-                              <p className="text-[10px] text-foreground/60">{event.event_time || t("common.allDay")}</p>
-                              <p className="text-sm font-semibold text-foreground">{event.title}</p>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </motion.div>
-                );
+                return null;
 
               case "add-memory":
-                return (
-                  <motion.div key="add-memory" variants={item}>
-                    <button
-                      onClick={() => navigate("/memories?add=true")}
-                      className="w-full bg-gradient-to-r from-accent/15 via-primary/10 to-accent/15 rounded-2xl p-4 border border-accent/20 text-left hover:scale-[1.01] active:scale-[0.99] transition-transform"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
-                          <BookHeart size={22} className="text-accent-foreground" />
-                        </div>
-                        <div className="flex-1">
-                           <p className="text-sm font-bold text-foreground">{t("home.addMemoryNote")}</p>
-                           <p className="text-xs text-muted-foreground mt-0.5">{t("home.captureSpecial")}</p>
-                        </div>
-                        <Plus size={18} className="text-muted-foreground shrink-0" />
-                      </div>
-                    </button>
-                  </motion.div>
-                );
+                return null;
 
               case "quick-links":
                 return (
@@ -775,50 +666,30 @@ export default function HomePage() {
               case "ai-insight":
                 if (!canAccess("daily-insight")) {
                   return (
-                    <motion.div key="ai-insight" variants={item} className="border border-border rounded-2xl p-4 flex items-start gap-3 bg-muted/50">
-                      <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
-                        <Sparkles size={16} className="text-muted-foreground" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                         <p className="text-xs font-bold text-foreground">{t("home.aiInsight")}</p>
-                         <p className="text-xs text-muted-foreground mt-0.5">{t("home.upgradeForInsight")}</p>
-                         <button onClick={() => navigate("/upgrade")} className="text-xs font-semibold text-primary mt-1.5">{t("home.upgradeNow")}</button>
-                      </div>
+                    <motion.div key="ai-insight" variants={item}>
+                      <button onClick={() => navigate("/upgrade")} className="w-full flex items-center gap-2 bg-muted/50 rounded-xl px-3 py-2.5 border border-border">
+                        <Sparkles size={12} className="text-muted-foreground shrink-0" />
+                        <p className="text-xs text-muted-foreground flex-1 text-left">{t("home.upgradeForInsight")}</p>
+                        <span className="text-[10px] font-semibold text-primary">{t("home.upgradeNow")}</span>
+                      </button>
                     </motion.div>
                   );
                 }
                 return !insightDismissed ? (
-                  <motion.div key="ai-insight" variants={item} className="love-gradient-soft border border-border rounded-2xl p-4 flex items-start gap-3 cursor-pointer"
-                    onClick={() => setInsightDismissed(true)}>
-                    <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
-                      <Sparkles size={16} className="text-foreground" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-0.5">
-                        <p className="text-xs font-bold text-foreground">{t("home.aiInsight")}</p>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); fetchInsight(); setInsightDismissed(false); }}
-                            disabled={insightLoading}
-                            className="text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <RefreshCw size={12} className={insightLoading ? "animate-spin" : ""} />
-                          </button>
-                          <button onClick={(e) => { e.stopPropagation(); setInsightDismissed(true); }} className="text-muted-foreground hover:text-foreground transition-colors">
-                            <X size={12} />
-                          </button>
-                        </div>
-                      </div>
+                  <motion.div key="ai-insight" variants={item}>
+                    <div className="flex items-center gap-2 bg-card rounded-xl px-3 py-2.5 border border-border">
+                      <Sparkles size={12} className="text-primary shrink-0" />
                       {insightLoading && !aiInsight ? (
-                        <div className="flex items-center gap-2 py-1">
-                          <Loader2 size={12} className="animate-spin text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">Generating insight…</span>
-                        </div>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1.5 flex-1"><Loader2 size={10} className="animate-spin" /> Generating insight…</span>
                       ) : (
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          {aiInsight || "Loading your personalized insight…"}
-                        </p>
+                        <p className="text-xs text-muted-foreground flex-1 leading-relaxed">{aiInsight || "Loading…"}</p>
                       )}
+                      <button onClick={() => { fetchInsight(); setInsightDismissed(false); }} disabled={insightLoading} className="text-muted-foreground shrink-0">
+                        <RefreshCw size={11} className={insightLoading ? "animate-spin" : ""} />
+                      </button>
+                      <button onClick={() => setInsightDismissed(true)} className="text-muted-foreground shrink-0">
+                        <X size={11} />
+                      </button>
                     </div>
                   </motion.div>
                 ) : null;
