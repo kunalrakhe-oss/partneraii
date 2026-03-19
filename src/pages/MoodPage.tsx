@@ -7,6 +7,7 @@ import { Heart, Sparkles, Lightbulb, Users, RefreshCw, Loader2, X, Send, Lock } 
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAppMode } from "@/hooks/useAppMode";
 import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";

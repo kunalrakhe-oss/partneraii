@@ -98,7 +98,7 @@ export const hi: TranslationKeys = {
     memories: "यादें",
     tasksDone: "पूरे किए काम",
     howFeeling: "आज आप कैसा महसूस कर रहे हैं?",
-    tapToLogMood: "अपना मूड दर्ज करें और पार्टनर से जुड़ें",
+    tapToLogMood: "अपना मूड दर्ज करें",
     yourMoodToday: "आज आपका मूड",
     aiCheckin: "AI चेक-इन",
     chatWithAi: "AI से चैट करें →",
