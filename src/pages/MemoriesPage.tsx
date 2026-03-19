@@ -49,6 +49,7 @@ export default function MemoriesPage() {
   const [memories, setMemories] = useState<MemoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  usePageFab([{ label: "Add Memory", icon: Camera, onTap: () => setShowAdd(true) }]);
   const [filter, setFilter] = useState<FilterType>("all");
   const [submitting, setSubmitting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);

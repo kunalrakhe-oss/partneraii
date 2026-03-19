@@ -311,6 +311,10 @@ export default function CalendarPage() {
   const [showFabMenu, setShowFabMenu] = useState(false);
   const [showViewMenu, setShowViewMenu] = useState(false);
   const [showDietForm, setShowDietForm] = useState(false);
+  usePageFab([
+    { label: "Add Event", icon: CalendarPlus, onTap: () => openAddForm() },
+    { label: "Add Diet", icon: Plus, onTap: () => setShowDietForm(true) },
+  ]);
   const [dietSaving, setDietSaving] = useState(false);
   const [choreLinkedItems, setChoreLinkedItems] = useState<Record<string, any[]>>({});
   const [expandedChores, setExpandedChores] = useState<Set<string>>(new Set());

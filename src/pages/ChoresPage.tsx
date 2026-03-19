@@ -108,6 +108,7 @@ export default function ChoresPage() {
   const { isSingle } = useAppMode();
   const [chores, setChores] = useState<ChoreRow[]>([]);
   const [showAdd, setShowAdd] = useState(false);
+  usePageFab([{ label: "Add Chore", icon: ClipboardList, onTap: () => setShowAdd(true) }]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterMode>("all");
   const [loading, setLoading] = useState(true);

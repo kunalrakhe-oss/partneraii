@@ -95,6 +95,7 @@ export default function GroceryPage() {
   const [editingItem, setEditingItem] = useState<GroceryRow | null>(null);
   const [customLists, setCustomLists] = useState<{ key: string; label: string; emoji: string }[]>([]);
   const [showNewList, setShowNewList] = useState(false);
+  usePageFab([{ label: "New List", icon: Plus, onTap: () => setShowNewList(true) }]);
   const [newListName, setNewListName] = useState("");
   const [newListEmoji, setNewListEmoji] = useState("📝");
 
