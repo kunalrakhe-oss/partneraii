@@ -8,6 +8,7 @@ import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { toast } from "sonner";
 import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
+import { useAppMode } from "@/hooks/useAppMode";
 
 const CATEGORIES = ["date-night", "groceries", "cleaning", "bills", "travel", "family"] as const;
 const CATEGORY_LABEL: Record<string, string> = {
