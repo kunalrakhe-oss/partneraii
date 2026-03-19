@@ -15,6 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
+import { useAppMode } from "@/hooks/useAppMode";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -120,12 +121,14 @@ function DietFormModal({
   defaultDate,
   onSave,
   onClose,
+  isSingle = false,
 }: {
   editing: DietItem | null;
   category: string;
   defaultDate: string;
   onSave: (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string; recurrence: string; recurrence_day: number | null }) => void;
   onClose: () => void;
+  isSingle?: boolean;
 }) {
   const [desc, setDesc] = useState(editing?.description || "");
   const [notes, setNotes] = useState(editing?.notes || "");
@@ -217,18 +220,22 @@ function DietFormModal({
             ))}
           </div>
 
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Assigned To</label>
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {ASSIGN_OPTIONS.map(a => (
-              <button key={a.value} onClick={() => setAssignedTo(a.value)}
-                className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  assignedTo === a.value ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
-                }`}>
-                <a.icon size={14} />
-                {a.label}
-              </button>
-            ))}
-          </div>
+          {!isSingle && (
+            <>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Assigned To</label>
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {ASSIGN_OPTIONS.map(a => (
+                  <button key={a.value} onClick={() => setAssignedTo(a.value)}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                      assignedTo === a.value ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
+                    }`}>
+                    <a.icon size={14} />
+                    {a.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
           <div className="grid grid-cols-2 gap-3 mb-5">
             <div>
@@ -270,6 +277,7 @@ function CategorySection({
   onAdd,
   expanded,
   onExpand,
+  isSingle = false,
 }: {
   category: typeof CATEGORIES[0];
   items: DietItem[];
@@ -281,6 +289,7 @@ function CategorySection({
   onAdd: () => void;
   expanded: boolean;
   onExpand: () => void;
+  isSingle?: boolean;
 }) {
   const done = items.filter(i => i.is_completed).length;
 
@@ -342,7 +351,7 @@ function CategorySection({
                         {item.description}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="text-[10px] text-muted-foreground">{assignLabel}</span>
+                        {!isSingle && <span className="text-[10px] text-muted-foreground">{assignLabel}</span>}
                         {item.event_time && <span className="text-[10px] text-muted-foreground">· 🕐 {item.event_time}</span>}
                         {item.recurrence === "daily" && <span className="text-[10px] font-semibold text-primary">· 🔁 Daily</span>}
                         {item.recurrence === "weekly" && <span className="text-[10px] font-semibold text-primary">· 🔁 Weekly · {DAY_NAMES[item.recurrence_day ?? 0]}</span>}
@@ -764,6 +773,7 @@ export default function DietPage() {
   const { partnerPair } = usePartnerPair();
 
   const { toast } = useToast();
+  const { isSingle } = useAppMode();
 
   const [items, setItems] = useState<DietItem[]>([]);
   const [partnerName, setPartnerName] = useState("Partner");
@@ -1110,6 +1120,7 @@ export default function DietPage() {
                   onAdd={() => openAdd(cat.key)}
                   expanded={expandedCats.includes(cat.key)}
                   onExpand={() => toggleExpand(cat.key)}
+                  isSingle={isSingle}
                 />
               );
             })}
@@ -1157,6 +1168,7 @@ export default function DietPage() {
             defaultDate={today}
             onSave={editingItem ? updateItem : addItem}
             onClose={() => { setShowForm(false); setEditingItem(null); }}
+            isSingle={isSingle}
           />
         )}
       </AnimatePresence>

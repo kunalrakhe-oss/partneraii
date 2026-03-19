@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useAppMode } from "@/hooks/useAppMode";
 import ProfileButton from "@/components/ProfileButton";
 import AddEventModal from "@/components/AddEventModal";
 import PageTransition from "@/components/PageTransition";
@@ -162,6 +163,7 @@ function CalendarDietForm({ defaultDate, onClose, onSave, t }: {
   onSave: (data: { description: string; category: string; notes: string; assigned_to: string; calories: number | null; log_date: string; event_time: string; recurrence: string; recurrence_day: number | null }) => void;
   t: (key: string) => string;
 }) {
+  const { isSingle } = useAppMode();
   const [desc, setDesc] = useState("");
   const [notes, setNotes] = useState("");
   const [cal, setCal] = useState("");
@@ -248,17 +250,21 @@ function CalendarDietForm({ defaultDate, onClose, onSave, t }: {
             ))}
           </div>
 
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">{t("calendar.assignedTo")}</label>
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {DIET_ASSIGN.map(a => (
-              <button key={a.value} onClick={() => setAssignedTo(a.value)}
-                className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  assignedTo === a.value ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
-                }`}>
-                {a.label}
-              </button>
-            ))}
-          </div>
+          {!isSingle && (
+            <>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">{t("calendar.assignedTo")}</label>
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {DIET_ASSIGN.map(a => (
+                  <button key={a.value} onClick={() => setAssignedTo(a.value)}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                      assignedTo === a.value ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
+                    }`}>
+                    {a.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
           <div className="grid grid-cols-2 gap-3 mb-5">
             <div>
@@ -294,6 +300,7 @@ export default function CalendarPage() {
   const { canAccess } = useSubscriptionContext();
   const { isDemoMode } = useDemo();
   const { t } = useLanguage();
+  const { isSingle } = useAppMode();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -659,7 +666,7 @@ export default function CalendarPage() {
                             <div className="flex items-center gap-1.5">
                               <p className="text-[10px] text-muted-foreground">
                                 {evt.event_time || "All day"} • {CATEGORY_LABEL[evt.category] || evt.category}
-                                {evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
+                                {!isSingle && evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
                               </p>
                               {countdownBadge(evt) && (
                                 <span className="text-[9px] font-bold bg-primary/15 text-primary px-1.5 py-0.5 rounded-full">
@@ -830,6 +837,7 @@ function WeekView({ currentDate, selectedDate, events, onSelectDate, onEditEvent
   onToggle: (e: CalendarEvent) => void;
   onAddEvent: () => void;
 }) {
+  const { isSingle } = useAppMode();
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekDays = eachDayOfInterval({ start: weekStart, end: addDays(weekStart, 6) });
 
@@ -919,7 +927,7 @@ function WeekView({ currentDate, selectedDate, events, onSelectDate, onEditEvent
                   <div className="flex items-center gap-1.5">
                     <p className="text-[10px] text-muted-foreground">
                       {evt.event_time || "All day"} • {CATEGORY_LABEL[evt.category] || evt.category}
-                      {evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
+                      {!isSingle && evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
                     </p>
                     {countdownBadge(evt) && (
                       <span className="text-[9px] font-bold bg-primary/15 text-primary px-1.5 py-0.5 rounded-full">
@@ -1389,6 +1397,7 @@ function ListView({ events, onEditEvent, onToggle, onAddEvent }: {
   onAddEvent: () => void;
 }) {
   const today = startOfDay(new Date());
+  const { isSingle } = useAppMode();
 
   // Group by date, sorted, show past 7 days + future
   const grouped = useMemo(() => {
@@ -1467,7 +1476,7 @@ function ListView({ events, onEditEvent, onToggle, onAddEvent }: {
                     <div className="flex items-center gap-1.5">
                       <p className="text-[10px] text-muted-foreground">
                         {evt.event_time || "All day"} • {CATEGORY_LABEL[evt.category] || evt.category}
-                        {evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
+                        {!isSingle && evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
                       </p>
                       {countdownBadge(evt) && (
                         <span className="text-[9px] font-bold bg-primary/15 text-primary px-1.5 py-0.5 rounded-full">
