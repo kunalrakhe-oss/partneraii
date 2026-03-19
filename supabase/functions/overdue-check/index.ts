@@ -17,11 +17,6 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceKey);
 
     const today = new Date().toISOString().split("T")[0];
-    const nowTime = new Date().toLocaleTimeString("en-US", {
-      hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
-    });
 
     // 1. Overdue chores (due_date < today, not completed)
     const { data: overdueChores } = await supabase
@@ -32,25 +27,14 @@ Deno.serve(async (req) => {
       .not("due_date", "is", null);
 
     // 2. Overdue calendar events (event_date < today, not completed)
+    // Only past dates — skip today's events since we can't reliably compare times across timezones
     const { data: overdueEvents } = await supabase
       .from("calendar_events")
       .select("id, title, user_id, assigned_to, partner_pair, event_date, event_time")
       .eq("is_completed", false)
       .lt("event_date", today);
 
-    // 3. Today's calendar events where time has passed
-    const { data: todayPastEvents } = await supabase
-      .from("calendar_events")
-      .select("id, title, user_id, assigned_to, partner_pair, event_date, event_time")
-      .eq("is_completed", false)
-      .eq("event_date", today)
-      .not("event_time", "is", null)
-      .lt("event_time", nowTime);
-
-    const allOverdueEvents = [
-      ...(overdueEvents || []),
-      ...(todayPastEvents || []),
-    ];
+    const allOverdueEvents = overdueEvents || [];
 
     // Dedup by user_id + title (not per-item-ID) to avoid spamming 
     // multiple notifications for recurring items with the same name.
