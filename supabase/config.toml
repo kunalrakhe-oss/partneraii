@@ -59,3 +59,6 @@ verify_jwt = false
 
 [functions.smart-suggestions]
 verify_jwt = false
+
+[functions.send-push]
+verify_jwt = false

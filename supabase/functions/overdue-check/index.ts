@@ -102,6 +102,36 @@ Deno.serve(async (req) => {
     // Insert all notifications
     if (notifications.length > 0) {
       await supabase.from("notifications").insert(notifications);
+
+      // Send web push for each unique user
+      const userIds = [...new Set(notifications.map(n => n.user_id))];
+      for (const userId of userIds) {
+        const userNotifs = notifications.filter(n => n.user_id === userId);
+        const title = userNotifs.length === 1
+          ? userNotifs[0].title
+          : `⏰ ${userNotifs.length} overdue items`;
+        const body = userNotifs.length === 1
+          ? userNotifs[0].message
+          : userNotifs.map(n => n.title.replace("⏰ Overdue: ", "")).join(", ");
+
+        try {
+          await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${serviceKey}`,
+            },
+            body: JSON.stringify({
+              user_id: userId,
+              title,
+              body,
+              url: userNotifs[0].link,
+            }),
+          });
+        } catch (e) {
+          console.error("Push send failed for user", userId, e);
+        }
+      }
     }
 
     return new Response(

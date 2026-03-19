@@ -6,6 +6,7 @@ import DemoBanner from "@/components/DemoBanner";
 
 import VoiceAssistant from "@/components/VoiceAssistant";
 import CompletedTasksCleanup from "@/components/CompletedTasksCleanup";
+import PushPermissionPrompt from "@/components/PushPermissionPrompt";
 import SmartCommandBar from "@/components/SmartCommandBar";
 import { getNavTabs, type NavTabId } from "@/hooks/useLayoutPreferences";
 import { useState, useEffect } from "react";
@@ -67,6 +68,7 @@ export default function AppLayout() {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-background relative">
       <DemoBanner />
+      <PushPermissionPrompt />
       {!isSingle && <PartnerNotifications />}
       
       <GatedVoiceAssistant />
