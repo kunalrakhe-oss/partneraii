@@ -210,7 +210,7 @@ export default function HealthPage() {
 
   return (
     <PageTransition>
-      <div className="max-w-lg mx-auto px-4 pb-28 space-y-5">
+      <div className="max-w-2xl mx-auto px-4 pb-28 space-y-5">
         <div className="sticky top-0 z-20 bg-background -mx-4 px-4 pt-6 pb-3 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
             <Activity size={20} className="text-primary" />
@@ -231,7 +231,7 @@ export default function HealthPage() {
           {/* LOG TAB */}
           <TabsContent value="log" className="space-y-4 mt-4">
             <p className="text-sm font-medium text-muted-foreground">Today — {format(new Date(), "MMM d, yyyy")}</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {metricFields.map(f => {
                 const Icon = f.icon;
                 return (
@@ -275,7 +275,7 @@ export default function HealthPage() {
               <>
                 <Card className="p-4">
                   <p className="text-sm font-semibold mb-2 flex items-center gap-2"><Footprints size={14} className="text-blue-500" /> Steps</p>
-                  <div className="h-40">
+                  <div className="h-40 sm:h-56">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={chartData}>
                         <defs><linearGradient id="stepsGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} /><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} /></linearGradient></defs>
@@ -291,7 +291,7 @@ export default function HealthPage() {
 
                 <Card className="p-4">
                   <p className="text-sm font-semibold mb-2 flex items-center gap-2"><Heart size={14} className="text-red-500" /> Heart Rate & <Moon size={14} className="text-indigo-500" /> Sleep</p>
-                  <div className="h-40">
+                  <div className="h-40 sm:h-56">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
@@ -307,7 +307,7 @@ export default function HealthPage() {
 
                 <Card className="p-4">
                   <p className="text-sm font-semibold mb-2 flex items-center gap-2"><Scale size={14} className="text-emerald-500" /> Weight & <Flame size={14} className="text-orange-500" /> Calories</p>
-                  <div className="h-40">
+                  <div className="h-40 sm:h-56">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
@@ -322,7 +322,7 @@ export default function HealthPage() {
                   </div>
                 </Card>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-3">
                   {[
                     { label: "Avg Steps", val: Math.round(myMetrics.reduce((s, m) => s + (m.steps || 0), 0) / (myMetrics.filter(m => m.steps).length || 1)), color: "text-blue-500" },
                     { label: "Avg Sleep", val: (myMetrics.reduce((s, m) => s + (m.sleep_hours || 0), 0) / (myMetrics.filter(m => m.sleep_hours).length || 1)).toFixed(1) + "h", color: "text-indigo-500" },
@@ -431,7 +431,7 @@ export default function HealthPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="h-[320px] overflow-y-auto space-y-3 pr-1">
+                <div className="h-[calc(100dvh-22rem)] min-h-[200px] max-h-[500px] overflow-y-auto space-y-3 pr-1">
                   {chatMessages.length === 0 && (
                     <p className="text-center text-muted-foreground text-sm py-8">Ask anything about your health data!</p>
                   )}
