@@ -101,6 +101,7 @@ Each log entry follows this comprehensive structured format for complete traceab
 | CHANGE-009 | 2026-03-18 | Branch Prep | Track Plan Doc | Completed | Removed plan doc from gitignore and prepared branch commit for Mac handoff |
 | CHANGE-010 | 2026-03-18 | Branch Prep | Include All Requested Files | Completed | Unignored logs, added repo agent file, and committed iOS scaffold plus planning docs for Mac handoff |
 | CHANGE-011 | 2026-03-18 | iOS | App Session Routing | Completed | Added app session state and Auth->Home->SignOut flow for faster Xcode validation |
+| CHANGE-012 | 2026-03-18 | iOS | Complete Web-to-iOS Map | Completed | Added full route-to-screen mapping for all pages with iOS file targets and phased build order |
 | TBD | | | | | |
 
 ---
@@ -1105,6 +1106,71 @@ git checkout HEAD~1 MOBILE_CONVERSION_PLAN.md
 
 ---
 
+### CHANGE-012 - Date: 2026-03-18 | Developer: App Builder | Session: 172500
+**Category**: iOS  
+**Status**: Completed
+
+**User Query / Request**:
+"Do that for tall" (interpreted as: create mapping for all screens)
+
+**Analysis & Planning**:
+- User asked for complete mapping coverage of current frontend to iOS.
+- Planned single source-of-truth document under ios/ to be used as Mac implementation checklist.
+- Included all routes/pages plus app-shell, tab strategy, data reuse, UI translation, and phased order.
+
+**Implementation Details**:
+- Created `ios/WEB_TO_IOS_MAPPING.md` with:
+   - Complete route-to-screen table for all pages from `src/pages` and app routes
+   - Suggested SwiftUI file targets per route
+   - Priority labels (P0-P3)
+   - App shell mapping (`App.tsx` and `AppLayout.tsx` to iOS equivalents)
+   - Primary tab mapping for parity
+   - Data/backend reuse matrix by domain
+   - UI pattern translation table (Tailwind/shadcn/Radix to SwiftUI)
+   - Phased implementation order (A-F)
+   - Per-screen parity checklist
+
+**Justification**:
+- **Business**: Reduces ambiguity and speeds iOS implementation by giving exact targets.
+- **Technical**: Enforces consistent file structure and sequencing across all features.
+- **Execution**: Makes handoff to Mac/Xcode work deterministic and trackable.
+
+**Files Affected**:
+- [x] c:\Users\anilc\Desktop\PartnerAI\partneraii\ios\WEB_TO_IOS_MAPPING.md (Type: Created) - complete all-screens mapping blueprint
+
+**Testing & Verification**:
+- Verified source page list includes all current entries under `src/pages`.
+- Verified mapping includes all routes defined in `src/App.tsx`.
+- Verified document sits under `ios/` for immediate use during iOS development.
+
+**Reverse Instructions**:
+1. Remove the mapping doc if needed: `git rm ios/WEB_TO_IOS_MAPPING.md`
+2. Commit revert.
+
+**Decision Log**:
+- Chose one consolidated mapping doc instead of multiple fragmented docs.
+- Chose route-first mapping to align with existing web navigation contracts.
+- Added phased order to prevent random feature implementation sequence.
+
+**Blockers & Resolutions**:
+- No blockers encountered.
+
+**Notes**:
+- This document should be updated if routes/pages change on web side.
+- Treat it as working blueprint, not static documentation.
+
+**Related Entries**:
+- CHANGE-004 (repo analysis)
+- CHANGE-005 (mobile plan)
+- CHANGE-011 (iOS routing foundation)
+
+**Approval/Review**:
+- Self-reviewed
+- Approval date: 2026-03-18
+- Status: Ready to commit and push for Mac pull
+
+---
+
 ## 📝 Template for Future Entries
 
 Copy and paste this template for new changes:
@@ -1199,17 +1265,17 @@ Copy and paste this template for new changes:
 
 ## 📊 Summary Statistics
 
-- **Total Changes**: 11
-- **Completed**: 11
+- **Total Changes**: 12
+- **Completed**: 12
 - **In Progress**: 0
 - **Failed**: 0
 - **Reverted**: 0
 - **Android Changes**: 0
-- **iOS Changes**: 4
+- **iOS Changes**: 5
 - **Shared Changes**: 0
 - **Documentation Changes**: 6
 - **Planning Documents**: 1 (Mobile Conversion Plan)
-- **Total Files Modified**: 10
+- **Total Files Modified**: 11
 - **Average Log Entry Size**: ~700 lines (comprehensive documentation)
 - **Total Documentation Pages**: 3 (Agent + Analysis + Plan)
 - **Plan Duration**: 16 weeks (4 months)
