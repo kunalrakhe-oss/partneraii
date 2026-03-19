@@ -106,13 +106,39 @@ function AppRoutes() {
     );
   }
 
-  // Not authenticated — always show onboarding first, with /auth available
-  if (!user) {
+  // Not authenticated — check if onboarding is done (demo mode)
+  const onboardingDone = localStorage.getItem("lovelist-onboarding-done") === "true";
+
+  if (!user && !onboardingDone) {
     return (
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/onboarding" element={<OnboardingFlow />} />
         <Route path="*" element={<Navigate to="/onboarding" replace />} />
+      </Routes>
+    );
+  }
+
+  if (!user && onboardingDone) {
+    return (
+      <Routes>
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/onboarding" element={<OnboardingFlow />} />
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/lists" element={<GroceryPage />} />
+          <Route path="/mood" element={<MoodPage />} />
+          <Route path="/chores" element={<ChoresPage />} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/profile" element={<Navigate to="/auth" replace />} />
+          <Route path="/workout" element={<WorkoutPage />} />
+          <Route path="/diet" element={<DietPage />} />
+          <Route path="/budget" element={<BudgetPage />} />
+          <Route path="/health" element={<HealthPage />} />
+          <Route path="/upgrade" element={<UpgradePage />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
