@@ -134,6 +134,7 @@ export default function MoodPage() {
   const [moodReaction, setMoodReaction] = useState("");
   const [sendingReaction, setSendingReaction] = useState(false);
   const [partnerName, setPartnerName] = useState("Partner");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
 
   const dragY = useMotionValue(0);
