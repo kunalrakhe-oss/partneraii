@@ -155,7 +155,7 @@ function AppRoutes() {
       {/* Authenticated users always redirect away from auth/onboarding */}
       <Route path="/auth" element={<Navigate to="/" replace />} />
       <Route path="/onboarding" element={<Navigate to="/" replace />} />
-      {/* No reset-password needed — using email OTP */}
+      <Route path="/setup" element={<Navigate to="/" replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
