@@ -82,8 +82,13 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
-        'card': '16px',
+        'card': '20px',
+        'glass': '24px',
         'btn': '9999px',
+      },
+      backdropBlur: {
+        'glass': '40px',
+        'glass-heavy': '60px',
       },
       keyframes: {
         "accordion-down": {
