@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, forwardRef, useRef } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Plus, Settings, Check, Clock, Sparkles, Loader2, CheckCircle2, X, Trash2, Home, Shirt, Utensils, Droplets, Brush, SprayCan, Dog, Baby, Car, Wrench, Leaf, ShoppingBag, HelpCircle, CalendarIcon, Repeat, User, Users, ArrowDownAZ, CheckCheck, Trash, Pencil, Save, Lock, ClipboardList, Link2 } from "lucide-react";
+import { usePageFab } from "@/contexts/PageFabContext";
 import { MediaPicker, uploadAttachment } from "@/components/MediaPicker";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
