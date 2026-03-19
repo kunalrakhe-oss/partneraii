@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useAppMode } from "@/hooks/useAppMode";
 import ProfileButton from "@/components/ProfileButton";
 import AddEventModal from "@/components/AddEventModal";
 import PageTransition from "@/components/PageTransition";
