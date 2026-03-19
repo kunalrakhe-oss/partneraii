@@ -65,6 +65,7 @@ export default function NotificationsPanel({ open, onClose }: { open: boolean; o
       .from("notifications")
       .select("*")
       .eq("user_id", user.id)
+      .eq("is_read", false)
       .order("created_at", { ascending: false })
       .limit(50)
       .then(({ data }) => {
@@ -81,7 +82,8 @@ export default function NotificationsPanel({ open, onClose }: { open: boolean; o
 
   const clearAll = async () => {
     if (!user) return;
-    // Mark all as read instead of deleting, so overdue-check dedup still works
+    // Delete all read notifications to clean up, mark unread as read
+    await supabase.from("notifications").delete().eq("user_id", user.id).eq("is_read", true);
     await supabase.from("notifications").update({ is_read: true }).eq("user_id", user.id);
     setNotifications([]);
   };
