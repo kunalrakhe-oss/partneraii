@@ -361,7 +361,7 @@ export default function MoodPage() {
         <GatedAiMoodTip
           myMood={todayLog?.mood || null}
           partnerMood={partnerLog?.mood || null}
-          weekHistory={last7.map(d => d.me?.mood || "none").join(", ")}
+          weekHistory={todayLog?.mood || "none"}
         />
       </motion.div>
     </PageTransition>
