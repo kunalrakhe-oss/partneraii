@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct AuthView: View {
+    let onSignedIn: () -> Void
     @StateObject private var viewModel = AuthViewModel()
 
     var body: some View {
@@ -37,11 +38,18 @@ struct AuthView: View {
             }
         }
         .navigationTitle("Authentication")
+        .onChange(of: viewModel.isAuthenticated) { isAuthenticated in
+            if isAuthenticated {
+                onSignedIn()
+            }
+        }
     }
 }
 
 #Preview {
     NavigationStack {
-        AuthView()
+        AuthView {
+            // no-op for preview
+        }
     }
 }

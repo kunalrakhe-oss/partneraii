@@ -4,7 +4,7 @@ This folder contains the initial SwiftUI scaffold for native iOS development.
 
 Current status:
 - App entry point created
-- Home screen placeholder created
+- App session routing (Auth -> Home -> Sign Out) created
 - Auth screen + ViewModel + mock service created
 - Supabase auth service + factory fallback created
 
@@ -37,6 +37,7 @@ How to inspect current repository state:
 Current mock login for testing UI flow:
 - Email: test@partnerai.app
 - Password: password123
+- Successful sign-in routes to AuthenticatedHomeView
 
 Why macOS is needed:
 - Build: Required. iOS compilation uses Xcode and Apple toolchains only available on macOS.
