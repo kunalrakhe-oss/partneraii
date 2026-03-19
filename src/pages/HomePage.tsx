@@ -198,7 +198,7 @@ export default function HomePage() {
 
           {/* Life Pillars */}
           <motion.div variants={item}>
-            <PillarGrid isSingle={isSingle} uncheckedGroceries={uncheckedGroceries} pendingChores={pendingChores} totalEvents={totalEvents} />
+            <PillarGrid isSingle={isSingle} />
           </motion.div>
 
           {/* Quick Glance */}
