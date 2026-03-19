@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Home, CalendarDays, ShoppingCart, MessageCircle, ClipboardList, Camera } from "lucide-react";
 import { motion } from "framer-motion";
 import PartnerNotifications from "@/components/PartnerNotifications";
@@ -35,6 +35,7 @@ function GatedVoiceAssistant() {
 export default function AppLayout() {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const location = useLocation();
   const [visibleTabs, setVisibleTabs] = useState<NavTabId[]>(getNavTabs);
   const [appMode, setAppMode] = useState<string>("couple");
 
@@ -63,6 +64,7 @@ export default function AppLayout() {
   }, []);
 
   const isSingle = appMode === "single";
+  const isHomeRoute = location.pathname === "/";
   const tabs = visibleTabs.map(id => tabMeta[id]).filter(Boolean);
 
   return (
@@ -75,7 +77,10 @@ export default function AppLayout() {
       <CompletedTasksCleanup />
       <PageFabProvider>
         <SmartCommandBar />
-        <div className="flex-1 overflow-y-auto pb-nav">
+        <div
+          data-scroll-container
+          className={isHomeRoute ? "flex-1 overflow-hidden" : "flex-1 overflow-y-auto pb-nav"}
+        >
           <Outlet />
         </div>
       </PageFabProvider>
