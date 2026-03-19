@@ -793,15 +793,6 @@ export default function CalendarPage() {
             {isToday(selectedDate) ? "Today" : format(selectedDate, "EEEE")}
           </p>
 
-          {/* Dynamic Mini Calendar — only in month view */}
-          {viewMode === "month" && (
-            <DynamicMiniCalendar
-              currentDate={currentDate}
-              selectedDate={selectedDate}
-              events={events}
-              onSelectDate={(d) => setSelectedDate(d)}
-            />
-          )}
         </div>
 
         {/* Content area */}
