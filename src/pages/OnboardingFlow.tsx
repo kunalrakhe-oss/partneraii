@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDemo } from "@/contexts/DemoContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
+import onboardingHero from "@/assets/onboarding-hero.jpg";
 
 type Step = "language" | "entry" | "slides" | "mode" | "demo" | "setup-names" | "setup-relationship" | "setup-connect" | "setup-start" | "done";
 
@@ -401,6 +401,14 @@ export default function OnboardingFlow() {
                 Your life, organized.
               </motion.p>
 
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4 }}
+                className="w-48 h-48 rounded-full overflow-hidden mt-10 shadow-elevated border-4 border-card"
+              >
+                <img src={onboardingHero} alt="Get Started" className="w-full h-full object-cover" />
+              </motion.div>
             </div>
 
             <motion.div
