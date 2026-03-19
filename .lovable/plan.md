@@ -1,55 +1,53 @@
 
 
-## Apple Glass (Vision Pro) Design System Overhaul
+## Clear All User Profiles & Force Fresh Setup
 
-Transform the entire app's look and feel to match Apple's glassmorphism aesthetic — frosted translucent surfaces, luminous depth, subtle light refractions, and the ethereal floating-panel look from visionOS.
+### What's already done
+Email OTP login is already the only login method — no changes needed there.
 
-### Design Principles
-- **Frosted glass everywhere**: Cards, nav, dialogs, sheets all use translucent backgrounds with heavy backdrop blur
-- **Luminous borders**: Replace solid borders with subtle white/light glow borders
-- **Depth through shadows**: Multi-layered soft shadows that simulate floating panels in space
-- **Muted, ethereal palette**: Slightly cooler, more translucent base colors
-- **Smooth radius**: Larger border-radius (20-24px) for that visionOS floating window feel
-- **Subtle inner glow**: Light inner highlights on glass surfaces
+### What needs to happen
 
-### File Changes
+**1. Delete all user data from the database**
 
-| File | Change |
-|------|--------|
-| `src/index.css` | Overhaul CSS variables for both light/dark themes — translucent card/popover backgrounds, luminous border colors, stronger glass gradients, deeper blur values, visionOS-style shadow system with outer glow + inner highlight |
-| `tailwind.config.ts` | Increase default `--radius` to 1.25rem, add `glass` border-radius (24px), add new `glass-surface` and `glass-panel` utility references |
-| `src/components/ui/card.tsx` | Replace solid bg-card with glass morphism — `backdrop-blur-2xl bg-white/60 dark:bg-white/[0.06]` with luminous border |
-| `src/components/ui/button.tsx` | Add glass variant, make outline/ghost variants use glass backgrounds, add subtle backdrop-blur to default variant |
-| `src/components/ui/dialog.tsx` | Glass overlay (blur behind), glass content panel with frosted background |
-| `src/components/ui/sheet.tsx` | Frosted glass background on sheet content panels |
-| `src/components/ui/input.tsx` | Translucent input backgrounds with inner glow on focus |
-| `src/components/ui/badge.tsx` | Glass pill badges with translucent backgrounds |
-| `src/components/AppLayout.tsx` | Enhanced bottom nav glass effect — stronger blur, luminous top border, floating pill shape with margin |
+Run SQL DELETE statements (via the insert/data tool) to clear all user-facing tables. This forces every returning user through the post-auth setup flow (`/setup`) since their `display_name` will be gone.
 
-### CSS Variable Changes (Light Theme)
-- `--card`: becomes semi-transparent (`rgba(255,255,255,0.6)`) instead of opaque white
-- `--border`: luminous white edge (`rgba(255,255,255,0.3)`)
-- New `--glass-bg`, `--glass-border`, `--glass-blur` variables
-- Shadows gain outer glow component for floating feel
-- Background gets a subtle mesh gradient for depth
+Tables to clear (in dependency order to avoid FK issues):
+- `chore_linked_items`
+- `message_reactions`
+- `memory_reactions`
+- `recovery_progress`
+- `recovery_plans`
+- `diet_plans`
+- `diet_logs`
+- `budget_entries`
+- `calendar_events`
+- `chat_messages`
+- `chores`
+- `grocery_items`
+- `health_metrics`
+- `location_shares`
+- `memories`
+- `mood_logs`
+- `notifications`
+- `partner_invites`
+- `period_logs`
+- `push_subscriptions`
+- `relationship_details`
+- `user_preferences`
+- `workouts`
+- `profiles`
 
-### CSS Variable Changes (Dark Theme)  
-- `--card`: `rgba(255,255,255,0.05)` — barely-there frost
-- `--border`: `rgba(255,255,255,0.08)` — soft luminous edge
-- Shadows shift to subtle colored glows instead of dark drops
-- Background uses deep navy/charcoal with subtle radial gradient
+**2. Clear localStorage setup flag in code**
 
-### New Utilities
-- `.glass-surface` — standard frosted panel (blur-2xl, translucent bg, luminous border)
-- `.glass-panel` — elevated frosted panel (blur-3xl, stronger opacity, glow shadow)
-- `.glass-input` — translucent input field style
-- `.glow-border` — animated subtle border glow effect
-- Enhanced `.glass-card` with stronger Vision Pro-accurate blur and saturation values
+Update `src/App.tsx` to remove `lovelist-setup-done` from localStorage on app load, ensuring returning users are routed to `/setup` even if they had a cached flag.
 
-### Key Visual Details
-- Nav bar becomes a floating frosted pill with 16px margin from edges and bottom
-- Cards float with multi-layer shadows (dark outer + colored glow)
-- Inputs get frosted glass background with soft inner shadow
-- Dialog/sheet overlays use backdrop-blur instead of plain black opacity
-- All interactive elements get a subtle glass shimmer on hover
+### No schema or auth changes needed
+- The email OTP flow is already the only login method
+- The `/setup` post-auth flow already exists and will trigger for any user missing a `display_name`
+- No tables need structural changes
+
+### Impact
+- All existing users will need to re-enter their name, mode, and preferences on next login
+- All stored data (chores, meals, moods, chats, etc.) will be permanently deleted
+- Auth accounts remain intact — users can still log in with the same email
 
