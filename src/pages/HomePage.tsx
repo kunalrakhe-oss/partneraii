@@ -374,7 +374,10 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-
+          {/* Day Intent Picker */}
+          <motion.div variants={item}>
+            <DayIntentPicker isSingle={isSingle} />
+          </motion.div>
 
 
           {/* ❤️ Make it Real - Getting Started (couple mode demo) */}
