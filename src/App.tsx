@@ -33,7 +33,7 @@ import EventPlannerPage from "@/pages/EventPlannerPage";
 import PartnerConnectPage from "@/pages/PartnerConnectPage";
 import CoupleProfilePage from "@/pages/CoupleProfilePage";
 import AuthPage from "@/pages/AuthPage";
-import ResetPasswordPage from "@/pages/ResetPasswordPage";
+// ResetPasswordPage removed — using email OTP login
 import NotFound from "@/pages/NotFound";
 import OnboardingFlow from "@/pages/OnboardingFlow";
 import UpgradePage from "@/pages/UpgradePage";
@@ -111,7 +111,6 @@ function AppRoutes() {
     return (
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/onboarding" element={<OnboardingFlow />} />
         <Route path="*" element={<Navigate to="/onboarding" replace />} />
       </Routes>
@@ -156,7 +155,7 @@ function AppRoutes() {
       {/* Authenticated users always redirect away from auth/onboarding */}
       <Route path="/auth" element={<Navigate to="/" replace />} />
       <Route path="/onboarding" element={<Navigate to="/" replace />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
+      {/* No reset-password needed — using email OTP */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
