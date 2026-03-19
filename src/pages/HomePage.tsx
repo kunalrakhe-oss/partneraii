@@ -684,118 +684,13 @@ export default function HomePage() {
 
               case "quick-links":
                 return (
-                  <motion.div key="quick-links" variants={item} className="space-y-5">
-                    {/* 🏥 HEALTHY */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-7 h-7 rounded-lg bg-success/15 flex items-center justify-center">
-                          <HeartPulse size={14} className="text-success" />
-                        </div>
-                        <h2 className="text-sm font-bold text-foreground tracking-wide">Stay Healthy</h2>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        {[
-                          { to: "/workout", icon: Dumbbell, label: "Workout AI", desc: "Smart fitness plans", gradient: "from-success/12 to-success/4", iconBg: "bg-success/15", iconColor: "text-success" },
-                          { to: "/diet", icon: Salad, label: "Diet AI", desc: "Nutrition coaching", gradient: "from-secondary/12 to-secondary/4", iconBg: "bg-secondary/15", iconColor: "text-secondary" },
-                          { to: "/health", icon: Activity, label: "Health Analytics", desc: "Track vitals", gradient: "from-primary/12 to-primary/4", iconBg: "bg-primary/15", iconColor: "text-primary" },
-                          { to: "/physio", icon: Activity, label: "Physio AI", desc: "Recovery plans", gradient: "from-success/12 to-success/4", iconBg: "bg-success/15", iconColor: "text-success" },
-                          { to: "/postpartum", icon: HeartPulse, label: "Postpartum", desc: "Mom recovery", gradient: "from-primary/12 to-primary/4", iconBg: "bg-primary/15", iconColor: "text-primary" },
-                          { to: "/mens-health", icon: Shield, label: "Men's Health", desc: "Wellness AI", gradient: "from-primary/12 to-primary/4", iconBg: "bg-primary/15", iconColor: "text-primary" },
-                        ].map(item => (
-                          <Link key={item.to} to={item.to} className={`bg-gradient-to-br ${item.gradient} rounded-2xl p-3.5 flex items-center gap-3 border border-border/30 hover:scale-[1.02] active:scale-[0.98] transition-transform`}>
-                            <div className={`w-10 h-10 rounded-xl ${item.iconBg} flex items-center justify-center shrink-0`}>
-                              <item.icon size={18} className={item.iconColor} />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-bold text-foreground truncate">{item.label}</p>
-                              <p className="text-[10px] text-muted-foreground">{item.desc}</p>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 😊 HAPPY */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-7 h-7 rounded-lg bg-warning/15 flex items-center justify-center">
-                          <Sparkles size={14} className="text-warning" />
-                        </div>
-                        <h2 className="text-sm font-bold text-foreground tracking-wide">Stay Happy</h2>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        {[
-                          { to: "/mood", icon: Heart, label: "Mood Tracker", desc: "Log & reflect", gradient: "from-warning/12 to-warning/4", iconBg: "bg-warning/15", iconColor: "text-warning" },
-                          { to: "/memories", icon: Camera, label: "Memories", desc: "Capture moments", gradient: "from-primary/12 to-primary/4", iconBg: "bg-primary/15", iconColor: "text-primary" },
-                          { to: "/baby-plan", icon: Baby, label: "Baby Plan AI", desc: "Fertility guidance", gradient: "from-primary/12 to-primary/4", iconBg: "bg-primary/15", iconColor: "text-primary" },
-                          ...(!isSingle ? [{ to: "/chat", icon: MessageSquare, label: "Partner Chat", desc: "Stay connected", gradient: "from-secondary/12 to-secondary/4", iconBg: "bg-secondary/15", iconColor: "text-secondary" }] : []),
-                        ].map(item => (
-                          <Link key={item.to} to={item.to} className={`bg-gradient-to-br ${item.gradient} rounded-2xl p-3.5 flex items-center gap-3 border border-border/30 hover:scale-[1.02] active:scale-[0.98] transition-transform`}>
-                            <div className={`w-10 h-10 rounded-xl ${item.iconBg} flex items-center justify-center shrink-0`}>
-                              <item.icon size={18} className={item.iconColor} />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-bold text-foreground truncate">{item.label}</p>
-                              <p className="text-[10px] text-muted-foreground">{item.desc}</p>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 💰 WEALTHY */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-7 h-7 rounded-lg bg-warning/15 flex items-center justify-center">
-                          <Wallet size={14} className="text-warning" />
-                        </div>
-                        <h2 className="text-sm font-bold text-foreground tracking-wide">Stay Wealthy</h2>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        {[
-                          { to: "/budget", icon: Wallet, label: "Finance AI", desc: "Smart budgeting", gradient: "from-warning/12 to-warning/4", iconBg: "bg-warning/15", iconColor: "text-warning" },
-                          { to: "/lists", icon: ShoppingCart, label: "Smart Lists", desc: `${uncheckedGroceries} items`, gradient: "from-primary/12 to-primary/4", iconBg: "bg-primary/15", iconColor: "text-primary" },
-                        ].map(item => (
-                          <Link key={item.to} to={item.to} className={`bg-gradient-to-br ${item.gradient} rounded-2xl p-3.5 flex items-center gap-3 border border-border/30 hover:scale-[1.02] active:scale-[0.98] transition-transform`}>
-                            <div className={`w-10 h-10 rounded-xl ${item.iconBg} flex items-center justify-center shrink-0`}>
-                              <item.icon size={18} className={item.iconColor} />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-bold text-foreground truncate">{item.label}</p>
-                              <p className="text-[10px] text-muted-foreground">{item.desc}</p>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 🚀 SUCCESSFUL */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
-                          <Target size={14} className="text-primary" />
-                        </div>
-                        <h2 className="text-sm font-bold text-foreground tracking-wide">Stay Successful</h2>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2.5">
-                        {[
-                          { to: "/chores", icon: Check, label: "Task Manager", desc: `${pendingChores} pending`, gradient: "from-primary/12 to-primary/4", iconBg: "bg-primary/15", iconColor: "text-primary" },
-                          { to: "/calendar", icon: CalendarDays, label: "Calendar", desc: `${totalEvents} events`, gradient: "from-secondary/12 to-secondary/4", iconBg: "bg-secondary/15", iconColor: "text-secondary" },
-                          { to: "/event-planner", icon: PartyPopper, label: "Event AI", desc: "Plan anything", gradient: "from-warning/12 to-warning/4", iconBg: "bg-warning/15", iconColor: "text-warning" },
-                          { to: "/safety", icon: MapPin, label: "Safety", desc: "Live location", gradient: "from-destructive/12 to-destructive/4", iconBg: "bg-destructive/15", iconColor: "text-destructive" },
-                        ].map(item => (
-                          <Link key={item.to} to={item.to} className={`bg-gradient-to-br ${item.gradient} rounded-2xl p-3.5 flex items-center gap-3 border border-border/30 hover:scale-[1.02] active:scale-[0.98] transition-transform`}>
-                            <div className={`w-10 h-10 rounded-xl ${item.iconBg} flex items-center justify-center shrink-0`}>
-                              <item.icon size={18} className={item.iconColor} />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-bold text-foreground truncate">{item.label}</p>
-                              <p className="text-[10px] text-muted-foreground">{item.desc}</p>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
+                  <motion.div key="quick-links" variants={item}>
+                    <FeatureBubbles
+                      isSingle={isSingle}
+                      uncheckedGroceries={uncheckedGroceries}
+                      pendingChores={pendingChores}
+                      totalEvents={totalEvents}
+                    />
                   </motion.div>
                 );
 
