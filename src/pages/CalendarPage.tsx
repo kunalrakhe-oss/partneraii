@@ -1397,6 +1397,7 @@ function ListView({ events, onEditEvent, onToggle, onAddEvent }: {
   onAddEvent: () => void;
 }) {
   const today = startOfDay(new Date());
+  const { isSingle } = useAppMode();
 
   // Group by date, sorted, show past 7 days + future
   const grouped = useMemo(() => {
