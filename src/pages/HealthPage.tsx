@@ -194,8 +194,11 @@ export default function HealthPage() {
     { key: "sleep_hours", label: "Sleep", icon: Moon, color: "text-indigo-500", unit: "hrs" },
     { key: "calories_burned", label: "Calories", icon: Flame, color: "text-orange-500", unit: "kcal" },
     { key: "weight", label: "Weight", icon: Scale, color: "text-emerald-500", unit: "kg" },
-    { key: "water_glasses", label: "Water", icon: Droplets, color: "text-cyan-500", unit: "glasses" },
   ] as const;
+
+  const waterCount = form.water_glasses ? parseInt(form.water_glasses) : 0;
+  const WATER_GOAL = 8;
+  const waterPercent = Math.min((waterCount / WATER_GOAL) * 100, 100);
 
   const directionIcon = (dir: string) => {
     if (dir === "up") return <ArrowUp size={14} className="text-green-500" />;
