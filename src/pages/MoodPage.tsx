@@ -3,7 +3,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import { format } from "date-fns";
-import { Heart, Lightbulb, Users, RefreshCw, Loader2, X, Send, Lock } from "lucide-react";
+import { Heart, Lightbulb, Users, RefreshCw, Loader2, X, Send, Lock, SmilePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
