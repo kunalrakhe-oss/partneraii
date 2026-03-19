@@ -1120,6 +1120,7 @@ export default function DietPage() {
                   onAdd={() => openAdd(cat.key)}
                   expanded={expandedCats.includes(cat.key)}
                   onExpand={() => toggleExpand(cat.key)}
+                  isSingle={isSingle}
                 />
               );
             })}
