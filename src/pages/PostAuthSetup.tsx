@@ -255,14 +255,71 @@ export default function PostAuthSetup() {
               })}
             </div>
             <button
+              onClick={() => setStep("goals")}
+              className="w-full bg-primary text-primary-foreground font-semibold py-3.5 rounded-xl flex items-center justify-center gap-2"
+            >
+              {morningRoutine ? "Continue" : "Skip"} <ArrowRight size={16} />
+            </button>
+            <button onClick={() => setStep("priorities")} className="text-xs text-muted-foreground">← Back</button>
+          </motion.div>
+        )}
+
+        {step === "goals" && (
+          <motion.div key="goals" {...anim} className="w-full max-w-sm space-y-6 text-center">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground mb-2">What do you want to achieve?</h1>
+              <p className="text-sm text-muted-foreground">Tell us your goals — AI will help you build a plan</p>
+            </div>
+            {/* Goal chips */}
+            {lifeGoals.length > 0 && (
+              <div className="flex flex-wrap gap-2 justify-center">
+                {lifeGoals.map(goal => (
+                  <span key={goal} className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs font-semibold">
+                    {goal}
+                    <button onClick={() => setLifeGoals(prev => prev.filter(g => g !== goal))}>
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {/* Input */}
+            <div className="flex gap-2">
+              <input
+                value={goalInput}
+                onChange={e => setGoalInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === "Enter" && goalInput.trim()) {
+                    setLifeGoals(prev => [...prev, goalInput.trim()]);
+                    setGoalInput("");
+                  }
+                }}
+                placeholder="Type a goal and press Enter…"
+                className="flex-1 bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+                autoFocus
+              />
+            </div>
+            {/* Suggestions */}
+            <div className="flex flex-wrap gap-2 justify-center">
+              {GOAL_SUGGESTIONS.filter(s => !lifeGoals.includes(s)).slice(0, 6).map(s => (
+                <button
+                  key={s}
+                  onClick={() => setLifeGoals(prev => [...prev, s])}
+                  className="bg-muted hover:bg-muted/80 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground transition-colors"
+                >
+                  + {s}
+                </button>
+              ))}
+            </div>
+            <button
               onClick={handleFinish}
               disabled={saving}
               className="w-full bg-primary text-primary-foreground font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2"
             >
-              {saving ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+              {saving ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
               {mode === "couple" ? "Continue to Partner Connect" : "Get Started"}
             </button>
-            <button onClick={() => setStep("priorities")} className="text-xs text-muted-foreground">← Back</button>
+            <button onClick={() => setStep("morning")} className="text-xs text-muted-foreground">← Back</button>
           </motion.div>
         )}
       </AnimatePresence>
