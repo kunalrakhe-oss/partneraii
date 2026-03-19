@@ -166,72 +166,75 @@ export default function HomePage() {
   })();
 
   return (
-    <PageTransition>
-      {/* Sticky header — outside scroll flow */}
-      <div className="sticky top-0 z-20 bg-background px-5 pt-10 pb-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <ProfileButton />
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              {greeting}, {firstName} <span className="text-base">✨</span>
-            </h1>
-            <p className="text-sm text-muted-foreground">{format(new Date(), "EEEE, MMMM d")}</p>
+    <PageTransition className="h-full">
+      <div className="flex h-full flex-col overflow-hidden">
+        <div className="shrink-0 bg-background px-5 pt-10 pb-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <ProfileButton />
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">
+                {greeting}, {firstName} <span className="text-base">✨</span>
+              </h1>
+              <p className="text-sm text-muted-foreground">{format(new Date(), "EEEE, MMMM d")}</p>
+            </div>
           </div>
+          <button onClick={() => setShowNotifications(true)} className="relative w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+            <Bell size={18} className="text-foreground" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[9px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
+          </button>
         </div>
-        <button onClick={() => setShowNotifications(true)} className="relative w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-          <Bell size={18} className="text-foreground" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[9px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center">
-              {unreadCount > 99 ? "99+" : unreadCount}
-            </span>
-          )}
-        </button>
-      </div>
 
-      <div className="px-5 pb-6">
-        <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-
-          {/* Today's Focus */}
-          <motion.div variants={item}>
-            <TodayFocusRing dailyGoals={dailyGoals} />
-          </motion.div>
-
-          {/* Life Pillars */}
-          <motion.div variants={item}>
-            <PillarGrid isSingle={isSingle} />
-          </motion.div>
-
-          {/* Quick Glance */}
-          <motion.div variants={item}>
-            <QuickGlanceScroll nextEvent={nextEvent} pendingChores={pendingChores} uncheckedGroceries={uncheckedGroceries} daysTogether={daysTogether} />
-          </motion.div>
-
-          {/* Active Plans */}
-          <motion.div variants={item}>
-            <ActivePlansStrip plans={activePlans} />
-          </motion.div>
-
-          {/* Daily AI Insight */}
-          {aiInsight && (
+        <div
+          className="flex-1 overflow-y-auto px-5"
+          data-scroll-container
+          style={{ paddingBottom: "calc(var(--nav-total) + 1.5rem)" }}
+        >
+          <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+            {/* Today's Focus */}
             <motion.div variants={item}>
-              <div className="rounded-2xl bg-card/60 backdrop-blur-glass border border-border/40 px-4 py-3 shadow-card"
-                style={{ WebkitBackdropFilter: "blur(40px) saturate(1.8)", backdropFilter: "blur(40px) saturate(1.8)" }}
-              >
-                <p className="text-xs text-muted-foreground mb-1 font-medium">Daily Insight</p>
-                <p className="text-sm text-foreground leading-relaxed">{aiInsight}</p>
-              </div>
+              <TodayFocusRing dailyGoals={dailyGoals} />
             </motion.div>
-          )}
 
-          {/* AI Coach — inline chat at bottom */}
-          <motion.div variants={item}>
-            <AICoachStrip greeting={greeting} firstName={firstName} />
+            {/* Life Pillars */}
+            <motion.div variants={item}>
+              <PillarGrid isSingle={isSingle} />
+            </motion.div>
+
+            {/* Quick Glance */}
+            <motion.div variants={item}>
+              <QuickGlanceScroll nextEvent={nextEvent} pendingChores={pendingChores} uncheckedGroceries={uncheckedGroceries} daysTogether={daysTogether} />
+            </motion.div>
+
+            {/* Active Plans */}
+            <motion.div variants={item}>
+              <ActivePlansStrip plans={activePlans} />
+            </motion.div>
+
+            {/* Daily AI Insight */}
+            {aiInsight && (
+              <motion.div variants={item}>
+                <div className="rounded-2xl bg-card/60 backdrop-blur-glass border border-border/40 px-4 py-3 shadow-card"
+                  style={{ WebkitBackdropFilter: "blur(40px) saturate(1.8)", backdropFilter: "blur(40px) saturate(1.8)" }}
+                >
+                  <p className="text-xs text-muted-foreground mb-1 font-medium">Daily Insight</p>
+                  <p className="text-sm text-foreground leading-relaxed">{aiInsight}</p>
+                </div>
+              </motion.div>
+            )}
+
+            {/* AI Coach — inline chat at bottom */}
+            <motion.div variants={item}>
+              <AICoachStrip greeting={greeting} firstName={firstName} />
+            </motion.div>
           </motion.div>
-        </motion.div>
-      </div>
+        </div>
 
-      {/* Notifications */}
-      <NotificationsPanel open={showNotifications} onClose={() => setShowNotifications(false)} />
+        <NotificationsPanel open={showNotifications} onClose={() => setShowNotifications(false)} />
+      </div>
     </PageTransition>
   );
 }
