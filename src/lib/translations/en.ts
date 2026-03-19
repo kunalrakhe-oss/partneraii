@@ -268,6 +268,8 @@ export const en = {
     addNote: "Add a note (optional)",
     whatsOnMind: "What's on your mind?",
     updateMood: "Update My Mood",
+    tapToSelect: "Tap an emoji to log your mood",
+    tapToChange: "Tap to change:",
     partnerStatus: "Partner's Status",
     isFeeling: "is feeling",
     noMoodLoggedYet: "No mood logged yet today",
