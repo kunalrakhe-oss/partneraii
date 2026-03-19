@@ -279,11 +279,90 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { message, history, preferences, activePlans, language, onboarding, userName, appMode } = await req.json();
+    const body = await req.json();
+    const { message, history, preferences, activePlans, language, onboarding, onboardingMode, userName, appMode, priorities, life_goals, daily_goals } = body;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const isOnboarding = !!onboarding;
+
+    // ── Structured onboarding: skip conversation, generate profile summary directly ──
+    if (isOnboarding && onboardingMode === "structured") {
+      const langInstruction = language === "hi" ? " Respond in Hindi." : "";
+      const structuredPrompt = `You are PAI, a motivational AI life coach. A user named "${userName || "there"}" just completed onboarding. Generate a warm, personalized profile for them.
+
+Their selections:
+- Priorities: ${(priorities || []).join(", ")}
+- Life Goals: ${(life_goals || []).join(", ")}
+- Daily Habits: ${(daily_goals || []).join(", ")}
+
+Call the build_profile tool with:
+- priorities: exactly what they selected
+- life_goals: exactly what they selected  
+- daily_goals: exactly what they selected
+- morning_routine: infer from their daily habits (one of: rushed, relaxed, workout, planning)
+- profile_summary: a warm, motivational one-liner about who they are based on their selections. Make it personal and inspiring.${langInstruction}`;
+
+      const structuredResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [{ role: "system", content: structuredPrompt }, { role: "user", content: "Build my profile now." }],
+          tools: [onboardingTools[0]],
+          tool_choice: "required",
+        }),
+      });
+
+      if (!structuredResponse.ok) {
+        const t = await structuredResponse.text();
+        console.error("AI structured error:", structuredResponse.status, t);
+        throw new Error("AI gateway error");
+      }
+
+      const structuredData = await structuredResponse.json();
+      const sChoice = structuredData.choices?.[0]?.message;
+      if (sChoice?.tool_calls?.[0]) {
+        const tc = sChoice.tool_calls[0];
+        let args: any;
+        try { args = JSON.parse(tc.function.arguments); } catch { args = {}; }
+
+        // Save to DB
+        const authHeader = req.headers.get("Authorization");
+        if (authHeader) {
+          const supabaseClient = createClient(
+            Deno.env.get("SUPABASE_URL")!,
+            Deno.env.get("SUPABASE_ANON_KEY")!,
+            { global: { headers: { Authorization: authHeader } } }
+          );
+          const { data: { user } } = await supabaseClient.auth.getUser();
+          if (user) {
+            await supabaseClient.from("user_preferences").upsert({
+              user_id: user.id,
+              priorities: args.priorities || priorities || [],
+              life_goals: args.life_goals || life_goals || [],
+              daily_goals: args.daily_goals || daily_goals || [],
+              morning_routine: args.morning_routine || null,
+              profile_summary: args.profile_summary || null,
+            }, { onConflict: "user_id" });
+          }
+        }
+
+        return new Response(JSON.stringify({ action: "build_profile", data: args }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Fallback
+      return new Response(JSON.stringify({ action: "chat_response", data: { message: "Profile built!" } }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── Regular conversational flow ──
     const systemPrompt = isOnboarding
       ? getOnboardingPrompt(userName || "there", appMode || "single", language || "en")
       : getCoachPrompt(preferences, activePlans, language || "en");
