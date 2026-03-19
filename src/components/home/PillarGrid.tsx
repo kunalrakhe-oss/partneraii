@@ -12,6 +12,7 @@ type Pillar = { id: string; label: string; icon: typeof Heart; color: string; ch
 
 export default function PillarGrid({ isSingle }: PillarGridProps) {
   const navigate = useNavigate();
+  const [sectionOpen, setSectionOpen] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const pillars: Pillar[] = [
@@ -56,55 +57,71 @@ export default function PillarGrid({ isSingle }: PillarGridProps) {
   const VISIBLE_COUNT = 3;
 
   return (
-    <div className="space-y-1.5">
-      <p className="text-sm font-bold text-foreground px-1">Life Pillars</p>
-      <div className="space-y-2">
-        {pillars.map((pillar) => {
-          const PillarIcon = pillar.icon;
-          const isExpanded = expanded === pillar.id;
-          const hasOverflow = pillar.children.length > VISIBLE_COUNT;
-          const visible = isExpanded ? pillar.children : pillar.children.slice(0, VISIBLE_COUNT);
-          const hiddenCount = pillar.children.length - VISIBLE_COUNT;
+    <div>
+      {/* Section header — tap to collapse/expand entire section */}
+      <button
+        onClick={() => setSectionOpen(!sectionOpen)}
+        className="flex items-center gap-1 px-1 mb-1.5 w-full"
+      >
+        <span className="text-sm font-bold text-foreground">Life Pillars</span>
+        <motion.div animate={{ rotate: sectionOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+          <ChevronDown size={14} className="text-muted-foreground" />
+        </motion.div>
+      </button>
 
-          return (
-            <div key={pillar.id} className="rounded-xl bg-card/60 border border-border/30 px-2.5 py-2">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <PillarIcon size={14} className={pillar.color} />
-                <span className={`text-xs font-semibold ${pillar.color}`}>{pillar.label}</span>
-              </div>
+      <motion.div
+        initial={false}
+        animate={{ height: sectionOpen ? "auto" : 0, opacity: sectionOpen ? 1 : 0 }}
+        transition={{ duration: 0.25, ease: "easeInOut" }}
+        className="overflow-hidden"
+      >
+        <div className="space-y-2">
+          {pillars.map((pillar) => {
+            const PillarIcon = pillar.icon;
+            const isExpanded = expanded === pillar.id;
+            const hasOverflow = pillar.children.length > VISIBLE_COUNT;
+            const visible = isExpanded ? pillar.children : pillar.children.slice(0, VISIBLE_COUNT);
+            const hiddenCount = pillar.children.length - VISIBLE_COUNT;
 
-              <div className={`flex gap-2 items-center ${isExpanded ? "flex-wrap" : "overflow-hidden"}`}>
-                {visible.map((feat) => {
-                  const Icon = feat.icon;
-                  return (
+            return (
+              <div key={pillar.id} className="rounded-xl bg-card/60 border border-border/30 px-2.5 py-2">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <PillarIcon size={14} className={pillar.color} />
+                  <span className={`text-xs font-semibold ${pillar.color}`}>{pillar.label}</span>
+                </div>
+                <div className={`flex gap-2 items-center ${isExpanded ? "flex-wrap" : "overflow-hidden"}`}>
+                  {visible.map((feat) => {
+                    const Icon = feat.icon;
+                    return (
+                      <button
+                        key={feat.to}
+                        onClick={() => navigate(feat.to)}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/50 hover:bg-muted/80 active:scale-95 transition-all shrink-0"
+                      >
+                        <Icon size={14} className="text-foreground" />
+                        <span className="text-[11px] font-medium text-foreground whitespace-nowrap">{feat.label}</span>
+                      </button>
+                    );
+                  })}
+                  {hasOverflow && (
                     <button
-                      key={feat.to}
-                      onClick={() => navigate(feat.to)}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted/50 hover:bg-muted/80 active:scale-95 transition-all shrink-0"
+                      onClick={() => setExpanded(isExpanded ? null : pillar.id)}
+                      className="flex items-center gap-0.5 px-2 py-1.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors shrink-0"
                     >
-                      <Icon size={14} className="text-foreground" />
-                      <span className="text-[11px] font-medium text-foreground whitespace-nowrap">{feat.label}</span>
+                      <span className="text-[11px] font-medium text-muted-foreground">
+                        {isExpanded ? "Less" : `+${hiddenCount}`}
+                      </span>
+                      <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                        <ChevronDown size={12} className="text-muted-foreground" />
+                      </motion.div>
                     </button>
-                  );
-                })}
-                {hasOverflow && (
-                  <button
-                    onClick={() => setExpanded(isExpanded ? null : pillar.id)}
-                    className="flex items-center gap-0.5 px-2 py-1.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors shrink-0"
-                  >
-                    <span className="text-[11px] font-medium text-muted-foreground">
-                      {isExpanded ? "Less" : `+${hiddenCount}`}
-                    </span>
-                    <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                      <ChevronDown size={12} className="text-muted-foreground" />
-                    </motion.div>
-                  </button>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      </motion.div>
     </div>
   );
 }
