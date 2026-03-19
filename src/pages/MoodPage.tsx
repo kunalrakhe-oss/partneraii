@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import { format } from "date-fns";
 import { Heart, Lightbulb, Users, RefreshCw, Loader2, X, Send, Lock } from "lucide-react";
