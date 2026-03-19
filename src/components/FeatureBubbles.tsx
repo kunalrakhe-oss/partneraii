@@ -106,11 +106,10 @@ export default function FeatureBubbles({ isSingle }: FeatureBubblesProps) {
 
   return (
     <>
-      {/* 4 circular pillar buttons with curved text */}
+      {/* 4 circular pillar buttons */}
       <div className="flex justify-between px-2">
         {pillars.map((pillar) => {
           const Icon = pillar.icon;
-          const circleId = `circle-${pillar.id}`;
           return (
             <motion.button
               key={pillar.id}
@@ -119,36 +118,12 @@ export default function FeatureBubbles({ isSingle }: FeatureBubblesProps) {
               onClick={() => setActivePillar(pillar)}
               className="flex flex-col items-center gap-1.5 group"
             >
-              <div className="relative w-[72px] h-[72px]">
-                {/* Curved text around circle */}
-                <svg
-                  className="absolute inset-0 w-full h-full"
-                  viewBox="0 0 72 72"
-                >
-                  <defs>
-                    <path
-                      id={circleId}
-                      d="M 36,36 m -27,0 a 27,27 0 1,1 54,0 a 27,27 0 1,1 -54,0"
-                    />
-                  </defs>
-                  <text
-                    className="fill-foreground"
-                    style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "2.5px" }}
-                  >
-                    <textPath
-                      href={`#${circleId}`}
-                      startOffset="50%"
-                      textAnchor="middle"
-                    >
-                      {pillar.label.toUpperCase()}
-                    </textPath>
-                  </text>
-                </svg>
-                {/* Center icon circle */}
-                <div className={`absolute inset-[10px] rounded-full bg-gradient-to-br ${pillar.bgGradient} ring-2 ${pillar.ringColor} flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow`}>
-                  <Icon size={22} className={pillar.color} />
-                </div>
+              <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${pillar.bgGradient} ring-2 ${pillar.ringColor} flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow`}>
+                <Icon size={24} className={pillar.color} />
               </div>
+              <span className="text-[11px] font-bold text-foreground leading-tight">
+                {pillar.label}
+              </span>
             </motion.button>
           );
         })}
