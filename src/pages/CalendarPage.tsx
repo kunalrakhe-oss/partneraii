@@ -564,7 +564,15 @@ export default function CalendarPage() {
               </button>
               <button onClick={goToToday} className="text-left">
                 <h1 className="text-lg font-bold text-foreground leading-tight">
-                  {viewMode === "day" || viewMode === "multiday"
+                  {viewMode === "week"
+                    ? (() => {
+                        const ws = startOfWeek(currentDate, { weekStartsOn: 1 });
+                        const we = addDays(ws, 6);
+                        return isSameMonth(ws, we)
+                          ? `${format(ws, "MMM d")} – ${format(we, "d, yyyy")}`
+                          : `${format(ws, "MMM d")} – ${format(we, "MMM d, yyyy")}`;
+                      })()
+                    : viewMode === "day" || viewMode === "multiday"
                     ? format(selectedDate, "MMM d, yyyy")
                     : format(currentDate, "MMMM yyyy")}
                 </h1>
