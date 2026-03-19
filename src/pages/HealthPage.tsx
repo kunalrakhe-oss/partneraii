@@ -250,15 +250,15 @@ export default function HealthPage() {
             )}
 
             {/* Add Habit Button */}
-            <Dialog open={addOpen} onOpenChange={setAddOpen}>
-              <DialogTrigger asChild>
+            <Drawer open={addOpen} onOpenChange={setAddOpen}>
+              <DrawerTrigger asChild>
                 <Button variant="outline" className="w-full">
                   <Plus size={16} className="mr-2" /> Add Habit
                 </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>New Habit</DialogTitle></DialogHeader>
-                <div className="space-y-4">
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerHeader><DrawerTitle>New Habit</DrawerTitle></DrawerHeader>
+                <div className="space-y-4 px-4 pb-6">
                   <Input
                     placeholder="Habit name (e.g. Drink Water)"
                     value={newHabit.name}
@@ -304,8 +304,8 @@ export default function HealthPage() {
                   </div>
                   <Button onClick={addHabit} disabled={!newHabit.name.trim()} className="w-full">Create Habit</Button>
                 </div>
-              </DialogContent>
-            </Dialog>
+              </DrawerContent>
+            </Drawer>
           </TabsContent>
 
           {/* STATS TAB */}
