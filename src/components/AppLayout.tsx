@@ -14,6 +14,7 @@ import { useSubscriptionContext } from "@/contexts/SubscriptionContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { PageFabProvider } from "@/contexts/PageFabContext";
 
 const tabMeta: Record<string, { icon: typeof Home; labelKey: string; to: string }> = {
   home: { to: "/", icon: Home, labelKey: "nav.home" },

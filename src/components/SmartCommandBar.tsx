@@ -1,11 +1,12 @@
 import { useState, useRef } from "react";
-import { Sparkles, Send, Loader2, X, RefreshCw } from "lucide-react";
+import { Sparkles, Send, Loader2, X, RefreshCw, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { usePageFabActions } from "@/contexts/PageFabContext";
 
 type SmartAction = {
   action: string;
@@ -30,12 +31,12 @@ export default function SmartCommandBar() {
   const { user } = useAuth();
   const { partnerPair } = usePartnerPair();
   const navigate = useNavigate();
+  const pageActions = usePageFabActions();
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-  const [showInput, setShowInput] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const fetchSuggestions = async () => {
@@ -53,14 +54,12 @@ export default function SmartCommandBar() {
 
   const handleExpand = () => {
     setExpanded(true);
-    setShowInput(false);
     setSuggestions([]);
     fetchSuggestions();
   };
 
   const handleClose = () => {
     setExpanded(false);
-    setShowInput(false);
     setInput("");
     setSuggestions([]);
   };
@@ -146,7 +145,7 @@ export default function SmartCommandBar() {
   if (!user) return null;
 
   return (
-    <div className="fixed bottom-[calc(var(--nav-h)+env(safe-area-inset-bottom)+4px)] left-0 right-0 z-50 px-3">
+    <div className="fixed bottom-[calc(var(--nav-h)+env(safe-area-inset-bottom)+4px)] left-0 right-0 z-50 px-3 pointer-events-none">
       <AnimatePresence mode="wait">
         {expanded ? (
           <motion.div
@@ -155,8 +154,24 @@ export default function SmartCommandBar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 16 }}
             transition={{ type: "spring", damping: 28, stiffness: 350 }}
-            className="space-y-2"
+            className="space-y-2 pointer-events-auto"
           >
+            {/* Page-specific actions */}
+            {pageActions.length > 0 && (
+              <div className="flex gap-2">
+                {pageActions.map((pa, i) => (
+                  <button
+                    key={i}
+                    onClick={() => { pa.onTap(); handleClose(); }}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-card/95 backdrop-blur-lg border border-border/60 shadow-lg text-sm font-semibold text-foreground hover:bg-muted active:scale-[0.96] transition-all"
+                  >
+                    <pa.icon size={16} className="text-primary" />
+                    <span>{pa.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Horizontal scrollable suggestion chips */}
             <div className="relative">
               {loadingSuggestions && suggestions.length === 0 ? (
@@ -227,13 +242,17 @@ export default function SmartCommandBar() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
             onClick={handleExpand}
-            className="mr-auto flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-2.5 shadow-lg text-sm font-medium active:scale-95 transition-transform"
+            className="ml-auto block w-14 h-14 rounded-full love-gradient text-primary-foreground shadow-elevated flex items-center justify-center active:scale-95 transition-transform pointer-events-auto"
           >
-            <Sparkles size={16} />
-            <span>Quick Add</span>
+            <Plus size={22} />
           </motion.button>
         )}
       </AnimatePresence>
+
+      {/* Backdrop when expanded */}
+      {expanded && (
+        <div className="fixed inset-0 z-[-1] pointer-events-auto" onClick={handleClose} />
+      )}
     </div>
   );
 }
