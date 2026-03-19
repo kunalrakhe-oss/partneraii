@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Activity, Heart, Moon, Flame, Scale, Droplets, Footprints, TrendingUp, TrendingDown, Bot, Send, Loader2, Plus, ArrowUp, ArrowDown, Minus, Target } from "lucide-react";
+import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
