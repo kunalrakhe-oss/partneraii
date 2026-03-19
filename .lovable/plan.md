@@ -1,64 +1,55 @@
 
 
-## Make AI Coach Plans Interactive + Add Images & Recipes
+## Apple Glass (Vision Pro) Design System Overhaul
 
-### Problem
-1. Users can't **negotiate/modify** plans created by the AI Coach — once created, they're fixed
-2. No **images** for exercises or diet items for visual learning
-3. No **recipes** in diet plans — just food names
+Transform the entire app's look and feel to match Apple's glassmorphism aesthetic — frosted translucent surfaces, luminous depth, subtle light refractions, and the ethereal floating-panel look from visionOS.
 
-### What We'll Build
-
-**1. "Modify Plan" conversation flow in AI Coach**
-- Add a new `modify_plan` tool to the `ai-coach` edge function that updates an existing plan in the database
-- After a plan is created, the AI Coach card stays conversational — user can say "remove squats", "I don't eat dairy", "make it easier" and the AI modifies the saved plan
-- The edge function fetches the current plan from DB, applies changes, and saves back
-
-**2. AI-generated images for exercises**
-- Enhance the `create_plan` tool schema to include `image_prompt` per exercise
-- After plan creation, auto-generate exercise illustration prompts (already supported by `generate-exercise-image` edge function + `RecoveryPlanCard` has image support)
-- Make images generate automatically when expanding an exercise card (instead of requiring a button tap)
-
-**3. Recipes in diet plans**
-- Expand the `create_plan` tool schema for diet plans to include `recipe` per meal item (ingredients list + brief instructions)
-- Update the diet plan display to show expandable recipe cards with ingredients and steps
-- AI Coach prompt updated to always include simple recipes when creating diet plans
+### Design Principles
+- **Frosted glass everywhere**: Cards, nav, dialogs, sheets all use translucent backgrounds with heavy backdrop blur
+- **Luminous borders**: Replace solid borders with subtle white/light glow borders
+- **Depth through shadows**: Multi-layered soft shadows that simulate floating panels in space
+- **Muted, ethereal palette**: Slightly cooler, more translucent base colors
+- **Smooth radius**: Larger border-radius (20-24px) for that visionOS floating window feel
+- **Subtle inner glow**: Light inner highlights on glass surfaces
 
 ### File Changes
 
 | File | Change |
 |------|--------|
-| `supabase/functions/ai-coach/index.ts` | Add `modify_plan` tool; expand `create_plan` schema with `image_prompt` per exercise and `recipe` per diet item; update system prompt to include recipes and modification instructions |
-| `src/components/AICoachCard.tsx` | Pass `activePlans` with IDs so modify_plan can reference them; show "Plan updated!" feedback when modify action returns |
-| `src/components/RecoveryPlanCard.tsx` | Auto-trigger image generation on expand (instead of manual button); add recipe display section |
-| `src/components/DietPlanCard.tsx` | New component — displays a diet meal item with expandable recipe (ingredients + steps) |
-| `src/pages/HomePage.tsx` | Pass plan IDs to AICoachCard so it can send them for modification |
-| `src/pages/DietPage.tsx` | Use new `DietPlanCard` component to render meals with recipes |
+| `src/index.css` | Overhaul CSS variables for both light/dark themes — translucent card/popover backgrounds, luminous border colors, stronger glass gradients, deeper blur values, visionOS-style shadow system with outer glow + inner highlight |
+| `tailwind.config.ts` | Increase default `--radius` to 1.25rem, add `glass` border-radius (24px), add new `glass-surface` and `glass-panel` utility references |
+| `src/components/ui/card.tsx` | Replace solid bg-card with glass morphism — `backdrop-blur-2xl bg-white/60 dark:bg-white/[0.06]` with luminous border |
+| `src/components/ui/button.tsx` | Add glass variant, make outline/ghost variants use glass backgrounds, add subtle backdrop-blur to default variant |
+| `src/components/ui/dialog.tsx` | Glass overlay (blur behind), glass content panel with frosted background |
+| `src/components/ui/sheet.tsx` | Frosted glass background on sheet content panels |
+| `src/components/ui/input.tsx` | Translucent input backgrounds with inner glow on focus |
+| `src/components/ui/badge.tsx` | Glass pill badges with translucent backgrounds |
+| `src/components/AppLayout.tsx` | Enhanced bottom nav glass effect — stronger blur, luminous top border, floating pill shape with margin |
 
-### AI Coach Edge Function Changes
+### CSS Variable Changes (Light Theme)
+- `--card`: becomes semi-transparent (`rgba(255,255,255,0.6)`) instead of opaque white
+- `--border`: luminous white edge (`rgba(255,255,255,0.3)`)
+- New `--glass-bg`, `--glass-border`, `--glass-blur` variables
+- Shadows gain outer glow component for floating feel
+- Background gets a subtle mesh gradient for depth
 
-New `modify_plan` tool:
-```
-modify_plan({
-  plan_id: string,        // UUID of recovery_plans or diet_plans row
-  plan_type: "physio" | "diet" | "workout",
-  modifications: string,  // Natural language description of changes
-  updated_phases: [...]   // Full updated phases array
-})
-```
+### CSS Variable Changes (Dark Theme)  
+- `--card`: `rgba(255,255,255,0.05)` — barely-there frost
+- `--border`: `rgba(255,255,255,0.08)` — soft luminous edge
+- Shadows shift to subtle colored glows instead of dark drops
+- Background uses deep navy/charcoal with subtle radial gradient
 
-Updated `create_plan` exercise schema adds:
-- `image_prompt`: string — description for AI image generation
-- `recipe`: { ingredients: string[], instructions: string } — for diet items
+### New Utilities
+- `.glass-surface` — standard frosted panel (blur-2xl, translucent bg, luminous border)
+- `.glass-panel` — elevated frosted panel (blur-3xl, stronger opacity, glow shadow)
+- `.glass-input` — translucent input field style
+- `.glow-border` — animated subtle border glow effect
+- Enhanced `.glass-card` with stronger Vision Pro-accurate blur and saturation values
 
-System prompt additions:
-- "When creating diet plans, ALWAYS include a recipe object with ingredients and brief instructions for each meal"
-- "When user asks to change a plan, use modify_plan tool with the updated phases"
-- "Include image_prompt for each exercise describing the movement for illustration"
-
-### Example Interaction
-1. User: "I have knee pain" → AI asks questions → creates physio plan with image prompts
-2. User: "I can't do lunges" → AI uses `modify_plan` to replace lunges with alternatives
-3. User: "Create a diet plan" → AI creates plan with recipes for each meal
-4. User: "I don't eat eggs" → AI modifies diet plan, swaps egg dishes with alternatives
+### Key Visual Details
+- Nav bar becomes a floating frosted pill with 16px margin from edges and bottom
+- Cards float with multi-layer shadows (dark outer + colored glow)
+- Inputs get frosted glass background with soft inner shadow
+- Dialog/sheet overlays use backdrop-blur instead of plain black opacity
+- All interactive elements get a subtle glass shimmer on hover
 
