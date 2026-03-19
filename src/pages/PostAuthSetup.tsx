@@ -48,6 +48,8 @@ export default function PostAuthSetup() {
   const [saving, setSaving] = useState(false);
   const [priorities, setPriorities] = useState<string[]>([]);
   const [morningRoutine, setMorningRoutine] = useState<string | null>(null);
+  const [lifeGoals, setLifeGoals] = useState<string[]>([]);
+  const [goalInput, setGoalInput] = useState("");
 
   const togglePriority = (id: string) => {
     setPriorities(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]);
