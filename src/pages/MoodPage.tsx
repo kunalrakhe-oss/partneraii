@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
 import { format } from "date-fns";
-import { Heart, Lightbulb, Users, RefreshCw, Loader2, X, Send, Lock } from "lucide-react";
+import { Heart, Lightbulb, Users, RefreshCw, Loader2, X, Send, Lock, SmilePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
@@ -134,6 +134,7 @@ export default function MoodPage() {
   const [moodReaction, setMoodReaction] = useState("");
   const [sendingReaction, setSendingReaction] = useState(false);
   const [partnerName, setPartnerName] = useState("Partner");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
 
   const dragY = useMotionValue(0);
@@ -275,24 +276,62 @@ export default function MoodPage() {
             </div>
           </div>
 
-          <p className="text-xs text-muted-foreground mb-2">{t("mood.tapToChange")}</p>
-          {MOOD_GROUPS.map((group) => (
-            <div key={group.label} className="mb-2 last:mb-0">
-              <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">{group.label}</p>
-              <div className="flex flex-wrap gap-1.5">
-                {group.moods.map(mood => (
-                  <motion.button
-                    key={mood.key}
-                    whileTap={{ scale: 0.85 }}
-                    onClick={() => logMood(mood.key)}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center text-lg transition-all ${todayLog?.mood === mood.key ? "scale-110 bg-primary/20 ring-2 ring-primary" : "bg-muted"}`}
-                  >
-                    {mood.emoji}
+          {/* Collapsed emoji trigger row */}
+          <div className="flex items-center gap-2 mb-1">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setShowEmojiPicker(prev => !prev)}
+              className={`h-9 px-3 rounded-full flex items-center gap-1.5 text-sm font-medium transition-all ${showEmojiPicker ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}
+            >
+              <SmilePlus size={16} />
+              <span>{showEmojiPicker ? "Close" : "Pick mood"}</span>
+            </motion.button>
+            {/* Quick preview of a few emojis when collapsed */}
+            {!showEmojiPicker && (
+              <div className="flex gap-0.5 overflow-hidden">
+                {MOODS.slice(0, 6).map(m => (
+                  <motion.button key={m.key} whileTap={{ scale: 0.8 }} onClick={() => { logMood(m.key); }}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-base transition-all ${todayLog?.mood === m.key ? "bg-primary/20 ring-2 ring-primary scale-105" : "hover:bg-muted/80"}`}>
+                    {m.emoji}
                   </motion.button>
                 ))}
               </div>
-            </div>
-          ))}
+            )}
+          </div>
+
+          {/* Expandable full emoji picker */}
+          <AnimatePresence>
+            {showEmojiPicker && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="overflow-hidden"
+              >
+                <div className="pt-2 pb-1">
+                  {MOOD_GROUPS.map((group) => (
+                    <div key={group.label} className="mb-2.5 last:mb-0">
+                      <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 px-0.5">{group.label}</p>
+                      <div className="flex flex-wrap gap-1">
+                        {group.moods.map(mood => (
+                          <motion.button
+                            key={mood.key}
+                            whileTap={{ scale: 0.85 }}
+                            onClick={() => { logMood(mood.key); setShowEmojiPicker(false); }}
+                            className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center transition-all ${todayLog?.mood === mood.key ? "bg-primary/20 ring-2 ring-primary scale-105" : "bg-muted/60 hover:bg-muted"}`}
+                          >
+                            <span className="text-xl leading-none">{mood.emoji}</span>
+                            <span className="text-[7px] text-muted-foreground mt-0.5 leading-none">{mood.label}</span>
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="flex gap-2 mt-3">
             <input value={note} onChange={e => setNote(e.target.value)}
