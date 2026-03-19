@@ -121,6 +121,7 @@ function DietFormModal({
   defaultDate,
   onSave,
   onClose,
+  isSingle = false,
 }: {
   editing: DietItem | null;
   category: string;
