@@ -16,6 +16,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_CHORES, DEMO_PARTNER1, DEMO_PARTNER2 } from "@/lib/demoData";
 import { useNavigate } from "react-router-dom";
+import { useAppMode } from "@/hooks/useAppMode";
 
 type GroceryRow = Tables<"grocery_items">;
 
@@ -103,6 +104,7 @@ export default function ChoresPage() {
   const { toast } = useToast();
   const { isDemoMode } = useDemo();
   const { t } = useLanguage();
+  const { isSingle } = useAppMode();
   const [chores, setChores] = useState<ChoreRow[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -563,7 +565,7 @@ export default function ChoresPage() {
 
         {/* Filter tabs */}
         <div className="flex gap-2 mb-5 overflow-x-auto no-scrollbar">
-          {([["all", "All Chores"], ["me", "Assigned to Me"], ["pending", "Pending"]] as [FilterMode, string][]).map(([key, label]) => (
+          {([["all", "All Chores"], ...(isSingle ? [] : [["me", "Assigned to Me"]]), ["pending", "Pending"]] as [FilterMode, string][]).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setFilter(key)}
@@ -746,15 +748,17 @@ export default function ChoresPage() {
                                   <option value="weekly">Weekly</option>
                                   <option value="monthly">Monthly</option>
                                 </select>
-                                <select
-                                  value={editAssign}
-                                  onChange={e => setEditAssign(e.target.value)}
-                                  className="flex-1 bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                                >
-                                  <option value="">Both</option>
-                                  <option value="me">Me</option>
-                                  <option value="partner">Partner</option>
-                                </select>
+                                {!isSingle && (
+                                  <select
+                                    value={editAssign}
+                                    onChange={e => setEditAssign(e.target.value)}
+                                    className="flex-1 bg-card border border-border rounded-xl px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                                  >
+                                    <option value="">Both</option>
+                                    <option value="me">Me</option>
+                                    <option value="partner">Partner</option>
+                                  </select>
+                                )}
                               </div>
                               <input
                                 type="date"
@@ -788,22 +792,26 @@ export default function ChoresPage() {
                     <div className="border-t border-border/40 mx-4" />
                     <div className="px-4 py-3 flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        {chore.assigned_to ? (
+                        {!isSingle && (
                           <>
-                            <AvatarCircle profile={assignedProfile} />
-                            {isExpanded && (
-                              <span className="text-xs text-muted-foreground">
-                                Assigned to {assignedName}
-                              </span>
+                            {chore.assigned_to ? (
+                              <>
+                                <AvatarCircle profile={assignedProfile} />
+                                {isExpanded && (
+                                  <span className="text-xs text-muted-foreground">
+                                    Assigned to {assignedName}
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              <div className="flex items-center">
+                                <AvatarCircle profile={myProfile} />
+                                {partnerProfile && (
+                                  <AvatarCircle profile={partnerProfile} className="-ml-2 border-2 border-card" />
+                                )}
+                              </div>
                             )}
                           </>
-                        ) : (
-                          <div className="flex items-center">
-                            <AvatarCircle profile={myProfile} />
-                            {partnerProfile && (
-                              <AvatarCircle profile={partnerProfile} className="-ml-2 border-2 border-card" />
-                            )}
-                          </div>
                         )}
                       </div>
                       <div className="flex items-center gap-3">
@@ -1014,27 +1022,29 @@ export default function ChoresPage() {
                   </div>
 
                   {/* Assignment section */}
-                  <div className="bg-card rounded-2xl border border-border overflow-hidden divide-y divide-border/50">
-                    <div className="px-4 py-3 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-accent/60 flex items-center justify-center">
-                          <Users size={16} className="text-foreground/70" />
+                  {!isSingle && (
+                    <div className="bg-card rounded-2xl border border-border overflow-hidden divide-y divide-border/50">
+                      <div className="px-4 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-accent/60 flex items-center justify-center">
+                            <Users size={16} className="text-foreground/70" />
+                          </div>
+                          <span className="text-sm text-foreground font-medium">Assign To</span>
                         </div>
-                        <span className="text-sm text-foreground font-medium">Assign To</span>
+                        <select
+                          value={newAssign}
+                          onChange={e => setNewAssign(e.target.value)}
+                          className="text-sm text-primary font-medium bg-transparent text-right appearance-none focus:outline-none cursor-pointer pr-0"
+                        >
+                          <option value="">Both</option>
+                          <option value="me">{myProfile?.display_name || "Me"}</option>
+                          {partnerProfile && (
+                            <option value="partner">{partnerProfile.display_name || "Partner"}</option>
+                          )}
+                        </select>
                       </div>
-                      <select
-                        value={newAssign}
-                        onChange={e => setNewAssign(e.target.value)}
-                        className="text-sm text-primary font-medium bg-transparent text-right appearance-none focus:outline-none cursor-pointer pr-0"
-                      >
-                        <option value="">Both</option>
-                        <option value="me">{myProfile?.display_name || "Me"}</option>
-                        {partnerProfile && (
-                          <option value="partner">{partnerProfile.display_name || "Partner"}</option>
-                        )}
-                      </select>
                     </div>
-                  </div>
+                  )}
 
                   {/* Link List Items */}
                   <div className="bg-card rounded-2xl border border-border overflow-hidden">
