@@ -205,10 +205,10 @@ export default function FeatureBubbles({ isSingle }: FeatureBubblesProps) {
                       }}
                       className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 hover:scale-110 active:scale-90 transition-transform"
                     >
-                      <div className={`w-14 h-14 rounded-full ${moon.iconBg} flex items-center justify-center shadow-lg ring-1 ring-border/30 backdrop-blur-sm bg-card/80`}>
-                        <MoonIcon size={22} className={moon.iconColor} />
+                      <div className={`w-16 h-16 rounded-full ${moon.iconBg} flex items-center justify-center shadow-lg ring-1 ring-border/30 backdrop-blur-sm bg-card/80`}>
+                        <MoonIcon size={26} className={moon.iconColor} />
                       </div>
-                      <span className="text-[10px] font-semibold text-foreground whitespace-nowrap">
+                      <span className="text-xs font-semibold text-foreground whitespace-nowrap">
                         {moon.label}
                       </span>
                     </motion.button>
