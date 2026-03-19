@@ -100,6 +100,7 @@ Each log entry follows this comprehensive structured format for complete traceab
 | CHANGE-008 | 2026-03-18 | iOS | Supabase Auth Wiring Scaffold | Completed | Added Supabase auth service factory with safe fallback and clarified macOS build/testing requirements |
 | CHANGE-009 | 2026-03-18 | Branch Prep | Track Plan Doc | Completed | Removed plan doc from gitignore and prepared branch commit for Mac handoff |
 | CHANGE-010 | 2026-03-18 | Branch Prep | Include All Requested Files | Completed | Unignored logs, added repo agent file, and committed iOS scaffold plus planning docs for Mac handoff |
+| CHANGE-011 | 2026-03-18 | iOS | App Session Routing | Completed | Added app session state and Auth->Home->SignOut flow for faster Xcode validation |
 | TBD | | | | | |
 
 ---
@@ -1034,6 +1035,76 @@ git checkout HEAD~1 MOBILE_CONVERSION_PLAN.md
 
 ---
 
+### CHANGE-011 - Date: 2026-03-18 | Developer: App Builder | Session: 171000
+**Category**: iOS  
+**Status**: Completed
+
+**User Query / Request**:
+"i am facing issue lets do the work here and then i will pull changes and build using xcode"
+
+**Analysis & Planning**:
+- User wants development to continue here so Mac side only needs pull+build.
+- Chosen milestone: implement app-level signed-out/signed-in routing to make iOS scaffold more testable immediately.
+- Keep scope iOS-only and avoid touching existing web app files.
+
+**Implementation Details**:
+- Added `AppSession` observable state object for authentication session.
+- Added `AuthenticatedHomeView` as signed-in destination with sign-out action.
+- Updated `PartnerAIApp` to inject `AppSession` via `.environmentObject`.
+- Updated `ContentView` to route:
+  - Signed out -> Welcome + Auth navigation
+  - Signed in -> AuthenticatedHomeView
+- Updated `AuthView` to emit callback on successful sign-in and trigger session transition.
+- Updated iOS README to document the new flow.
+
+**Justification**:
+- **Business**: Reduces friction on Mac by pre-building core navigation flow.
+- **Technical**: Establishes base app architecture for all upcoming feature screens.
+- **Validation**: Enables quick end-to-end manual test loop in Xcode (Sign In -> Home -> Sign Out).
+
+**Files Affected**:
+- [x] c:\Users\anilc\Desktop\PartnerAI\partneraii\ios\PartnerAI\App\AppSession.swift (Type: Created) - session state container
+- [x] c:\Users\anilc\Desktop\PartnerAI\partneraii\ios\PartnerAI\Features\Home\AuthenticatedHomeView.swift (Type: Created) - signed-in placeholder home
+- [x] c:\Users\anilc\Desktop\PartnerAI\partneraii\ios\PartnerAI\App\PartnerAIApp.swift (Type: Modified) - injects session object
+- [x] c:\Users\anilc\Desktop\PartnerAI\partneraii\ios\PartnerAI\App\ContentView.swift (Type: Modified) - auth/session based root routing
+- [x] c:\Users\anilc\Desktop\PartnerAI\partneraii\ios\PartnerAI\Features\Auth\AuthView.swift (Type: Modified) - sign-in callback to app session
+- [x] c:\Users\anilc\Desktop\PartnerAI\partneraii\ios\README.txt (Type: Modified) - updated current status and expected flow
+
+**Testing & Verification**:
+- Verified changed scope is limited to `ios/` plus log file updates.
+- Verified no `src/` web files modified.
+- Verified login success path now has deterministic transition callback.
+
+**Reverse Instructions**:
+1. Revert modified files:
+   - `git checkout -- ios/PartnerAI/App/PartnerAIApp.swift ios/PartnerAI/App/ContentView.swift ios/PartnerAI/Features/Auth/AuthView.swift ios/README.txt`
+2. Remove newly added files:
+   - `git rm ios/PartnerAI/App/AppSession.swift ios/PartnerAI/Features/Home/AuthenticatedHomeView.swift`
+
+**Decision Log**:
+- Chose `EnvironmentObject` for simple app-wide auth state propagation.
+- Chose callback-based transition from `AuthView` to avoid tight coupling with service layer.
+- Kept signed-in home intentionally minimal to unblock subsequent feature work.
+
+**Blockers & Resolutions**:
+- **Blocker**: Cannot run Xcode validation from this Windows environment.
+- **Resolution**: Implemented compile-friendly Swift structure so Mac side can immediately build/test.
+
+**Notes**:
+- Next logical step: replace mock success path with persistent Supabase session restore at app launch.
+
+**Related Entries**:
+- CHANGE-006
+- CHANGE-007
+- CHANGE-008
+
+**Approval/Review**:
+- Self-reviewed
+- Approval date: 2026-03-18
+- Status: Ready to commit and push for Mac pull
+
+---
+
 ## 📝 Template for Future Entries
 
 Copy and paste this template for new changes:
@@ -1128,17 +1199,17 @@ Copy and paste this template for new changes:
 
 ## 📊 Summary Statistics
 
-- **Total Changes**: 10
-- **Completed**: 10
+- **Total Changes**: 11
+- **Completed**: 11
 - **In Progress**: 0
 - **Failed**: 0
 - **Reverted**: 0
 - **Android Changes**: 0
-- **iOS Changes**: 3
+- **iOS Changes**: 4
 - **Shared Changes**: 0
 - **Documentation Changes**: 6
 - **Planning Documents**: 1 (Mobile Conversion Plan)
-- **Total Files Modified**: 9
+- **Total Files Modified**: 10
 - **Average Log Entry Size**: ~700 lines (comprehensive documentation)
 - **Total Documentation Pages**: 3 (Agent + Analysis + Plan)
 - **Plan Duration**: 16 weeks (4 months)
