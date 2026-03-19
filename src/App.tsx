@@ -84,7 +84,11 @@ function AppRoutes() {
         .eq("user_id", user.id)
         .single();
 
-      if (!data || !data.display_name) {
+      // Treat null/empty display_name OR gibberish-looking names as needing setup
+      const name = data?.display_name?.trim() || "";
+      const looksReal = name.length > 0 && !/^[a-z0-9]{8,}$/i.test(name);
+
+      if (!data || !looksReal) {
         setNeedsSetup(true);
       } else {
         localStorage.setItem("lovelist-setup-done", "true");

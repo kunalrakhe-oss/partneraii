@@ -31,11 +31,17 @@ export default function PostAuthSetup() {
     if (!user || !mode) return;
     setSaving(true);
     try {
+      const trimmedName = name.trim();
+      if (!trimmedName) {
+        toast({ title: "Please enter your name", variant: "destructive" });
+        setSaving(false);
+        return;
+      }
       const { error } = await supabase
         .from("profiles")
         .update({
           app_mode: mode,
-          display_name: name.trim() || undefined,
+          display_name: trimmedName,
         })
         .eq("user_id", user.id);
       if (error) throw error;
@@ -64,7 +70,7 @@ export default function PostAuthSetup() {
             className="w-full max-w-sm space-y-6 text-center"
           >
             <div>
-              <h1 className="text-2xl font-bold text-foreground mb-2">How will you use LoveList?</h1>
+              <h1 className="text-2xl font-bold text-foreground mb-2">How will you use PartnerAI?</h1>
               <p className="text-sm text-muted-foreground">You can change this anytime in settings</p>
             </div>
 
