@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -157,6 +158,11 @@ function AppRoutes() {
   );
 }
 
+function PushNotificationsInit() {
+  usePushNotifications();
+  return null;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -168,6 +174,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <FullscreenExitButton />
+            <PushNotificationsInit />
             <BrowserRouter>
               <AppRoutes />
             </BrowserRouter>

@@ -8,6 +8,7 @@
         "@capacitor/android": "^8.2.0",
         "@capacitor/core": "^8.2.0",
         "@capacitor/ios": "^8.2.0",
+        "@capacitor/push-notifications": "^8.0.2",
         "@hookform/resolvers": "^3.10.0",
         "@lovable.dev/cloud-auth-js": "^0.0.3",
         "@radix-ui/react-accordion": "^1.2.11",
@@ -281,6 +282,8 @@
     "@capacitor/core": ["@capacitor/core@8.2.0", "", { "dependencies": { "tslib": "^2.1.0" } }, "sha512-oKaoNeNtH2iIZMDFVrb1atoyRECDGHcfLMunJ5KWN8DtvpVBeeA4c41e20NTuhMxw1cSYbpq2PV2hb+/9CJxlQ=="],
 
     "@capacitor/ios": ["@capacitor/ios@8.2.0", "", { "peerDependencies": { "@capacitor/core": "^8.2.0" } }, "sha512-X2/VtM4qP/R1SM0VQ5W/VotEc6PS/KTooD33EijsfAHWBdee+xmBapW8SeNLnu16wJ+tsfWlvtipaJEyfKbRKQ=="],
+
+    "@capacitor/push-notifications": ["@capacitor/push-notifications@8.0.2", "", { "peerDependencies": { "@capacitor/core": ">=8.0.0" } }, "sha512-mej8Eh4EU4JXbaeyMX2l+4NNK6IdY5iRsEXpBOTHLD29fuCACBP7kOJTiJv6piw134zdlbFH0rR+sDKHIiFOFg=="],
 
     "@emnapi/core": ["@emnapi/core@1.9.0", "", { "dependencies": { "@emnapi/wasi-threads": "1.2.0", "tslib": "^2.4.0" } }, "sha512-0DQ98G9ZQZOxfUcQn1waV2yS8aWdZ6kJMbYCJB3oUBecjWYO1fqJ+a1DRfPF3O5JEkwqwP1A9QEN/9mYm2Yd0w=="],
 
