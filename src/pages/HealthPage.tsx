@@ -322,7 +322,7 @@ export default function HealthPage() {
                   </div>
                 </Card>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-3">
                   {[
                     { label: "Avg Steps", val: Math.round(myMetrics.reduce((s, m) => s + (m.steps || 0), 0) / (myMetrics.filter(m => m.steps).length || 1)), color: "text-blue-500" },
                     { label: "Avg Sleep", val: (myMetrics.reduce((s, m) => s + (m.sleep_hours || 0), 0) / (myMetrics.filter(m => m.sleep_hours).length || 1)).toFixed(1) + "h", color: "text-indigo-500" },
