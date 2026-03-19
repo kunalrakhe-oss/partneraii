@@ -295,6 +295,7 @@ export default function CalendarPage() {
   const { canAccess } = useSubscriptionContext();
   const { isDemoMode } = useDemo();
   const { t } = useLanguage();
+  const { isSingle } = useAppMode();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
