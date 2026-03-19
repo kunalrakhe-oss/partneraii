@@ -1,53 +1,40 @@
 
 
-## Clear All User Profiles & Force Fresh Setup
+## Add Language Selection to Setup Screen
 
-### What's already done
-Email OTP login is already the only login method — no changes needed there.
+### Approach
+Add a new **first step** ("language") to the setup flow where users pick English or Hindi. The chosen language is saved via `useLanguage()` and persists as the primary language. All subsequent setup steps render using the `t()` function from `LanguageContext`.
 
-### What needs to happen
+### Changes
 
-**1. Delete all user data from the database**
+**1. `src/pages/PostAuthSetup.tsx`**
+- Import `useLanguage` and `LANGUAGE_OPTIONS` 
+- Add a new step type `"language"` before `"mode"`
+- New "language" step UI: two large buttons (English / हिन्दी) styled like the existing mode cards, with a flag or globe icon
+- On selection, call `setLanguage(lang)` which persists to localStorage and sets `document.documentElement.lang`
+- All hardcoded strings in the setup steps replaced with `t("setup.xxx")` calls
 
-Run SQL DELETE statements (via the insert/data tool) to clear all user-facing tables. This forces every returning user through the post-auth setup flow (`/setup`) since their `display_name` will be gone.
+**2. `src/lib/translations/en.ts`**
+- Add a `setup` section with all setup screen strings:
+  - `setup.chooseLang` — "Choose your language"
+  - `setup.howUse` — "How will you use PartnerAI?"
+  - `setup.meMode` / `setup.weMode` — mode labels and descriptions
+  - `setup.whatsName` — "What's your name?"
+  - `setup.priorities` — "What matters most to you?"
+  - `setup.morning` — "What's your morning like?"
+  - `setup.goals` — "What do you want to achieve?"
+  - Priority labels, morning option labels, goal suggestions, button text
 
-Tables to clear (in dependency order to avoid FK issues):
-- `chore_linked_items`
-- `message_reactions`
-- `memory_reactions`
-- `recovery_progress`
-- `recovery_plans`
-- `diet_plans`
-- `diet_logs`
-- `budget_entries`
-- `calendar_events`
-- `chat_messages`
-- `chores`
-- `grocery_items`
-- `health_metrics`
-- `location_shares`
-- `memories`
-- `mood_logs`
-- `notifications`
-- `partner_invites`
-- `period_logs`
-- `push_subscriptions`
-- `relationship_details`
-- `user_preferences`
-- `workouts`
-- `profiles`
+**3. `src/lib/translations/hi.ts`**
+- Add matching Hindi `setup` section with all translated strings
 
-**2. Clear localStorage setup flag in code**
+**4. `src/pages/PostAuthSetup.tsx` — save language to profile**
+- In `handleFinish`, also save the selected language to `user_preferences` so it can be restored on future logins
 
-Update `src/App.tsx` to remove `lovelist-setup-done` from localStorage on app load, ensuring returning users are routed to `/setup` even if they had a cached flag.
+### Flow
+```text
+Language → Mode → Name → Priorities → Morning → Goals → Done
+```
 
-### No schema or auth changes needed
-- The email OTP flow is already the only login method
-- The `/setup` post-auth flow already exists and will trigger for any user missing a `display_name`
-- No tables need structural changes
-
-### Impact
-- All existing users will need to re-enter their name, mode, and preferences on next login
-- All stored data (chores, meals, moods, chats, etc.) will be permanently deleted
-- Auth accounts remain intact — users can still log in with the same email
+The language can be changed later in Profile/Settings (already supported via `LanguageContext`).
 
