@@ -320,6 +320,7 @@ export default function HealthPage() {
                 </p>
               </div>
             </Card>
+            <Input
               placeholder="Notes (optional)"
               value={form.notes}
               onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
