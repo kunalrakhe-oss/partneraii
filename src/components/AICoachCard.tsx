@@ -30,7 +30,7 @@ const PLAN_ICON: Record<string, typeof Activity> = {
 
 interface AICoachCardProps {
   preferences: { priorities: string[]; morning_routine: string | null; life_goals: string[]; daily_goals: string[] } | null;
-  activePlans: { plan_type: string; title: string; started_at: string }[];
+  activePlans: { id?: string; plan_type: string; title: string; started_at: string }[];
 }
 
 export default function AICoachCard({ preferences, activePlans }: AICoachCardProps) {
