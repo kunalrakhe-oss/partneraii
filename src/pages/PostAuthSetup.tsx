@@ -79,8 +79,9 @@ export default function PostAuthSetup() {
           user_id: user.id,
           priorities,
           morning_routine: morningRoutine,
-          daily_goals: priorities, // initially same as priorities
-        }, { onConflict: "user_id" });
+          daily_goals: priorities,
+          life_goals: lifeGoals,
+        } as any, { onConflict: "user_id" });
       if (prefError) console.error("Preferences save error:", prefError);
 
       localStorage.setItem("lovelist-setup-done", "true");
