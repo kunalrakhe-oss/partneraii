@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Plus, Camera, Heart, Star, Calendar, X, Image as ImageIcon, Award, BookOpen, Loader2, ChevronLeft, MessageCircle, Send } from "lucide-react";
+import { usePageFab } from "@/contexts/PageFabContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ProfileButton from "@/components/ProfileButton";
 import { motion, AnimatePresence } from "framer-motion";
