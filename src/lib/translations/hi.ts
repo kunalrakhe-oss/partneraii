@@ -55,7 +55,7 @@ export const hi: TranslationKeys = {
 
   // Auth Page
   auth: {
-    welcomeTo: "PartnerAI में आपका स्वागत है",
+    welcomeTo: "PAI में आपका स्वागत है",
     signIn: "साइन इन",
     signUp: "साइन अप",
     signInToAccount: "अपने अकाउंट में साइन इन करें",
