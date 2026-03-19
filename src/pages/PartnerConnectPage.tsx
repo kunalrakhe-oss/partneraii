@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import PageTransition from "@/components/PageTransition";
-import onboardingHero from "@/assets/onboarding-hero.jpg";
+
 import { format, differenceInYears } from "date-fns";
 
 function generateLinkCode(): string {
