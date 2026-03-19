@@ -234,7 +234,7 @@ export default function AICoachStrip({ greeting, firstName }: AICoachStripProps)
                           })()}
                           <span className="text-xs font-bold text-foreground">{m.planData.title}</span>
                           {m.planData.plan_id && (
-                            <CheckCircle2 size={12} className="text-green-500 ml-auto" />
+                            <CheckCircle2 size={12} className="text-primary ml-auto" />
                           )}
                         </div>
                         {m.planData.phases.slice(0, 2).map((phase: any, pi: number) => (
