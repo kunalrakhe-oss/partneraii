@@ -311,6 +311,21 @@ export default function CalendarPage() {
   const [showViewMenu, setShowViewMenu] = useState(false);
   const [showDietForm, setShowDietForm] = useState(false);
   const [dietSaving, setDietSaving] = useState(false);
+  const [choreLinkedItems, setChoreLinkedItems] = useState<Record<string, any[]>>({});
+  const [expandedChores, setExpandedChores] = useState<Set<string>>(new Set());
+
+  const toggleChoreExpand = (choreId: string) => {
+    setExpandedChores(prev => {
+      const next = new Set(prev);
+      if (next.has(choreId)) next.delete(choreId); else next.add(choreId);
+      return next;
+    });
+  };
+
+  const toggleLinkedItem = async (itemId: string, currentChecked: boolean) => {
+    await supabase.from("grocery_items").update({ is_checked: !currentChecked }).eq("id", itemId);
+    await refreshEvents();
+  };
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
@@ -361,6 +376,23 @@ export default function CalendarPage() {
       _source: "grocery" as const,
       _sourceId: item.id,
     }));
+    // Fetch linked items for chores
+    const choreIds = (choresRes.data || []).map((c: any) => c.id);
+    const linkedMap: Record<string, any[]> = {};
+    if (choreIds.length > 0) {
+      const { data: linked } = await supabase
+        .from("chore_linked_items")
+        .select("chore_id, grocery_items(*)")
+        .in("chore_id", choreIds);
+      if (linked) {
+        for (const row of linked as any[]) {
+          if (!linkedMap[row.chore_id]) linkedMap[row.chore_id] = [];
+          if (row.grocery_items) linkedMap[row.chore_id].push(row.grocery_items);
+        }
+      }
+    }
+    setChoreLinkedItems(linkedMap);
+
     const baseEvents = [...calEvents, ...choreEvents, ...groceryEvents];
     setEvents(expandRecurringEvents(baseEvents));
   };
@@ -425,9 +457,18 @@ export default function CalendarPage() {
       navigate("/diet");
       return;
     }
-    // Chore/grocery items are view-only on calendar — just toggle completion
-    if (event._source === "chore" || event._source === "grocery") {
-      toast.info(`${event._source === "chore" ? "Chore" : "Grocery item"} — tap ✓ to toggle completion`);
+    // Chore items — toggle linked items expansion
+    if (event._source === "chore") {
+      const choreId = event._sourceId || "";
+      if (choreLinkedItems[choreId]?.length > 0) {
+        toggleChoreExpand(choreId);
+      } else {
+        toast.info("Chore — tap ✓ to toggle completion");
+      }
+      return;
+    }
+    if (event._source === "grocery") {
+      toast.info("Grocery item — tap ✓ to toggle completion");
       return;
     }
     setEditingEvent(event);
@@ -638,6 +679,9 @@ export default function CalendarPage() {
               onEditEvent={openEditForm}
               onToggle={toggleComplete}
               onAddEvent={() => openAddForm()}
+              choreLinkedItems={choreLinkedItems}
+              expandedChores={expandedChores}
+              onToggleLinkedItem={toggleLinkedItem}
             />
           )}
 
@@ -652,39 +696,76 @@ export default function CalendarPage() {
                   <div className="space-y-1.5">
                     {dayEvents
                       .sort((a, b) => (a.event_time || "").localeCompare(b.event_time || ""))
-                      .map((evt) => (
-                        <div
-                          key={evt.id}
-                          onClick={() => openEditForm(evt)}
-                          className={`w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-card shadow-soft border border-border cursor-pointer ${evt.is_completed ? "opacity-50" : ""}`}
-                        >
-                          <div className={`w-1 self-stretch rounded-full ${CATEGORY_COLORS[evt.category] || "bg-primary/50"}`} />
-                          <div className="flex-1 min-w-0">
-                            <p className={`text-sm font-semibold text-foreground ${evt.is_completed ? "line-through" : ""}`}>
-                              {evt.title}
-                            </p>
-                            <div className="flex items-center gap-1.5">
-                              <p className="text-[10px] text-muted-foreground">
-                                {evt.event_time || "All day"} • {CATEGORY_LABEL[evt.category] || evt.category}
-                                {!isSingle && evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
-                              </p>
-                              {countdownBadge(evt) && (
-                                <span className="text-[9px] font-bold bg-primary/15 text-primary px-1.5 py-0.5 rounded-full">
-                                  {countdownBadge(evt)}
-                                </span>
-                              )}
+                      .map((evt) => {
+                        const choreId = evt._sourceId || "";
+                        const linked = evt._source === "chore" ? (choreLinkedItems[choreId] || []) : [];
+                        const isExpanded = expandedChores.has(choreId);
+                        return (
+                          <div key={evt.id} className="rounded-xl bg-card shadow-soft border border-border overflow-hidden">
+                            <div
+                              onClick={() => openEditForm(evt)}
+                              className={`w-full text-left flex items-center gap-2.5 px-3 py-2.5 cursor-pointer ${evt.is_completed ? "opacity-50" : ""}`}
+                            >
+                              <div className={`w-1 self-stretch rounded-full ${CATEGORY_COLORS[evt.category] || "bg-primary/50"}`} />
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm font-semibold text-foreground ${evt.is_completed ? "line-through" : ""}`}>
+                                  {evt.title}
+                                </p>
+                                <div className="flex items-center gap-1.5">
+                                  <p className="text-[10px] text-muted-foreground">
+                                    {evt.event_time || "All day"} • {CATEGORY_LABEL[evt.category] || evt.category}
+                                    {!isSingle && evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
+                                  </p>
+                                  {linked.length > 0 && (
+                                    <span className="text-[9px] font-semibold bg-accent/50 text-accent-foreground px-1.5 py-0.5 rounded-full">
+                                      📋 {linked.filter((i: any) => i.is_checked).length}/{linked.length}
+                                    </span>
+                                  )}
+                                  {countdownBadge(evt) && (
+                                    <span className="text-[9px] font-bold bg-primary/15 text-primary px-1.5 py-0.5 rounded-full">
+                                      {countdownBadge(evt)}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); toggleComplete(evt); }}
+                                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                                  evt.is_completed ? "bg-success border-success" : "border-border"
+                                }`}
+                              >
+                                {evt.is_completed && <Check size={10} className="text-success-foreground" />}
+                              </button>
                             </div>
+                            <AnimatePresence>
+                              {isExpanded && linked.length > 0 && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                                  className="overflow-hidden border-t border-border/50"
+                                >
+                                  <div className="px-4 py-2 space-y-1.5 bg-muted/30">
+                                    {linked.map((item: any) => (
+                                      <label key={item.id} className="flex items-center gap-2 cursor-pointer" onClick={e => e.stopPropagation()}>
+                                        <button
+                                          onClick={() => toggleLinkedItem(item.id, item.is_checked)}
+                                          className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                                            item.is_checked ? "bg-success border-success" : "border-border"
+                                          }`}
+                                        >
+                                          {item.is_checked && <Check size={8} className="text-success-foreground" />}
+                                        </button>
+                                        <span className={`text-xs ${item.is_checked ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                                          {item.name}
+                                        </span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </div>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); toggleComplete(evt); }}
-                            className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                              evt.is_completed ? "bg-success border-success" : "border-border"
-                            }`}
-                          >
-                            {evt.is_completed && <Check size={10} className="text-success-foreground" />}
-                          </button>
-                        </div>
-                      ))}
+                        );
+                      })}
                   </div>
                 </div>
               ) : (
@@ -828,7 +909,7 @@ export default function CalendarPage() {
 
 /* ─────────────── WEEK VIEW (horizontal strip + day event list) ─────────────── */
 
-function WeekView({ currentDate, selectedDate, events, onSelectDate, onEditEvent, onToggle, onAddEvent }: {
+function WeekView({ currentDate, selectedDate, events, onSelectDate, onEditEvent, onToggle, onAddEvent, choreLinkedItems, expandedChores, onToggleLinkedItem }: {
   currentDate: Date;
   selectedDate: Date;
   events: CalendarEvent[];
@@ -836,6 +917,9 @@ function WeekView({ currentDate, selectedDate, events, onSelectDate, onEditEvent
   onEditEvent: (e: CalendarEvent) => void;
   onToggle: (e: CalendarEvent) => void;
   onAddEvent: () => void;
+  choreLinkedItems?: Record<string, any[]>;
+  expandedChores?: Set<string>;
+  onToggleLinkedItem?: (itemId: string, currentChecked: boolean) => void;
 }) {
   const { isSingle } = useAppMode();
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -913,39 +997,80 @@ function WeekView({ currentDate, selectedDate, events, onSelectDate, onEditEvent
             {isToday(selectedDate) ? "Today's Events" : format(selectedDate, "EEEE's Events")}
           </p>
           <div className="space-y-1.5">
-            {selectedEvents.map((evt) => (
-              <div
-                key={evt.id}
-                onClick={() => onEditEvent(evt)}
-                className={`w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-card shadow-soft border border-border cursor-pointer ${evt.is_completed ? "opacity-50" : ""}`}
-              >
-                <div className={`w-1 self-stretch rounded-full ${CATEGORY_COLORS[evt.category] || "bg-primary/50"}`} />
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-semibold text-foreground ${evt.is_completed ? "line-through" : ""}`}>
-                    {evt.title}
-                  </p>
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-[10px] text-muted-foreground">
-                      {evt.event_time || "All day"} • {CATEGORY_LABEL[evt.category] || evt.category}
-                      {!isSingle && evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
-                    </p>
-                    {countdownBadge(evt) && (
-                      <span className="text-[9px] font-bold bg-primary/15 text-primary px-1.5 py-0.5 rounded-full">
-                        {countdownBadge(evt)}
-                      </span>
-                    )}
+            {selectedEvents.map((evt) => {
+              const choreId = evt._sourceId || "";
+              const linked = evt._source === "chore" ? (choreLinkedItems?.[choreId] || []) : [];
+              const isExpanded = expandedChores?.has(choreId);
+              return (
+                <div key={evt.id} className="rounded-xl bg-card shadow-soft border border-border overflow-hidden">
+                  <div
+                    onClick={() => onEditEvent(evt)}
+                    className={`w-full text-left flex items-center gap-2.5 px-3 py-2.5 cursor-pointer ${evt.is_completed ? "opacity-50" : ""}`}
+                  >
+                    <div className={`w-1 self-stretch rounded-full ${CATEGORY_COLORS[evt.category] || "bg-primary/50"}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-semibold text-foreground ${evt.is_completed ? "line-through" : ""}`}>
+                        {evt.title}
+                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-[10px] text-muted-foreground">
+                          {evt.event_time || "All day"} • {CATEGORY_LABEL[evt.category] || evt.category}
+                          {!isSingle && evt.assigned_to !== "both" ? ` • ${evt.assigned_to}` : ""}
+                        </p>
+                        {linked.length > 0 && (
+                          <span className="text-[9px] font-semibold bg-accent/50 text-accent-foreground px-1.5 py-0.5 rounded-full">
+                            📋 {linked.filter((i: any) => i.is_checked).length}/{linked.length}
+                          </span>
+                        )}
+                        {countdownBadge(evt) && (
+                          <span className="text-[9px] font-bold bg-primary/15 text-primary px-1.5 py-0.5 rounded-full">
+                            {countdownBadge(evt)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onToggle(evt); }}
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        evt.is_completed ? "bg-success border-success" : "border-border"
+                      }`}
+                    >
+                      {evt.is_completed && <Check size={10} className="text-success-foreground" />}
+                    </button>
                   </div>
+                  {/* Expandable linked items */}
+                  <AnimatePresence>
+                    {isExpanded && linked.length > 0 && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden border-t border-border/50"
+                      >
+                        <div className="px-4 py-2 space-y-1.5 bg-muted/30">
+                          {linked.map((item: any) => (
+                            <label key={item.id} className="flex items-center gap-2 cursor-pointer" onClick={e => e.stopPropagation()}>
+                              <button
+                                onClick={() => onToggleLinkedItem?.(item.id, item.is_checked)}
+                                className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                                  item.is_checked ? "bg-success border-success" : "border-border"
+                                }`}
+                              >
+                                {item.is_checked && <Check size={8} className="text-success-foreground" />}
+                              </button>
+                              <span className={`text-xs ${item.is_checked ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                                {item.name}
+                              </span>
+                              {item.category && item.category !== "other" && (
+                                <span className="text-[9px] text-muted-foreground">({item.category})</span>
+                              )}
+                            </label>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); onToggle(evt); }}
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                    evt.is_completed ? "bg-success border-success" : "border-border"
-                  }`}
-                >
-                  {evt.is_completed && <Check size={10} className="text-success-foreground" />}
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ) : (

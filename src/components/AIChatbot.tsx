@@ -73,7 +73,7 @@ const SUGGESTIONS = [
   "🍽️ Meal planning help",
 ];
 
-export default function AIChatbot({ embedded }: { embedded?: boolean }) {
+export default function AIChatbot({ embedded, initialContext }: { embedded?: boolean; initialContext?: string | null }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -82,6 +82,15 @@ export default function AIChatbot({ embedded }: { embedded?: boolean }) {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  // Auto-send mood context from URL
+  const contextSent = useRef(false);
+  useEffect(() => {
+    if (initialContext && !contextSent.current && messages.length === 0 && !loading) {
+      contextSent.current = true;
+      send(initialContext);
+    }
+  }, [initialContext]);
 
   const send = async (text?: string) => {
     const msg = text || input.trim();
