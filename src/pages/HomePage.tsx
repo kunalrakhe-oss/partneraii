@@ -167,29 +167,29 @@ export default function HomePage() {
 
   return (
     <PageTransition>
+      {/* Sticky header — outside scroll flow */}
+      <div className="sticky top-0 z-20 bg-background px-5 pt-10 pb-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <ProfileButton />
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">
+              {greeting}, {firstName} <span className="text-base">✨</span>
+            </h1>
+            <p className="text-sm text-muted-foreground">{format(new Date(), "EEEE, MMMM d")}</p>
+          </div>
+        </div>
+        <button onClick={() => setShowNotifications(true)} className="relative w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+          <Bell size={18} className="text-foreground" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[9px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </button>
+      </div>
+
       <div className="px-5 pb-6">
         <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-
-          {/* Header */}
-          <motion.div variants={item} className="sticky top-0 z-20 bg-background -mx-5 px-5 pt-10 pb-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <ProfileButton />
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">
-                  {greeting}, {firstName} <span className="text-base">✨</span>
-                </h1>
-                <p className="text-sm text-muted-foreground">{format(new Date(), "EEEE, MMMM d")}</p>
-              </div>
-            </div>
-            <button onClick={() => setShowNotifications(true)} className="relative w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-              <Bell size={18} className="text-foreground" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[9px] font-bold min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
-              )}
-            </button>
-          </motion.div>
 
           {/* Today's Focus */}
           <motion.div variants={item}>
