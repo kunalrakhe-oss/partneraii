@@ -413,7 +413,99 @@ export default function HomePage() {
             </motion.div>
           )}
 
-          {/* Active Recovery Plan Card */}
+          {/* === Fixed-order widget rendering === */}
+
+          {/* 1. Mood Check-in */}
+          {showWidget("mood-check") && (() => {
+            const MOOD_EMOJI: Record<string, string> = { happy: "😊", excited: "🤩", neutral: "🥰", calm: "😌", grateful: "🙏", silly: "🤪", tired: "😵‍💫", sad: "😢", stressed: "😫", anxious: "😰", angry: "😠", furious: "🤬", lonely: "🥺", hopeful: "🌟", confused: "😕" };
+            return (
+              <motion.div key="mood-check" variants={item} className="space-y-2">
+                <div className="flex gap-2">
+                  <button onClick={() => navigate("/mood")} className="flex-1 bg-gradient-to-br from-secondary/15 to-secondary/5 rounded-2xl p-3 border border-secondary/20 text-left">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xl">{myMood ? (MOOD_EMOJI[myMood.mood] || "✨") : "🌤️"}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] text-muted-foreground">{t("home.yourMoodToday")}</p>
+                        <p className="text-sm font-bold text-foreground truncate">
+                          {myMood ? myMood.mood.charAt(0).toUpperCase() + myMood.mood.slice(1) : t("home.tapToLogMood")}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                  {!isSingle && (
+                    <button onClick={() => partnerMood ? setShowMoodPopup(true) : navigate("/mood")} className="flex-1 bg-gradient-to-br from-primary/15 to-primary/5 rounded-2xl p-3 border border-primary/20 text-left">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xl">{partnerMood ? (MOOD_EMOJI[partnerMood.mood] || "✨") : "✨"}</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] text-muted-foreground">{t("home.partnerFeeling")}</p>
+                          <p className="text-sm font-bold text-foreground truncate">
+                            {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : t("home.noMoodYet")}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  )}
+                </div>
+                {myMood && (
+                  <button onClick={() => navigate(`/chat?tab=ai&mood=${encodeURIComponent(myMood.mood)}${myMood.note ? `&note=${encodeURIComponent(myMood.note)}` : ""}`)} className="w-full flex items-center gap-2 bg-card rounded-xl px-3 py-2 border border-border">
+                    <Brain size={12} className="text-primary shrink-0" />
+                    {aiMoodLoading ? (
+                      <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Loader2 size={10} className="animate-spin" /> Checking in…</span>
+                    ) : (
+                      <p className="text-xs text-muted-foreground truncate flex-1 text-left">{aiMoodCheckin || "Take a moment to check in… 💕"}</p>
+                    )}
+                  </button>
+                )}
+              </motion.div>
+            );
+          })()}
+
+          {/* 2. Today's Agenda / Next Event */}
+          {showWidget("next-event") && (
+            <motion.div key="next-event" variants={item}>
+              <Link to="/calendar" className="block love-gradient rounded-2xl p-4 shadow-elevated relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-primary-foreground/10 rounded-full -translate-y-8 translate-x-8" />
+                {nextEvent ? (
+                  <>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">{t("home.nextUp")}</p>
+                      {getCountdownBadge(nextEvent) && (
+                        <span className="text-[10px] font-bold bg-primary-foreground/20 text-primary-foreground px-2 py-0.5 rounded-full">
+                          {getCountdownBadge(nextEvent)}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-base font-bold text-primary-foreground leading-tight">{nextEvent.title}</p>
+                    <div className="flex items-center gap-3 mt-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <CalendarDays size={12} className="text-primary-foreground/70" />
+                        <span className="text-xs font-medium text-primary-foreground/80">{formatEventDate(nextEvent.event_date)}</span>
+                      </div>
+                      {nextEvent.event_time && (
+                        <div className="flex items-center gap-1.5">
+                          <Clock size={12} className="text-primary-foreground/70" />
+                          <span className="text-xs font-medium text-primary-foreground/80">{nextEvent.event_time}</span>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <CalendarDays size={18} className="text-primary-foreground/70" />
+                    <p className="text-sm font-medium text-primary-foreground/80">{t("home.noEventsToday")}</p>
+                  </div>
+                )}
+                {todayEvents.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-primary-foreground/15 flex items-center justify-between">
+                    <p className="text-xs font-medium text-primary-foreground/70">{todayEvents.length} {isSingle ? "events" : t("home.sharedEvents").toLowerCase()} {t("common.today").toLowerCase()}</p>
+                    <span className="text-[10px] font-semibold text-primary-foreground/60">{t("common.viewAll")} →</span>
+                  </div>
+                )}
+              </Link>
+            </motion.div>
+          )}
+
+          {/* 3. Active Plan Cards */}
           {activePlan && (
             <motion.div variants={item}>
               <Link
@@ -440,8 +532,6 @@ export default function HomePage() {
               </Link>
             </motion.div>
           )}
-
-          {/* Active Diet Plan Card */}
           {activeDietPlan && (
             <motion.div variants={item}>
               <Link
@@ -469,235 +559,125 @@ export default function HomePage() {
             </motion.div>
           )}
 
+          {/* 4. Feature Bubbles (4 categories) */}
+          {showWidget("quick-links") && (
+            <motion.div key="quick-links" variants={item}>
+              <FeatureBubbles
+                isSingle={isSingle}
+                uncheckedGroceries={uncheckedGroceries}
+                pendingChores={pendingChores}
+                totalEvents={totalEvents}
+              />
+            </motion.div>
+          )}
 
-          {visibleWidgets.map(widgetId => {
-            switch (widgetId) {
-              case "next-event":
-                return (
-                  <motion.div key="next-event" variants={item}>
-                    <Link to="/calendar" className="block love-gradient rounded-2xl p-4 shadow-elevated relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-20 h-20 bg-primary-foreground/10 rounded-full -translate-y-8 translate-x-8" />
-                      {nextEvent ? (
-                        <>
-                          <div className="flex items-center justify-between mb-1">
-                            <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">{t("home.nextUp")}</p>
-                            {getCountdownBadge(nextEvent) && (
-                              <span className="text-[10px] font-bold bg-primary-foreground/20 text-primary-foreground px-2 py-0.5 rounded-full">
-                                {getCountdownBadge(nextEvent)}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-base font-bold text-primary-foreground leading-tight">{nextEvent.title}</p>
-                          <div className="flex items-center gap-3 mt-1.5">
-                            <div className="flex items-center gap-1.5">
-                              <CalendarDays size={12} className="text-primary-foreground/70" />
-                              <span className="text-xs font-medium text-primary-foreground/80">{formatEventDate(nextEvent.event_date)}</span>
-                            </div>
-                            {nextEvent.event_time && (
-                              <div className="flex items-center gap-1.5">
-                                <Clock size={12} className="text-primary-foreground/70" />
-                                <span className="text-xs font-medium text-primary-foreground/80">{nextEvent.event_time}</span>
-                              </div>
-                            )}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="flex items-center gap-3">
-                          <CalendarDays size={18} className="text-primary-foreground/70" />
-                          <p className="text-sm font-medium text-primary-foreground/80">{t("home.noEventsToday")}</p>
-                        </div>
-                      )}
-                      {todayEvents.length > 0 && (
-                        <div className="mt-2 pt-2 border-t border-primary-foreground/15 flex items-center justify-between">
-                          <p className="text-xs font-medium text-primary-foreground/70">{todayEvents.length} {isSingle ? "events" : t("home.sharedEvents").toLowerCase()} {t("common.today").toLowerCase()}</p>
-                          <span className="text-[10px] font-semibold text-primary-foreground/60">{t("common.viewAll")} →</span>
-                        </div>
-                      )}
-                    </Link>
-                  </motion.div>
-                );
-
-              case "partnership-stats":
-                return null;
-
-              case "mood-check": {
-                const MOOD_EMOJI: Record<string, string> = { happy: "😊", excited: "🤩", neutral: "🥰", calm: "😌", grateful: "🙏", silly: "🤪", tired: "😵‍💫", sad: "😢", stressed: "😫", anxious: "😰", angry: "😠", furious: "🤬", lonely: "🥺", hopeful: "🌟", confused: "😕" };
-                return (
-                  <motion.div key="mood-check" variants={item} className="space-y-2">
-                    <div className="flex gap-2">
-                      <button onClick={() => navigate("/mood")} className="flex-1 bg-gradient-to-br from-secondary/15 to-secondary/5 rounded-2xl p-3 border border-secondary/20 text-left">
-                        <div className="flex items-center gap-2.5">
-                          <span className="text-xl">{myMood ? (MOOD_EMOJI[myMood.mood] || "✨") : "🌤️"}</span>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-[10px] text-muted-foreground">{t("home.yourMoodToday")}</p>
-                            <p className="text-sm font-bold text-foreground truncate">
-                              {myMood ? myMood.mood.charAt(0).toUpperCase() + myMood.mood.slice(1) : t("home.tapToLogMood")}
-                            </p>
-                          </div>
-                        </div>
+          {/* 5. Urgent Chores */}
+          {showWidget("urgent-chores") && (
+            <motion.div key="urgent-chores" variants={item}>
+              <div className="flex items-center justify-between mb-3">
+                 <h2 className="text-base font-bold text-foreground">{t("home.urgentChores")}</h2>
+                 <div className="flex items-center gap-2">
+                   <button onClick={() => setShowAddChore(true)} className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
+                     <Plus size={14} className="text-primary" />
+                   </button>
+                   <Link to="/chores" className="text-sm text-muted-foreground font-medium">{t("common.manage")}</Link>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {urgentChores.length === 0 ? (
+                  <div className="bg-card rounded-2xl p-4 shadow-card text-center">
+                    <p className="text-sm text-muted-foreground">{t("home.noPendingChores")}</p>
+                  </div>
+                ) : (
+                  urgentChores.map(chore => (
+                    <div key={chore.id} className="bg-card rounded-2xl px-4 py-3.5 shadow-card flex items-center gap-3">
+                      <button
+                        onClick={() => toggleChore(chore.id)}
+                        className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
+                          chore.is_completed ? "bg-success border-success" : "border-border"
+                        }`}
+                      >
+                        {chore.is_completed && <Check size={14} className="text-success-foreground" />}
                       </button>
-                      {!isSingle && (
-                        <button onClick={() => partnerMood ? setShowMoodPopup(true) : navigate("/mood")} className="flex-1 bg-gradient-to-br from-primary/15 to-primary/5 rounded-2xl p-3 border border-primary/20 text-left">
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-xl">{partnerMood ? (MOOD_EMOJI[partnerMood.mood] || "✨") : "✨"}</span>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-[10px] text-muted-foreground">{t("home.partnerFeeling")}</p>
-                              <p className="text-sm font-bold text-foreground truncate">
-                                {partnerMood ? partnerMood.mood.charAt(0).toUpperCase() + partnerMood.mood.slice(1) : t("home.noMoodYet")}
-                              </p>
-                            </div>
-                          </div>
-                        </button>
-                      )}
-                    </div>
-                    {myMood && (
-                      <button onClick={() => navigate(`/chat?tab=ai&mood=${encodeURIComponent(myMood.mood)}${myMood.note ? `&note=${encodeURIComponent(myMood.note)}` : ""}`)} className="w-full flex items-center gap-2 bg-card rounded-xl px-3 py-2 border border-border">
-                        <Brain size={12} className="text-primary shrink-0" />
-                        {aiMoodLoading ? (
-                          <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Loader2 size={10} className="animate-spin" /> Checking in…</span>
-                        ) : (
-                          <p className="text-xs text-muted-foreground truncate flex-1 text-left">{aiMoodCheckin || "Take a moment to check in… 💕"}</p>
-                        )}
-                      </button>
-                    )}
-                  </motion.div>
-                );
-              }
-
-              case "partner-mood":
-                return null;
-
-              case "today-agenda":
-                return null;
-
-              case "add-memory":
-                return null;
-
-              case "quick-links":
-                return (
-                  <motion.div key="quick-links" variants={item}>
-                    <FeatureBubbles
-                      isSingle={isSingle}
-                      uncheckedGroceries={uncheckedGroceries}
-                      pendingChores={pendingChores}
-                      totalEvents={totalEvents}
-                    />
-                  </motion.div>
-                );
-
-              case "urgent-chores":
-                return (
-                  <motion.div key="urgent-chores" variants={item}>
-                    <div className="flex items-center justify-between mb-3">
-                       <h2 className="text-base font-bold text-foreground">{t("home.urgentChores")}</h2>
-                       <div className="flex items-center gap-2">
-                         <button onClick={() => setShowAddChore(true)} className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center">
-                           <Plus size={14} className="text-primary" />
-                         </button>
-                         <Link to="/chores" className="text-sm text-muted-foreground font-medium">{t("common.manage")}</Link>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-medium ${chore.is_completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{chore.title}</p>
+                        <p className="text-xs text-muted-foreground capitalize">{chore.recurrence === "daily" ? t("home.dueNow") : chore.recurrence || t("home.once")}</p>
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      {urgentChores.length === 0 ? (
-                        <div className="bg-card rounded-2xl p-4 shadow-card text-center">
-                          <p className="text-sm text-muted-foreground">{t("home.noPendingChores")}</p>
-                        </div>
-                      ) : (
-                        urgentChores.map(chore => (
-                          <div key={chore.id} className="bg-card rounded-2xl px-4 py-3.5 shadow-card flex items-center gap-3">
-                            <button
-                              onClick={() => toggleChore(chore.id)}
-                              className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
-                                chore.is_completed ? "bg-success border-success" : "border-border"
-                              }`}
-                            >
-                              {chore.is_completed && <Check size={14} className="text-success-foreground" />}
-                            </button>
-                            <div className="flex-1 min-w-0">
-                              <p className={`text-sm font-medium ${chore.is_completed ? "line-through text-muted-foreground" : "text-foreground"}`}>{chore.title}</p>
-                              <p className="text-xs text-muted-foreground capitalize">{chore.recurrence === "daily" ? t("home.dueNow") : chore.recurrence || t("home.once")}</p>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                      <AnimatePresence>
-                        {showAddChore && (
-                          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                            <div className="flex gap-2 mt-2">
-                              <input
-                                value={newChoreTitle}
-                                onChange={e => setNewChoreTitle(e.target.value)}
-                                onKeyDown={e => e.key === "Enter" && newChoreTitle.trim() && (async () => {
-                                  if (!user || !partnerPair) return;
-                                  const { data, error } = await supabase.from("chores").insert({
-                                    title: newChoreTitle.trim(), user_id: user.id, partner_pair: partnerPair,
-                                  }).select().single();
-                                  if (!error && data) {
-                                    setUrgentChores(prev => [...prev, { id: data.id, title: data.title, is_completed: false, recurrence: null }]);
-                                    setNewChoreTitle(""); setShowAddChore(false);
-                                  }
-                                })()}
-                                placeholder={t("home.quickAddChore")}
-                                autoFocus
-                                className="flex-1 h-10 bg-card rounded-xl px-3 text-sm text-foreground placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
-                              />
-                              <button
-                                onClick={async () => {
-                                  if (!newChoreTitle.trim() || !user || !partnerPair) return;
-                                  const { data, error } = await supabase.from("chores").insert({
-                                    title: newChoreTitle.trim(), user_id: user.id, partner_pair: partnerPair,
-                                  }).select().single();
-                                  if (!error && data) {
-                                    setUrgentChores(prev => [...prev, { id: data.id, title: data.title, is_completed: false, recurrence: null }]);
-                                    setNewChoreTitle(""); setShowAddChore(false);
-                                  }
-                                }}
-                                disabled={!newChoreTitle.trim()}
-                                className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40"
-                              >{t("common.add")}</button>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </motion.div>
-                );
-
-              case "ai-insight":
-                if (!canAccess("daily-insight")) {
-                  return (
-                    <motion.div key="ai-insight" variants={item}>
-                      <button onClick={() => navigate("/upgrade")} className="w-full flex items-center gap-2 bg-muted/50 rounded-xl px-3 py-2.5 border border-border">
-                        <Sparkles size={12} className="text-muted-foreground shrink-0" />
-                        <p className="text-xs text-muted-foreground flex-1 text-left">{t("home.upgradeForInsight")}</p>
-                        <span className="text-[10px] font-semibold text-primary">{t("home.upgradeNow")}</span>
-                      </button>
+                  ))
+                )}
+                <AnimatePresence>
+                  {showAddChore && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                      <div className="flex gap-2 mt-2">
+                        <input
+                          value={newChoreTitle}
+                          onChange={e => setNewChoreTitle(e.target.value)}
+                          onKeyDown={e => e.key === "Enter" && newChoreTitle.trim() && (async () => {
+                            if (!user || !partnerPair) return;
+                            const { data, error } = await supabase.from("chores").insert({
+                              title: newChoreTitle.trim(), user_id: user.id, partner_pair: partnerPair,
+                            }).select().single();
+                            if (!error && data) {
+                              setUrgentChores(prev => [...prev, { id: data.id, title: data.title, is_completed: false, recurrence: null }]);
+                              setNewChoreTitle(""); setShowAddChore(false);
+                            }
+                          })()}
+                          placeholder={t("home.quickAddChore")}
+                          autoFocus
+                          className="flex-1 h-10 bg-card rounded-xl px-3 text-sm text-foreground placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+                        />
+                        <button
+                          onClick={async () => {
+                            if (!newChoreTitle.trim() || !user || !partnerPair) return;
+                            const { data, error } = await supabase.from("chores").insert({
+                              title: newChoreTitle.trim(), user_id: user.id, partner_pair: partnerPair,
+                            }).select().single();
+                            if (!error && data) {
+                              setUrgentChores(prev => [...prev, { id: data.id, title: data.title, is_completed: false, recurrence: null }]);
+                              setNewChoreTitle(""); setShowAddChore(false);
+                            }
+                          }}
+                          disabled={!newChoreTitle.trim()}
+                          className="h-10 px-4 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-40"
+                        >{t("common.add")}</button>
+                      </div>
                     </motion.div>
-                  );
-                }
-                return !insightDismissed ? (
-                  <motion.div key="ai-insight" variants={item}>
-                    <div className="flex items-center gap-2 bg-card rounded-xl px-3 py-2.5 border border-border">
-                      <Sparkles size={12} className="text-primary shrink-0" />
-                      {insightLoading && !aiInsight ? (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1.5 flex-1"><Loader2 size={10} className="animate-spin" /> Generating insight…</span>
-                      ) : (
-                        <p className="text-xs text-muted-foreground flex-1 leading-relaxed">{aiInsight || "Loading…"}</p>
-                      )}
-                      <button onClick={() => { fetchInsight(); setInsightDismissed(false); }} disabled={insightLoading} className="text-muted-foreground shrink-0">
-                        <RefreshCw size={11} className={insightLoading ? "animate-spin" : ""} />
-                      </button>
-                      <button onClick={() => setInsightDismissed(true)} className="text-muted-foreground shrink-0">
-                        <X size={11} />
-                      </button>
-                    </div>
-                  </motion.div>
-                ) : null;
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          )}
 
-              default:
-                return null;
-            }
-          })}
+          {/* 6. AI Insight */}
+          {showWidget("ai-insight") && (
+            !canAccess("daily-insight") ? (
+              <motion.div key="ai-insight" variants={item}>
+                <button onClick={() => navigate("/upgrade")} className="w-full flex items-center gap-2 bg-muted/50 rounded-xl px-3 py-2.5 border border-border">
+                  <Sparkles size={12} className="text-muted-foreground shrink-0" />
+                  <p className="text-xs text-muted-foreground flex-1 text-left">{t("home.upgradeForInsight")}</p>
+                  <span className="text-[10px] font-semibold text-primary">{t("home.upgradeNow")}</span>
+                </button>
+              </motion.div>
+            ) : !insightDismissed ? (
+              <motion.div key="ai-insight" variants={item}>
+                <div className="flex items-center gap-2 bg-card rounded-xl px-3 py-2.5 border border-border">
+                  <Sparkles size={12} className="text-primary shrink-0" />
+                  {insightLoading && !aiInsight ? (
+                    <span className="text-xs text-muted-foreground flex items-center gap-1.5 flex-1"><Loader2 size={10} className="animate-spin" /> Generating insight…</span>
+                  ) : (
+                    <p className="text-xs text-muted-foreground flex-1 leading-relaxed">{aiInsight || "Loading…"}</p>
+                  )}
+                  <button onClick={() => { fetchInsight(); setInsightDismissed(false); }} disabled={insightLoading} className="text-muted-foreground shrink-0">
+                    <RefreshCw size={11} className={insightLoading ? "animate-spin" : ""} />
+                  </button>
+                  <button onClick={() => setInsightDismissed(true)} className="text-muted-foreground shrink-0">
+                    <X size={11} />
+                  </button>
+                </div>
+              </motion.div>
+            ) : null
+          )}
 
         </motion.div>
 
