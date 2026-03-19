@@ -531,13 +531,6 @@ export default function GroceryPage() {
         )}
       </AnimatePresence>
 
-        {/* Floating Add Button */}
-        <button
-          onClick={() => setShowNewList(true)}
-          className="fixed bottom-above-nav right-5 w-14 h-14 rounded-full love-gradient text-primary-foreground flex items-center justify-center shadow-elevated z-40"
-        >
-          <Plus size={24} />
-        </button>
     </PageTransition>
   );
 }

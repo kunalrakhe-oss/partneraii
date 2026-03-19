@@ -816,36 +816,6 @@ export default function CalendarPage() {
         </div>
 
 
-        {/* FAB with menu */}
-        {showFabMenu && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-            className="fixed right-5 z-50 flex flex-col gap-2 items-end" style={{ bottom: 'calc(var(--nav-total) + 4.5rem)' }}
-          >
-            <button
-              onClick={() => { setShowFabMenu(false); openAddForm(); }}
-              className="flex items-center gap-2 bg-card text-foreground px-4 py-2.5 rounded-2xl shadow-elevated border border-border text-sm font-semibold"
-            >
-              <CalendarPlus size={16} className="text-primary" /> Add Event
-            </button>
-            <button
-              onClick={() => { setShowFabMenu(false); setShowDietForm(true); }}
-              className="flex items-center gap-2 bg-card text-foreground px-4 py-2.5 rounded-2xl shadow-elevated border border-border text-sm font-semibold"
-            >
-              <span className="text-base">🥗</span> Add Diet Item
-            </button>
-          </motion.div>
-        )}
-        {showFabMenu && (
-          <div className="fixed inset-0 z-40" onClick={() => setShowFabMenu(false)} />
-        )}
-        <button
-          onClick={() => setShowFabMenu(prev => !prev)}
-          className="fixed bottom-above-nav right-5 max-w-lg love-gradient text-primary-foreground w-12 h-12 rounded-full flex items-center justify-center shadow-elevated z-50"
-        >
-          <Plus size={22} className={`transition-transform ${showFabMenu ? "rotate-45" : ""}`} />
-        </button>
-
         {/* Diet Form Bottom Sheet */}
         <AnimatePresence>
           {showDietForm && <CalendarDietForm t={t}

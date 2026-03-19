@@ -47,6 +47,7 @@ export default function HomePage() {
   const [messageCount, setMessageCount] = useState(0);
   const [nextEvent, setNextEvent] = useState<NextEvent | null>(null);
   const [showAddEvent, setShowAddEvent] = useState(false);
+  usePageFab([{ label: "Add Event", icon: CalendarPlus, onTap: () => setShowAddEvent(true) }]);
   const [showMoodPopup, setShowMoodPopup] = useState(false);
   const [moodReaction, setMoodReaction] = useState("");
   const [sendingReaction, setSendingReaction] = useState(false);
