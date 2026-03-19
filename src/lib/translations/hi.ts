@@ -397,7 +397,7 @@ export const hi: TranslationKeys = {
     voiceDisabled: "वॉइस असिस्टेंट निष्क्रिय",
 
     // Install
-    installLoveLists: "PartnerAI इंस्टॉल करें",
+    installLoveLists: "PAI इंस्टॉल करें",
     installSafari: "Safari में शेयर → होम स्क्रीन में जोड़ें टैप करें",
     alreadyAvailable: "पहले से उपलब्ध",
     useBrowserMenu: "ऐप इंस्टॉल करने के लिए ब्राउज़र मेनू का उपयोग करें",
