@@ -275,7 +275,7 @@ export default function HealthPage() {
               <>
                 <Card className="p-4">
                   <p className="text-sm font-semibold mb-2 flex items-center gap-2"><Footprints size={14} className="text-blue-500" /> Steps</p>
-                  <div className="h-40">
+                  <div className="h-40 sm:h-56">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={chartData}>
                         <defs><linearGradient id="stepsGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} /><stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} /></linearGradient></defs>
