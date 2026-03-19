@@ -1,65 +1,73 @@
 
 
-# Plan: Move Login After Onboarding Data Collection
+# Plan: Recreate Home Screen as a Personalized Life Dashboard
 
-## Current flow
-1. **Onboarding** (unauthenticated): Language → Slides → Mode → redirects to `/auth`
-2. **Auth**: Email magic link login
-3. **PostAuthSetup** (authenticated): Language → Mode → Name → Priorities → Life Goals → Daily Habits → AI Profile → Confirm
+## Problem
+The current HomePage is 861 lines of tightly coupled code — a monolith mixing mood popups, chore management, partner mood reactions, emoji pickers, and analytics fetching. It's visually cluttered with many widgets competing for attention rather than guiding the user toward their goals.
 
-Problem: User hits a login wall before giving any preferences. The selection screens in PostAuthSetup duplicate some onboarding steps.
+## Design Vision
+A clean, focused **"Mission Control"** home screen that reflects PAI's core promise: *one AI that helps you live better*. Organized around the user's chosen priorities from onboarding, with clear visual hierarchy.
 
-## New flow
+### Layout (top to bottom)
 
-```text
-Onboarding (no login required):
-  Language → Entry → Slides → Mode → Name → Priorities → Life Goals → Daily Habits
-  → "Save your progress!" login prompt (email magic link inline)
+1. **Header** — Greeting + date + profile button + notification bell (keep existing logic, simplify)
 
-After auth:
-  → Auto-save all cached data to DB → Generate AI profile → Home
-```
+2. **AI Coach Strip** — Compact glass card with a one-line personalized nudge from the AI coach + tap to expand into the chat. Replaces the large AICoachCard.
 
-## Changes
+3. **Today's Focus Ring** — A horizontal scroll of 3-4 circular "focus cards" generated from the user's daily goals (from onboarding). Each shows an icon + short label (e.g., "Workout", "Read 30m", "Track Budget"). Tap toggles completion with a satisfying check animation. This is the centerpiece.
 
-### 1. `src/pages/OnboardingFlow.tsx` — Add selection steps + inline login
+4. **Priority Pillars** — The 4 pillars (Healthy, Happy, Wealthy, Successful) as a 2x2 grid of glass cards. Each card shows the pillar icon, label, and a count/status line (e.g., "3 active plans", "Mood: Happy"). Tap opens the orbital feature picker (existing FeatureBubbles logic).
 
-- Add 4 new steps after `mode`: `name`, `priorities`, `life-goals`, `daily-habits`, then `save-progress` (login prompt)
-- Reuse the same `ChipSelector` component and option arrays from PostAuthSetup
-- Store all selections in localStorage as JSON (`lovelist-onboard-data`: `{ name, priorities, lifeGoals, dailyHabits }`)
-- The `save-progress` step shows: "Want to save your progress? Sign in with a quick email link" with the email input + send magic link button (same logic as AuthPage)
-- After mode selection, instead of redirecting to `/auth`, proceed to `name` step
-- Remove the old `setup-names`, `setup-relationship`, `setup-connect`, `setup-start` steps (these will move to post-auth or be handled differently)
+5. **Quick Glance Cards** — A horizontal scroll of compact stat cards:
+   - Next event (date + title)
+   - Pending chores count
+   - Grocery items left
+   - Streak/days active
 
-### 2. `src/pages/PostAuthSetup.tsx` — Simplify to data-saving + AI profile generation
+6. **Active Plans Strip** — If user has active recovery/diet plans, show as a compact horizontal list of pill-shaped cards with plan name + day count.
 
-- On mount, read `lovelist-onboard-data` from localStorage
-- If data exists: auto-save name/mode to `profiles`, call AI to generate profile, save to `user_preferences`, clear localStorage, navigate to home (or `/connect` for couple mode)
-- If no cached data: fall back to existing selection flow (for users who somehow skip onboarding)
-- Remove the language/mode steps (already done in onboarding)
+7. **Daily Insight** — Small AI insight banner at the bottom (keep existing logic, compact UI).
 
-### 3. `src/pages/AuthPage.tsx` — Keep as fallback route
+### What gets removed/simplified
+- Partner mood popup with emoji picker and reaction flow → move to dedicated Mood page
+- Inline chore management (add chore form) → chores page only
+- "Make it Real" demo banner → handled by DemoBanner component already
+- Inline AddEventModal → calendar page
+- Mood check-in cards → simplified to a single tap-to-log button inside "Happy" pillar
+- 800+ lines → target ~300 lines by extracting sections into small components
 
-- Still accessible at `/auth` for direct navigation
-- No changes needed
+### File Changes
 
-### 4. `src/App.tsx` — Minor routing adjustment
+1. **`src/pages/HomePage.tsx`** — Complete rewrite (~300 lines):
+   - Keep data fetching hooks (profile, events, chores, preferences, plans)
+   - Remove: mood popup, chore add form, emoji picker, reaction logic
+   - New sections: TodayFocusRing, PillarGrid, QuickGlanceScroll, ActivePlansStrip
+   - Import extracted components
 
-- Unauthenticated users can access `/onboarding` (already works)
-- After auth, the `needsSetup` check still routes to `/setup` which now auto-processes cached data
+2. **`src/components/home/TodayFocusRing.tsx`** — New component:
+   - Horizontal scroll of daily goal chips from `user_preferences.daily_goals`
+   - Tap to toggle check (local state, optionally persist)
+   - Glass pill style with check animation
 
-### UX of the login prompt step
+3. **`src/components/home/PillarGrid.tsx`** — New component:
+   - 2x2 grid of the 4 pillars (reuse pillar data from FeatureBubbles)
+   - Each card: icon + label + contextual subtitle
+   - Tap opens the existing FeatureBubbles orbital popup
 
-The "save-progress" step will show:
-- Headline: "Save your progress"
-- Subtext: "Sign in with a quick email link to keep your personalized plan"
-- Email input + "Send Sign-In Link" button (reuses AuthPage magic link logic)
-- After sending: "Check your inbox" confirmation with resend option
-- Small "Skip for now" link that enters demo mode
+4. **`src/components/home/QuickGlanceScroll.tsx`** — New component:
+   - Horizontal scroll of compact stat cards (next event, chores, groceries, streak)
+   - Each card links to its respective page
 
-### Data flow
+5. **`src/components/home/AICoachStrip.tsx`** — New component:
+   - Compact glass bar with AI sparkle icon + one-line greeting/nudge
+   - Tap navigates to `/chat?tab=ai`
 
-- All selections cached in `localStorage` under `lovelist-onboard-data`
-- After successful auth → redirect to `/setup` → PostAuthSetup reads cache → saves to DB → generates AI profile → navigates to home
-- Cache is cleared after successful save
+6. **Keep unchanged**: `FeatureBubbles.tsx` (reuse for orbital popup), `AICoachCard.tsx` (deprecated but not deleted yet), `ProfileButton.tsx`, `NotificationsPanel.tsx`, `PageTransition.tsx`, all hooks and contexts.
+
+### Visual Style
+- All cards use glass morphism (existing `rounded-glass`, `backdrop-blur-glass`, `shadow-card`)
+- Focus ring items use `love-gradient` for completed state
+- Pillar cards use subtle gradient backgrounds matching their theme color
+- Horizontal scrolls use `overflow-x-auto scrollbar-hide` with `snap-x`
+- Stagger animation on mount (existing framer-motion container/item pattern)
 
