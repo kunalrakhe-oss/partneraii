@@ -1,5 +1,6 @@
 import { Heart, ShoppingCart, MessageSquare, Check, Sparkles, Plus, Camera, CalendarDays, Clock, Image, Trophy, Loader2, RefreshCw, X, Send, Bell, Users, BookOpen, Rocket, BookHeart, Dumbbell, Apple, Baby, Shield, Activity, HeartPulse, MapPin, Wallet, PartyPopper, Flame, Brain, Target, Salad, Moon, CalendarPlus } from "lucide-react";
 import FeatureBubbles from "@/components/FeatureBubbles";
+import DayIntentPicker from "@/components/DayIntentPicker";
 import ProfileButton from "@/components/ProfileButton";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
