@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import partneraiIcon from "@/assets/partnerai-icon.png";
+
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Heart, ArrowRight, ArrowLeft, ChevronRight, ChevronLeft, Sparkles, Users, MessageCircle, Brain, Camera, ClipboardList, Smile, Send, Copy, Keyboard, Link2, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDemo } from "@/contexts/DemoContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import onboardingHero from "@/assets/onboarding-hero.jpg";
+
 
 type Step = "language" | "entry" | "slides" | "mode" | "demo" | "setup-names" | "setup-relationship" | "setup-connect" | "setup-start" | "done";
 
@@ -379,9 +379,9 @@ export default function OnboardingFlow() {
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-                className="w-20 h-20 rounded-full overflow-hidden mb-6 shadow-elevated"
+                className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mb-6 shadow-elevated ring-2 ring-primary/20"
               >
-                <img src={partneraiIcon} alt="PartnerAI" className="w-full h-full object-contain" />
+                <Sparkles size={32} className="text-primary" />
               </motion.div>
 
               <motion.h1
@@ -401,14 +401,6 @@ export default function OnboardingFlow() {
                 Your life, organized.
               </motion.p>
 
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 }}
-                className="w-48 h-48 rounded-full overflow-hidden mt-10 shadow-elevated border-4 border-card"
-              >
-                <img src={onboardingHero} alt="Get Started" className="w-full h-full object-cover" />
-              </motion.div>
             </div>
 
             <motion.div
