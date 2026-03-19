@@ -622,6 +622,18 @@ export default function CalendarPage() {
 
         {/* Content area */}
         <div className="flex-1 overflow-y-auto">
+          {viewMode === "week" && (
+            <WeekView
+              currentDate={currentDate}
+              selectedDate={selectedDate}
+              events={events}
+              onSelectDate={(d) => setSelectedDate(d)}
+              onEditEvent={openEditForm}
+              onToggle={toggleComplete}
+              onAddEvent={() => openAddForm()}
+            />
+          )}
+
           {viewMode === "day" && (
             <>
               {/* Today's / Selected day's events */}
