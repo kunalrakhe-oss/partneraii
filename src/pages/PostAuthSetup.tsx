@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -6,16 +6,9 @@ import { LANGUAGE_OPTIONS } from "@/lib/translations";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Users, ArrowRight, Check, Loader2, Sparkles, Globe, Send } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import ReactMarkdown from "react-markdown";
+import { User, Users, ArrowRight, Check, Loader2, Sparkles, Globe, Plus, X } from "lucide-react";
 
-type Step = "language" | "mode" | "name" | "ai-interview";
-
-interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-}
+type Step = "language" | "mode" | "name" | "priorities" | "life-goals" | "daily-habits" | "generating" | "confirm";
 
 interface ProfileData {
   priorities: string[];
@@ -23,6 +16,99 @@ interface ProfileData {
   daily_goals: string[];
   morning_routine: string;
   profile_summary: string;
+}
+
+const PRIORITY_OPTIONS = [
+  "Health & Fitness", "Financial Freedom", "Career Growth", "Relationships",
+  "Mental Wellness", "Productivity", "Education", "Spirituality",
+];
+
+const LIFE_GOAL_OPTIONS = [
+  "Become debt free", "Earn first million", "Run a marathon", "Lose weight",
+  "Build a business", "Learn a new skill", "Travel the world", "Buy a home", "Get promoted",
+];
+
+const DAILY_HABIT_OPTIONS = [
+  "Morning workout", "Meditate 10 min", "Track expenses", "Read 30 min",
+  "Meal prep", "Journal", "Walk 10k steps", "No screen before bed",
+];
+
+function ChipSelector({
+  options,
+  selected,
+  onToggle,
+  onAddCustom,
+}: {
+  options: string[];
+  selected: string[];
+  onToggle: (item: string) => void;
+  onAddCustom: (item: string) => void;
+}) {
+  const [otherText, setOtherText] = useState("");
+
+  const handleAdd = () => {
+    const trimmed = otherText.trim();
+    if (trimmed && !selected.includes(trimmed)) {
+      onAddCustom(trimmed);
+      setOtherText("");
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {options.map((opt) => {
+          const isSelected = selected.includes(opt);
+          return (
+            <button
+              key={opt}
+              onClick={() => onToggle(opt)}
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-medium transition-all border-2 ${
+                isSelected
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border bg-card text-foreground hover:border-primary/30"
+              }`}
+            >
+              {isSelected && <Check size={14} className="text-primary" />}
+              {opt}
+            </button>
+          );
+        })}
+        {/* Custom chips */}
+        {selected
+          .filter((s) => !options.includes(s))
+          .map((custom) => (
+            <button
+              key={custom}
+              onClick={() => onToggle(custom)}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl text-sm font-medium border-2 border-primary bg-primary/10 text-primary transition-all"
+            >
+              <Check size={14} />
+              {custom}
+              <X size={12} className="ml-0.5 opacity-60" />
+            </button>
+          ))}
+      </div>
+
+      {/* Other input */}
+      <div className="flex gap-2">
+        <input
+          value={otherText}
+          onChange={(e) => setOtherText(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+          placeholder="Add your own..."
+          className="flex-1 bg-muted rounded-xl px-4 py-2.5 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        <button
+          onClick={handleAdd}
+          disabled={!otherText.trim()}
+          className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40"
+        >
+          <Plus size={18} />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export default function PostAuthSetup() {
@@ -50,82 +136,63 @@ export default function PostAuthSetup() {
   const [name, setName] = useState(looksLikeRealName ? rawName : "");
   const [saving, setSaving] = useState(false);
 
-  // AI Interview state
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [chatInput, setChatInput] = useState("");
-  const [chatLoading, setChatLoading] = useState(false);
+  // Selection state
+  const [priorities, setPriorities] = useState<string[]>([]);
+  const [lifeGoals, setLifeGoals] = useState<string[]>([]);
+  const [dailyHabits, setDailyHabits] = useState<string[]>([]);
   const [profileResult, setProfileResult] = useState<ProfileData | null>(null);
-  const [interviewStarted, setInterviewStarted] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll chat
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [chatMessages, chatLoading]);
+  const toggleItem = (list: string[], setList: (v: string[]) => void, item: string) => {
+    setList(list.includes(item) ? list.filter((i) => i !== item) : [...list, item]);
+  };
 
-  // Start the AI interview when entering the step
-  useEffect(() => {
-    if (step === "ai-interview" && !interviewStarted) {
-      setInterviewStarted(true);
-      sendToAI("Hi, I'm ready to get started!");
-    }
-  }, [step, interviewStarted]);
+  const totalSteps = 6;
+  const stepIndex = ["language", "mode", "name", "priorities", "life-goals", "daily-habits"].indexOf(step);
 
-  const sendToAI = async (messageText: string) => {
-    if (chatLoading) return;
-    setChatLoading(true);
-
-    const userMsg: ChatMessage = { role: "user", content: messageText };
-    const updatedMessages = [...chatMessages, userMsg];
-    setChatMessages(updatedMessages);
-
+  const generateProfile = async () => {
+    setStep("generating");
     try {
       const { data, error } = await supabase.functions.invoke("ai-coach", {
         body: {
-          message: messageText,
-          history: updatedMessages.slice(0, -1).map(m => ({ role: m.role, content: m.content })),
           onboarding: true,
+          onboardingMode: "structured",
           userName: name.trim(),
           appMode: mode || "single",
           language,
+          priorities,
+          life_goals: lifeGoals,
+          daily_goals: dailyHabits,
         },
       });
 
       if (error) throw error;
 
       if (data?.action === "build_profile") {
-        const profile = data.data as ProfileData;
-        setProfileResult(profile);
-        setChatMessages(prev => [
-          ...prev,
-          { role: "assistant", content: `✨ I've got a great picture of who you are! Here's your personalized profile:` },
-        ]);
-      } else if (data?.action === "chat_response") {
-        const msg = data.data?.message || "Tell me more!";
-        setChatMessages(prev => [...prev, { role: "assistant", content: msg }]);
+        setProfileResult(data.data as ProfileData);
+        setStep("confirm");
       } else {
-        setChatMessages(prev => [...prev, { role: "assistant", content: data?.data?.message || "What else would you like to share?" }]);
+        // Fallback: use selections directly
+        setProfileResult({
+          priorities,
+          life_goals: lifeGoals,
+          daily_goals: dailyHabits,
+          morning_routine: dailyHabits.some((h) => h.toLowerCase().includes("workout")) ? "workout" : "planning",
+          profile_summary: data?.data?.message || `${name} is on a mission to level up their life.`,
+        });
+        setStep("confirm");
       }
     } catch (err: any) {
-      console.error("AI interview error:", err);
-      setChatMessages(prev => [
-        ...prev,
-        { role: "assistant", content: "Sorry, I had a moment. Could you tell me that again? 😊" },
-      ]);
-    } finally {
-      setChatLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 100);
+      console.error("Profile generation error:", err);
+      // Fallback gracefully
+      setProfileResult({
+        priorities,
+        life_goals: lifeGoals,
+        daily_goals: dailyHabits,
+        morning_routine: "planning",
+        profile_summary: `${name.trim()} is ready to build an extraordinary life.`,
+      });
+      setStep("confirm");
     }
-  };
-
-  const handleChatSend = () => {
-    const text = chatInput.trim();
-    if (!text || chatLoading) return;
-    setChatInput("");
-    sendToAI(text);
   };
 
   const handleConfirmProfile = async () => {
@@ -156,6 +223,20 @@ export default function PostAuthSetup() {
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center px-6">
+      {/* Progress dots */}
+      {stepIndex >= 0 && step !== "generating" && step !== "confirm" && (
+        <div className="fixed top-6 left-0 right-0 flex justify-center gap-1.5 z-10">
+          {Array.from({ length: totalSteps }).map((_, i) => (
+            <div
+              key={i}
+              className={`h-1.5 rounded-full transition-all ${
+                i <= stepIndex ? "w-6 bg-primary" : "w-1.5 bg-muted-foreground/20"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+
       <AnimatePresence mode="wait">
         {/* LANGUAGE STEP */}
         {step === "language" && (
@@ -168,7 +249,7 @@ export default function PostAuthSetup() {
               <p className="text-sm text-muted-foreground">{t("setup.chooseLangDesc")}</p>
             </div>
             <div className="space-y-3">
-              {LANGUAGE_OPTIONS.map(opt => {
+              {LANGUAGE_OPTIONS.map((opt) => {
                 const selected = language === opt.value;
                 return (
                   <button
@@ -268,13 +349,13 @@ export default function PostAuthSetup() {
             </div>
             <input
               value={name}
-              onChange={e => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value)}
               placeholder={t("setup.namePlaceholder")}
               className="w-full bg-muted rounded-xl px-4 py-3.5 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring text-center"
               autoFocus
             />
             <button
-              onClick={() => name.trim() ? setStep("ai-interview") : toast({ title: t("setup.enterName"), variant: "destructive" })}
+              onClick={() => name.trim() ? setStep("priorities") : toast({ title: t("setup.enterName"), variant: "destructive" })}
               disabled={!name.trim()}
               className="w-full bg-primary text-primary-foreground font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2"
             >
@@ -284,134 +365,137 @@ export default function PostAuthSetup() {
           </motion.div>
         )}
 
-        {/* AI INTERVIEW STEP */}
-        {step === "ai-interview" && (
-          <motion.div key="ai-interview" {...anim} className="w-full max-w-md flex flex-col h-[100dvh] py-4">
-            {/* Header */}
-            <div className="text-center mb-3 flex-shrink-0">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-2">
-                <Sparkles size={24} className="text-primary" />
+        {/* PRIORITIES STEP */}
+        {step === "priorities" && (
+          <motion.div key="priorities" {...anim} className="w-full max-w-md space-y-6">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-foreground mb-2">What matters most to you?</h1>
+              <p className="text-sm text-muted-foreground">Pick your top priorities — select all that apply</p>
+            </div>
+            <ChipSelector
+              options={PRIORITY_OPTIONS}
+              selected={priorities}
+              onToggle={(item) => toggleItem(priorities, setPriorities, item)}
+              onAddCustom={(item) => setPriorities([...priorities, item])}
+            />
+            <button
+              onClick={() => setStep("life-goals")}
+              disabled={priorities.length === 0}
+              className="w-full bg-primary text-primary-foreground font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2"
+            >
+              {t("common.continue")} <ArrowRight size={16} />
+            </button>
+            <button onClick={() => setStep("name")} className="text-xs text-muted-foreground mx-auto block">← {t("common.back")}</button>
+          </motion.div>
+        )}
+
+        {/* LIFE GOALS STEP */}
+        {step === "life-goals" && (
+          <motion.div key="life-goals" {...anim} className="w-full max-w-md space-y-6">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-foreground mb-2">What are your life goals?</h1>
+              <p className="text-sm text-muted-foreground">Dream big — what do you want to achieve?</p>
+            </div>
+            <ChipSelector
+              options={LIFE_GOAL_OPTIONS}
+              selected={lifeGoals}
+              onToggle={(item) => toggleItem(lifeGoals, setLifeGoals, item)}
+              onAddCustom={(item) => setLifeGoals([...lifeGoals, item])}
+            />
+            <button
+              onClick={() => setStep("daily-habits")}
+              disabled={lifeGoals.length === 0}
+              className="w-full bg-primary text-primary-foreground font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2"
+            >
+              {t("common.continue")} <ArrowRight size={16} />
+            </button>
+            <button onClick={() => setStep("priorities")} className="text-xs text-muted-foreground mx-auto block">← {t("common.back")}</button>
+          </motion.div>
+        )}
+
+        {/* DAILY HABITS STEP */}
+        {step === "daily-habits" && (
+          <motion.div key="daily-habits" {...anim} className="w-full max-w-md space-y-6">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-foreground mb-2">Daily habits to build</h1>
+              <p className="text-sm text-muted-foreground">Small steps every day lead to big results</p>
+            </div>
+            <ChipSelector
+              options={DAILY_HABIT_OPTIONS}
+              selected={dailyHabits}
+              onToggle={(item) => toggleItem(dailyHabits, setDailyHabits, item)}
+              onAddCustom={(item) => setDailyHabits([...dailyHabits, item])}
+            />
+            <button
+              onClick={generateProfile}
+              disabled={dailyHabits.length === 0}
+              className="w-full bg-primary text-primary-foreground font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2"
+            >
+              <Sparkles size={16} /> Build My Profile
+            </button>
+            <button onClick={() => setStep("life-goals")} className="text-xs text-muted-foreground mx-auto block">← {t("common.back")}</button>
+          </motion.div>
+        )}
+
+        {/* GENERATING STEP */}
+        {step === "generating" && (
+          <motion.div key="generating" {...anim} className="w-full max-w-sm text-center space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+              <Loader2 size={32} className="text-primary animate-spin" />
+            </div>
+            <h1 className="text-xl font-bold text-foreground">Building your profile...</h1>
+            <p className="text-sm text-muted-foreground">Our AI is creating your personalized plan ✨</p>
+          </motion.div>
+        )}
+
+        {/* CONFIRM STEP */}
+        {step === "confirm" && profileResult && (
+          <motion.div key="confirm" {...anim} className="w-full max-w-md space-y-5">
+            <div className="text-center">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <Sparkles size={28} className="text-primary" />
               </div>
-              <h1 className="text-lg font-bold text-foreground">Your AI Life Coach</h1>
-              <p className="text-xs text-muted-foreground">Let's build your personalized profile</p>
+              <h1 className="text-2xl font-bold text-foreground mb-1">Your Profile</h1>
+              <p className="text-sm text-muted-foreground italic">"{profileResult.profile_summary}"</p>
             </div>
 
-            {/* Chat messages */}
-            <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-3 px-1 mb-3">
-              {chatMessages.filter((m, i) => !(i === 0 && m.role === "user")).map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
-                      msg.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-card border border-border text-foreground rounded-bl-md"
-                    }`}
-                  >
-                    {msg.role === "assistant" ? (
-                      <div className="prose prose-sm dark:prose-invert max-w-none [&>p]:mb-1 [&>p:last-child]:mb-0">
-                        <ReactMarkdown>{msg.content}</ReactMarkdown>
-                      </div>
-                    ) : (
-                      msg.content
-                    )}
-                  </div>
+            <div className="bg-card border-2 border-primary/20 rounded-2xl p-5 space-y-4">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Priorities</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {profileResult.priorities.map((p) => (
+                    <span key={p} className="bg-primary/10 text-primary px-2.5 py-1 rounded-full text-xs font-semibold">{p}</span>
+                  ))}
                 </div>
-              ))}
+              </div>
 
-              {chatLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-card border border-border rounded-2xl rounded-bl-md px-4 py-3">
-                    <div className="flex gap-1.5">
-                      <div className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <div className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <div className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                    </div>
-                  </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Life Goals</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {profileResult.life_goals.map((g) => (
+                    <span key={g} className="bg-accent/50 text-accent-foreground px-2.5 py-1 rounded-full text-xs font-medium">{g}</span>
+                  ))}
                 </div>
-              )}
+              </div>
 
-              {/* Profile result card */}
-              {profileResult && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-card border-2 border-primary/20 rounded-2xl p-5 space-y-4"
-                >
-                  <p className="text-sm font-medium text-muted-foreground italic">"{profileResult.profile_summary}"</p>
-
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Priorities</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {profileResult.priorities.map(p => (
-                          <span key={p} className="bg-primary/10 text-primary px-2.5 py-1 rounded-full text-xs font-semibold">{p}</span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Life Goals</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {profileResult.life_goals.map(g => (
-                          <span key={g} className="bg-accent/50 text-accent-foreground px-2.5 py-1 rounded-full text-xs font-medium">{g}</span>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Daily Habits</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {profileResult.daily_goals.map(d => (
-                          <span key={d} className="bg-muted text-muted-foreground px-2.5 py-1 rounded-full text-xs font-medium">{d}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={handleConfirmProfile}
-                    disabled={saving}
-                    className="w-full bg-primary text-primary-foreground font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2 mt-2"
-                  >
-                    {saving ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                    Looks great, let's go! 🚀
-                  </button>
-                </motion.div>
-              )}
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Daily Habits</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {profileResult.daily_goals.map((d) => (
+                    <span key={d} className="bg-muted text-muted-foreground px-2.5 py-1 rounded-full text-xs font-medium">{d}</span>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* Input area */}
-            {!profileResult && (
-              <div className="flex-shrink-0 flex gap-2 px-1">
-                <input
-                  ref={inputRef}
-                  value={chatInput}
-                  onChange={e => setChatInput(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && handleChatSend()}
-                  placeholder="Type your answer..."
-                  disabled={chatLoading}
-                  className="flex-1 bg-muted rounded-xl px-4 py-3 text-sm text-foreground border border-border focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
-                  autoFocus
-                />
-                <button
-                  onClick={handleChatSend}
-                  disabled={!chatInput.trim() || chatLoading}
-                  className="w-11 h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40"
-                >
-                  <Send size={18} />
-                </button>
-              </div>
-            )}
-
-            {/* Back button */}
-            {!profileResult && chatMessages.length <= 1 && (
-              <button
-                onClick={() => { setStep("name"); setInterviewStarted(false); setChatMessages([]); }}
-                className="text-xs text-muted-foreground mt-2 text-center"
-              >
-                ← {t("common.back")}
-              </button>
-            )}
+            <button
+              onClick={handleConfirmProfile}
+              disabled={saving}
+              className="w-full bg-primary text-primary-foreground font-semibold py-3.5 rounded-xl disabled:opacity-40 flex items-center justify-center gap-2"
+            >
+              {saving ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+              Looks great, let's go! 🚀
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
