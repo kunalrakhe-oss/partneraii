@@ -79,44 +79,54 @@ export default function AppLayout() {
           <Outlet />
         </div>
       </PageFabProvider>
-      <nav className="fixed bottom-0 left-0 right-0 glass-card border-t border-border/50 safe-bottom z-50">
-        <div className="flex items-center justify-around" style={{ height: 'var(--nav-h)' }}>
-          {tabs.map(({ to, icon: Icon, labelKey }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === "/"}
-              className="relative flex flex-col items-center gap-0.5 px-3 py-2"
-            >
-              {({ isActive }) => (
-                <>
-                  {isActive && (
+      {/* Floating glass pill nav bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <div
+          className="mx-auto max-w-md rounded-glass border border-border/30 shadow-elevated"
+          style={{
+            background: 'var(--glass-bg-strong)',
+            backdropFilter: 'blur(60px) saturate(2)',
+            WebkitBackdropFilter: 'blur(60px) saturate(2)',
+          }}
+        >
+          <div className="flex items-center justify-around" style={{ height: 'var(--nav-h)' }}>
+            {tabs.map(({ to, icon: Icon, labelKey }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === "/"}
+                className="relative flex flex-col items-center gap-0.5 px-3 py-2"
+              >
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <motion.div
+                        layoutId="tab-indicator"
+                        className="absolute -top-0.5 left-3 right-3 h-[3px] love-gradient rounded-full shadow-glow"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
                     <motion.div
-                      layoutId="tab-indicator"
-                      className="absolute -top-0.5 left-3 right-3 h-[3px] love-gradient rounded-full shadow-glow"
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                  <motion.div
-                    animate={isActive ? { scale: 1.15 } : { scale: 1 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  >
-                    <Icon
-                      size={20}
-                      className={isActive ? "text-primary drop-shadow-sm" : "text-muted-foreground"}
-                    />
-                  </motion.div>
-                  <span
-                    className={`text-[10px] font-semibold tracking-wide ${
-                      isActive ? "text-primary" : "text-muted-foreground"
-                    }`}
-                  >
-                    {t(labelKey)}
-                  </span>
-                </>
-              )}
-            </NavLink>
-          ))}
+                      animate={isActive ? { scale: 1.15 } : { scale: 1 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    >
+                      <Icon
+                        size={20}
+                        className={isActive ? "text-primary drop-shadow-sm" : "text-muted-foreground"}
+                      />
+                    </motion.div>
+                    <span
+                      className={`text-[10px] font-semibold tracking-wide ${
+                        isActive ? "text-primary" : "text-muted-foreground"
+                      }`}
+                    >
+                      {t(labelKey)}
+                    </span>
+                  </>
+                )}
+              </NavLink>
+            ))}
+          </div>
         </div>
       </nav>
     </div>
