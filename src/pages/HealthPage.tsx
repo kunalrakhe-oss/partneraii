@@ -258,7 +258,68 @@ export default function HealthPage() {
                 );
               })}
             </div>
-            <Input
+
+            {/* Water Intake Tap Widget */}
+            <Card className="p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Droplets size={18} className="text-cyan-500" />
+                  <span className="text-sm font-semibold text-foreground">Water Intake</span>
+                </div>
+                <span className="text-xs text-muted-foreground">{waterCount} × 250ml = {waterCount * 250}ml</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="flex flex-1 gap-1.5 flex-wrap">
+                  {Array.from({ length: WATER_GOAL }).map((_, i) => (
+                    <motion.button
+                      key={i}
+                      type="button"
+                      whileTap={{ scale: 1.3 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                      onClick={() => {
+                        const newVal = i < waterCount ? i : i + 1;
+                        setForm(p => ({ ...p, water_glasses: newVal.toString() }));
+                      }}
+                      className="focus:outline-none"
+                    >
+                      <Droplets
+                        size={28}
+                        className={i < waterCount ? "text-cyan-500 fill-cyan-500/30" : "text-muted-foreground/30"}
+                      />
+                    </motion.button>
+                  ))}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setForm(p => ({ ...p, water_glasses: Math.min(waterCount + 1, 20).toString() }))}
+                  >
+                    <Plus size={14} />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    disabled={waterCount <= 0}
+                    onClick={() => setForm(p => ({ ...p, water_glasses: Math.max(waterCount - 1, 0).toString() }))}
+                  >
+                    <Minus size={14} />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Progress value={waterPercent} className="h-2" />
+                <p className="text-xs text-muted-foreground text-right">
+                  {waterPercent >= 100 ? "🎉 Goal reached!" : `${Math.round(waterPercent)}% of 2L goal`}
+                </p>
+              </div>
+            </Card>
               placeholder="Notes (optional)"
               value={form.notes}
               onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
