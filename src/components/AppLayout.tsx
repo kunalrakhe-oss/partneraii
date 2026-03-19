@@ -68,6 +68,7 @@ export default function AppLayout() {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-background relative">
       <DemoBanner />
+      <PushPermissionPrompt />
       {!isSingle && <PartnerNotifications />}
       
       <GatedVoiceAssistant />

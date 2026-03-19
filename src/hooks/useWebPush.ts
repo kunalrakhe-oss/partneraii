@@ -38,7 +38,7 @@ export function useWebPush() {
       let subscription = await reg.pushManager.getSubscription();
       if (!subscription) {
       subscription = await reg.pushManager.subscribe({
-          userVisuallyIndicatesPermission: true,
+          userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY).buffer as ArrayBuffer,
         });
       }
