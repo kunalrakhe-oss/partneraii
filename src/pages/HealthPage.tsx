@@ -291,7 +291,7 @@ export default function HealthPage() {
 
                 <Card className="p-4">
                   <p className="text-sm font-semibold mb-2 flex items-center gap-2"><Heart size={14} className="text-red-500" /> Heart Rate & <Moon size={14} className="text-indigo-500" /> Sleep</p>
-                  <div className="h-40">
+                  <div className="h-40 sm:h-56">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={chartData}>
                         <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" />
