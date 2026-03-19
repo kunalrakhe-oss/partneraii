@@ -1020,27 +1020,29 @@ export default function ChoresPage() {
                   </div>
 
                   {/* Assignment section */}
-                  <div className="bg-card rounded-2xl border border-border overflow-hidden divide-y divide-border/50">
-                    <div className="px-4 py-3 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-accent/60 flex items-center justify-center">
-                          <Users size={16} className="text-foreground/70" />
+                  {!isSingle && (
+                    <div className="bg-card rounded-2xl border border-border overflow-hidden divide-y divide-border/50">
+                      <div className="px-4 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-accent/60 flex items-center justify-center">
+                            <Users size={16} className="text-foreground/70" />
+                          </div>
+                          <span className="text-sm text-foreground font-medium">Assign To</span>
                         </div>
-                        <span className="text-sm text-foreground font-medium">Assign To</span>
+                        <select
+                          value={newAssign}
+                          onChange={e => setNewAssign(e.target.value)}
+                          className="text-sm text-primary font-medium bg-transparent text-right appearance-none focus:outline-none cursor-pointer pr-0"
+                        >
+                          <option value="">Both</option>
+                          <option value="me">{myProfile?.display_name || "Me"}</option>
+                          {partnerProfile && (
+                            <option value="partner">{partnerProfile.display_name || "Partner"}</option>
+                          )}
+                        </select>
                       </div>
-                      <select
-                        value={newAssign}
-                        onChange={e => setNewAssign(e.target.value)}
-                        className="text-sm text-primary font-medium bg-transparent text-right appearance-none focus:outline-none cursor-pointer pr-0"
-                      >
-                        <option value="">Both</option>
-                        <option value="me">{myProfile?.display_name || "Me"}</option>
-                        {partnerProfile && (
-                          <option value="partner">{partnerProfile.display_name || "Partner"}</option>
-                        )}
-                      </select>
                     </div>
-                  </div>
+                  )}
 
                   {/* Link List Items */}
                   <div className="bg-card rounded-2xl border border-border overflow-hidden">
