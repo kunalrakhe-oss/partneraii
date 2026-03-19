@@ -71,9 +71,11 @@ export default function AppLayout() {
       <GatedVoiceAssistant />
       <CompletedTasksCleanup />
       <SmartCommandBar />
-      <div className="flex-1 overflow-y-auto pb-nav">
-        <Outlet />
-      </div>
+      <PageFabProvider>
+        <div className="flex-1 overflow-y-auto pb-nav">
+          <Outlet />
+        </div>
+      </PageFabProvider>
       <nav className="fixed bottom-0 left-0 right-0 glass-card border-t border-border/50 safe-bottom z-50">
         <div className="flex items-center justify-around" style={{ height: 'var(--nav-h)' }}>
           {tabs.map(({ to, icon: Icon, labelKey }) => (
