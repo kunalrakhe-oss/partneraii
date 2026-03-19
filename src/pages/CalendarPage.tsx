@@ -457,9 +457,18 @@ export default function CalendarPage() {
       navigate("/diet");
       return;
     }
-    // Chore/grocery items are view-only on calendar — just toggle completion
-    if (event._source === "chore" || event._source === "grocery") {
-      toast.info(`${event._source === "chore" ? "Chore" : "Grocery item"} — tap ✓ to toggle completion`);
+    // Chore items — toggle linked items expansion
+    if (event._source === "chore") {
+      const choreId = event._sourceId || "";
+      if (choreLinkedItems[choreId]?.length > 0) {
+        toggleChoreExpand(choreId);
+      } else {
+        toast.info("Chore — tap ✓ to toggle completion");
+      }
+      return;
+    }
+    if (event._source === "grocery") {
+      toast.info("Grocery item — tap ✓ to toggle completion");
       return;
     }
     setEditingEvent(event);
