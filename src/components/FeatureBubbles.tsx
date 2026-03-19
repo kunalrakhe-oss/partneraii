@@ -134,7 +134,7 @@ export default function FeatureBubbles({ isSingle }: FeatureBubblesProps) {
         {activePillar && (() => {
           const PlanetIcon = activePillar.icon;
           const moons = activePillar.children;
-          const radius = 120; // Fixed radius for all categories
+          const radius = 140;
 
           return (
             <motion.div
