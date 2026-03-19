@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import partneraiIcon from "@/assets/partnerai-icon.png";
+
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Heart, ArrowRight, ArrowLeft, ChevronRight, ChevronLeft, Sparkles, Users, MessageCircle, Brain, Camera, ClipboardList, Smile, Send, Copy, Keyboard, Link2, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
