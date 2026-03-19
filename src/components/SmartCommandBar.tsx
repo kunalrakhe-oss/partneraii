@@ -109,47 +109,33 @@ export default function SmartCommandBar() {
     switch (action) {
       case "create_calendar_event":
         await supabase.from("calendar_events").insert({
-          ...base,
-          title: data.title!,
-          event_date: data.event_date!,
-          event_time: data.event_time || null,
-          category: data.category || "other",
-          description: data.description || null,
-          reminder: data.reminder || "none",
+          ...base, title: data.title!, event_date: data.event_date!,
+          event_time: data.event_time || null, category: data.category || "other",
+          description: data.description || null, reminder: data.reminder || "none",
         });
         break;
       case "create_chore":
         await supabase.from("chores").insert({
-          ...base,
-          title: data.title!,
-          due_date: data.due_date || null,
+          ...base, title: data.title!, due_date: data.due_date || null,
           recurrence: data.recurrence || null,
         });
         break;
       case "create_grocery_item":
         await supabase.from("grocery_items").insert({
-          ...base,
-          name: data.name!,
-          list_type: data.list_type || "grocery",
-          category: data.category || "other",
-          notes: data.notes || null,
+          ...base, name: data.name!, list_type: data.list_type || "grocery",
+          category: data.category || "other", notes: data.notes || null,
           priority: data.priority || "none",
         });
         break;
       case "create_memory":
         await supabase.from("memories").insert({
-          ...base,
-          title: data.title!,
-          description: data.description || null,
-          type: data.type!,
-          memory_date: data.memory_date || new Date().toISOString().split("T")[0],
+          ...base, title: data.title!, description: data.description || null,
+          type: data.type!, memory_date: data.memory_date || new Date().toISOString().split("T")[0],
         });
         break;
       case "create_mood_log":
         await supabase.from("mood_logs").insert({
-          ...base,
-          mood: data.mood!,
-          note: data.note || null,
+          ...base, mood: data.mood!, note: data.note || null,
         });
         break;
       default:
@@ -160,118 +146,79 @@ export default function SmartCommandBar() {
   if (!user) return null;
 
   return (
-    <div className="fixed bottom-[calc(var(--nav-h)+env(safe-area-inset-bottom)+4px)] left-3 right-3 z-50">
+    <div className="fixed bottom-[calc(var(--nav-h)+env(safe-area-inset-bottom)+4px)] left-0 right-0 z-50 px-3">
       <AnimatePresence mode="wait">
         {expanded ? (
           <motion.div
             key="panel"
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="rounded-2xl bg-card/95 backdrop-blur-lg border border-border/60 shadow-lg overflow-hidden"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ type: "spring", damping: 28, stiffness: 350 }}
+            className="space-y-2"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 pt-3 pb-2">
-              <div className="flex items-center gap-2">
-                <Sparkles size={16} className="text-primary" />
-                <span className="text-xs font-bold text-foreground tracking-wide">Quick Add</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={fetchSuggestions}
-                  disabled={loadingSuggestions}
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <RefreshCw size={14} className={loadingSuggestions ? "animate-spin" : ""} />
-                </button>
-                <button
-                  onClick={handleClose}
-                  className="w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            </div>
-
-            {/* Suggestions */}
-            <div className="px-3 pb-2">
+            {/* Horizontal scrollable suggestion chips */}
+            <div className="relative">
               {loadingSuggestions && suggestions.length === 0 ? (
-                <div className="flex items-center justify-center py-6 gap-2">
-                  <Loader2 size={16} className="text-primary animate-spin" />
-                  <span className="text-xs text-muted-foreground">Thinking of suggestions...</span>
+                <div className="flex items-center gap-2 px-1 py-2">
+                  <Loader2 size={14} className="text-primary animate-spin" />
+                  <span className="text-xs text-muted-foreground">Getting suggestions...</span>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-1.5">
+                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                   {suggestions.map((s, i) => (
                     <motion.button
                       key={i}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.05 }}
                       onClick={() => executePrompt(s.prompt)}
                       disabled={loading}
-                      className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-muted/60 hover:bg-muted text-left transition-colors active:scale-[0.97] disabled:opacity-50"
+                      className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-border/80 bg-card/90 backdrop-blur-md text-foreground text-xs font-medium shadow-sm hover:bg-muted active:scale-[0.96] transition-all disabled:opacity-50"
                     >
-                      <span className="text-base shrink-0">{s.emoji}</span>
-                      <span className="text-xs font-medium text-foreground leading-tight line-clamp-2">{s.label}</span>
+                      <span>{s.emoji}</span>
+                      <span className="whitespace-nowrap">{s.label}</span>
                     </motion.button>
                   ))}
+                  {suggestions.length > 0 && (
+                    <button
+                      onClick={fetchSuggestions}
+                      disabled={loadingSuggestions}
+                      className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-full border border-dashed border-border/60 text-muted-foreground text-xs hover:text-foreground hover:border-border transition-colors"
+                    >
+                      <RefreshCw size={12} className={loadingSuggestions ? "animate-spin" : ""} />
+                      <span className="whitespace-nowrap">More</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Custom input toggle & field */}
-            <div className="px-3 pb-3">
-              {showInput ? (
-                <div className="flex items-center gap-2 rounded-xl bg-muted/60 px-3 py-2">
-                  <input
-                    ref={inputRef}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                    placeholder="Type your own..."
-                    className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
-                    autoFocus
-                    disabled={loading}
-                  />
-                  {loading ? (
-                    <Loader2 size={16} className="text-primary animate-spin" />
-                  ) : input.trim() ? (
-                    <button onClick={handleSubmit} className="text-primary hover:text-primary/80">
-                      <Send size={16} />
-                    </button>
-                  ) : null}
-                </div>
+            {/* Input bar */}
+            <div className="flex items-center gap-2 rounded-2xl bg-card/95 backdrop-blur-lg border border-border/60 shadow-lg px-3 py-2">
+              <Sparkles size={18} className="text-primary shrink-0" />
+              <input
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                placeholder="Or type your own..."
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                autoFocus
+                disabled={loading}
+              />
+              {loading ? (
+                <Loader2 size={18} className="text-primary animate-spin" />
+              ) : input.trim() ? (
+                <button onClick={handleSubmit} className="text-primary hover:text-primary/80">
+                  <Send size={18} />
+                </button>
               ) : (
-                <button
-                  onClick={() => {
-                    setShowInput(true);
-                    setTimeout(() => inputRef.current?.focus(), 100);
-                  }}
-                  className="w-full text-center text-xs font-medium text-muted-foreground hover:text-foreground py-1.5 transition-colors"
-                >
-                  Or type something custom...
+                <button onClick={handleClose} className="text-muted-foreground">
+                  <X size={18} />
                 </button>
               )}
             </div>
-
-            {/* Loading overlay for executing */}
-            <AnimatePresence>
-              {loading && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 bg-card/80 backdrop-blur-sm flex items-center justify-center rounded-2xl"
-                >
-                  <div className="flex items-center gap-2">
-                    <Loader2 size={18} className="text-primary animate-spin" />
-                    <span className="text-sm font-medium text-foreground">Creating...</span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </motion.div>
         ) : (
           <motion.button
