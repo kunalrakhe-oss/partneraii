@@ -1,74 +1,50 @@
 
 
-# Plan: AI-Powered Onboarding Profile Builder
+# Plan: Replace AI Chat Onboarding with Selectable Options + "Other"
 
-## What's happening now
-The current PostAuthSetup flow collects: language → mode → name → priorities → morning routine → life goals. These are static multiple-choice screens. The data is saved but the AI Coach on the home page doesn't deeply leverage it.
+## Current state
+The `ai-interview` step is a free-form chat where users type answers to the AI. This is slow (API calls per message), awkward on mobile, and most users have common goals anyway.
 
 ## What we'll build
-
-A conversational AI onboarding step that replaces the static priorities/morning/goals screens with an **AI-driven interview**. After entering their name, users chat with the AI Coach which asks personalized questions, builds a comprehensive life profile, and creates an actionable plan.
+Replace the single `ai-interview` chat step with **3 quick tap-to-select screens**, each with predefined options as selectable chips and an "Other" text input. Then the AI generates a profile summary from the selections (one API call at the end).
 
 ### Flow
-
 ```text
-Language → Mode → Name → AI Profile Interview → Done
+Language → Mode → Name → Priorities → Life Goals → Daily Habits → AI generates profile summary → Done
 ```
 
-The AI interview step will:
-1. Greet the user by name and ask about their current life situation
-2. Ask follow-up questions based on responses (career, health, finances, relationships, goals)
-3. Suggest aspirational goals like "become debt free", "earn first million", "financial freedom", "run a marathon"
-4. Summarize what it learned and show the user their generated profile
-5. Save structured data to `user_preferences` (priorities, life_goals, daily_goals, morning_routine)
+### Step 1: Priorities (multi-select chips + Other)
+Predefined: Health & Fitness, Financial Freedom, Career Growth, Relationships, Mental Wellness, Productivity, Education, Spirituality
 
-### New step: "ai-interview" in PostAuthSetup
+### Step 2: Life Goals (multi-select chips + Other)  
+Predefined: Become debt free, Earn first million, Run a marathon, Lose weight, Build a business, Learn a new skill, Travel the world, Buy a home, Get promoted
 
-- Replace the 3 static steps (priorities, morning, goals) with a single **chat-based AI interview screen**
-- Uses the existing `ai-coach` edge function with a special `onboarding: true` flag
-- The AI asks 3-5 questions conversationally, then returns a structured profile via tool-calling
-- User sees a chat UI with the AI, then a profile summary card they confirm
-- On confirm, data saves to `user_preferences` and profile, then navigates to home/connect
+### Step 3: Daily Habits (multi-select chips + Other)
+Predefined: Morning workout, Meditate 10 min, Track expenses, Read 30 min, Meal prep, Journal, Walk 10k steps, No screen before bed
 
-### Changes required
+After step 3, one API call to `ai-coach` with `onboarding: true` sends all selections. The AI returns a `build_profile` with a motivational `profile_summary` and recommended `morning_routine`. Show the profile card, user confirms, done.
 
-1. **`supabase/functions/ai-coach/index.ts`** — Add an `onboarding` mode that:
-   - Takes the user's name and mode (single/couple)
-   - Asks structured life questions conversationally
-   - After enough context, returns a `build_profile` tool call with structured priorities, goals, morning routine
-   - Uses motivational language: "financial freedom", "debt free", "earn your first million", "build wealth", "peak fitness"
+### Changes
 
-2. **`src/pages/PostAuthSetup.tsx`** — Replace steps `priorities`, `morning`, `goals` with a single `ai-interview` step:
-   - Chat UI (messages list + input)
-   - AI asks questions, user responds naturally
-   - When AI returns the profile summary, show a confirmation card
-   - User taps "Looks great!" to save and proceed
+1. **`src/pages/PostAuthSetup.tsx`** — Replace `ai-interview` step with 3 new steps: `priorities`, `life-goals`, `daily-habits`. Each step:
+   - Grid of selectable chip buttons (multi-select, toggle on/off)
+   - "Other" input field at the bottom to type custom entries
+   - Continue button (require at least 1 selection)
+   - After the last step, call AI once to generate `profile_summary` and `morning_routine`, show confirmation card
 
-3. **Minor**: Update `user_preferences` table to also store a `profile_summary` text field (AI-generated one-liner about the user) via migration.
+2. **`supabase/functions/ai-coach/index.ts`** — Simplify onboarding mode: instead of conversational back-and-forth, accept pre-selected `priorities`, `life_goals`, `daily_goals` arrays in the request body. AI just generates a `profile_summary` and `morning_routine` recommendation in one shot.
+
+3. **Remove** unused chat UI code (ChatMessage interface, scrollRef, chatInput state, etc.)
+
+### UX details
+- Chips use the same card styling as language/mode selection (rounded, border highlight on select, checkmark)
+- "Other" field: small text input with a "+" button to add custom items as chips
+- Each screen has a progress indicator (dots or step count)
+- Minimum 1 selection per step to continue
+- Final AI call shows a brief loading state, then the profile card
 
 ### Technical details
-
-- Edge function uses Lovable AI Gateway with `google/gemini-3-flash-preview`
-- Tool-calling extracts structured output: `{ priorities: string[], life_goals: string[], morning_routine: string, daily_goals: string[], profile_summary: string }`
-- Chat history maintained in component state (no persistence needed for onboarding)
-- Streaming not required for onboarding — simple request/response is fine
-- The AI interview is limited to ~5 exchanges to keep it fast
-
-### Example AI conversation
-
-> **AI**: Hey Rahul! I'm your AI Life Coach. Tell me — what's the one area of your life you most want to improve right now?
->
-> **User**: I want to get fit and save more money
->
-> **AI**: Love that! 💪 Getting fit and building wealth — those are powerful goals. Are you dealing with any injuries or health issues, or starting fresh?
->
-> **User**: I have knee pain from an old injury
->
-> **AI**: Got it. I'll factor that into your fitness plan. On the money side — are you looking to pay off debt, build savings, or invest for the future?
->
-> **User**: Pay off debt first, then save
->
-> **AI**: Great plan — become debt-free first, then build your wealth. Here's your profile! ✨
->
-> *[Shows profile card: Health & Fitness ✓, Financial Freedom ✓, Knee Recovery ✓, Goals: Debt free → Save → Invest]*
+- No streaming needed — single request/response
+- Edge function onboarding mode becomes simpler: receives structured data, generates summary
+- All selections saved to `user_preferences` table (priorities, life_goals, daily_goals, morning_routine, profile_summary)
 
