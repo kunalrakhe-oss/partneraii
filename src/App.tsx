@@ -158,9 +158,7 @@ function AppRoutes() {
   );
 }
 
-function PushInit() {
-  // Initialize push notifications on native platforms
-  const { usePushNotifications } = require("@/hooks/usePushNotifications");
+function PushNotificationsInit() {
   usePushNotifications();
   return null;
 }
