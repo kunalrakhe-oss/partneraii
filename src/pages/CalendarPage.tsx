@@ -872,7 +872,7 @@ export default function CalendarPage() {
 
 /* ─────────────── WEEK VIEW (horizontal strip + day event list) ─────────────── */
 
-function WeekView({ currentDate, selectedDate, events, onSelectDate, onEditEvent, onToggle, onAddEvent }: {
+function WeekView({ currentDate, selectedDate, events, onSelectDate, onEditEvent, onToggle, onAddEvent, choreLinkedItems, expandedChores, onToggleLinkedItem }: {
   currentDate: Date;
   selectedDate: Date;
   events: CalendarEvent[];
@@ -880,6 +880,9 @@ function WeekView({ currentDate, selectedDate, events, onSelectDate, onEditEvent
   onEditEvent: (e: CalendarEvent) => void;
   onToggle: (e: CalendarEvent) => void;
   onAddEvent: () => void;
+  choreLinkedItems?: Record<string, any[]>;
+  expandedChores?: Set<string>;
+  onToggleLinkedItem?: (itemId: string, currentChecked: boolean) => void;
 }) {
   const { isSingle } = useAppMode();
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
