@@ -30,7 +30,7 @@ const PLAN_ICON: Record<string, typeof Activity> = {
 
 interface AICoachCardProps {
   preferences: { priorities: string[]; morning_routine: string | null; life_goals: string[]; daily_goals: string[] } | null;
-  activePlans: { plan_type: string; title: string; started_at: string }[];
+  activePlans: { id?: string; plan_type: string; title: string; started_at: string }[];
 }
 
 export default function AICoachCard({ preferences, activePlans }: AICoachCardProps) {
@@ -65,7 +65,10 @@ export default function AICoachCard({ preferences, activePlans }: AICoachCardPro
 
     try {
       const planSummary = activePlans.map(p => ({
-        ...p,
+        id: p.id,
+        plan_type: p.plan_type,
+        title: p.title,
+        started_at: p.started_at,
         day: Math.max(1, Math.floor((Date.now() - new Date(p.started_at).getTime()) / (1000 * 60 * 60 * 24)) + 1),
       }));
 
@@ -108,6 +111,11 @@ export default function AICoachCard({ preferences, activePlans }: AICoachCardPro
         setMessages(prev => [
           ...prev,
           { role: "assistant", content: `I've created your "${action.data.title}" plan! It's been added to your home screen. Tap below to get started. 🎯` },
+        ]);
+      } else if (action.action === "modify_plan") {
+        setMessages(prev => [
+          ...prev,
+          { role: "assistant", content: `Done! I've updated your plan. ${action.data.modifications} ✅` },
         ]);
       }
     } catch (err: any) {

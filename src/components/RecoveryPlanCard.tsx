@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronDown, ChevronUp, ImageIcon, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -37,6 +37,7 @@ export default function RecoveryPlanCard({ exercise, accentColor = "emerald", on
   const [expanded, setExpanded] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
+  const [imageTriggered, setImageTriggered] = useState(false);
 
   const handleGenerateImage = async () => {
     if (imageUrl || imageLoading || !onGenerateImage) return;
@@ -49,6 +50,12 @@ export default function RecoveryPlanCard({ exercise, accentColor = "emerald", on
     }
     setImageLoading(false);
   };
+
+  // Auto-trigger image generation when expanded
+  if (expanded && !imageTriggered && onGenerateImage && !imageUrl && !imageLoading) {
+    setImageTriggered(true);
+    handleGenerateImage();
+  }
 
   return (
     <motion.div
@@ -125,24 +132,11 @@ export default function RecoveryPlanCard({ exercise, accentColor = "emerald", on
             <div className="rounded-xl overflow-hidden">
               <img src={imageUrl} alt={exercise.name} className="w-full h-40 object-cover rounded-xl" />
             </div>
-          ) : onGenerateImage ? (
-            <button
-              onClick={handleGenerateImage}
-              disabled={imageLoading}
-              className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors disabled:opacity-50`}
-            >
-              {imageLoading ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" />
-                  Generating illustration...
-                </>
-              ) : (
-                <>
-                  <ImageIcon size={14} />
-                  Show exercise illustration
-                </>
-              )}
-            </button>
+          ) : imageLoading ? (
+            <div className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium border border-dashed border-border text-muted-foreground">
+              <Loader2 size={14} className="animate-spin" />
+              Generating illustration...
+            </div>
           ) : null}
         </motion.div>
       )}
