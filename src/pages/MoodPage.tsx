@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import PageTransition from "@/components/PageTransition";
-import { format, subDays } from "date-fns";
-import { Heart, Sparkles, Lightbulb, Users, RefreshCw, Loader2, X, Send, Lock } from "lucide-react";
+import { format } from "date-fns";
+import { Heart, Lightbulb, Users, RefreshCw, Loader2, X, Send, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePartnerPair } from "@/hooks/usePartnerPair";
 import { useAuth } from "@/contexts/AuthContext";
@@ -224,14 +224,8 @@ export default function MoodPage() {
     toast.success("Reaction sent! 💕");
   };
 
-  const moodToHeight: Record<string, number> = { happy: 95, excited: 90, neutral: 75, calm: 70, grateful: 80, silly: 85, tired: 50, sad: 35, stressed: 25, anxious: 40, angry: 20, furious: 15, lonely: 30, hopeful: 78, confused: 45 };
-  const last7 = Array.from({ length: 7 }, (_, i) => {
-    const date = format(subDays(new Date(), 6 - i), "yyyy-MM-dd");
-    return {
-      day: format(subDays(new Date(), 6 - i), "EEEEE"),
-      me: logs.find(l => l.log_date === date && l.user_id === user?.id),
-    };
-  });
+
+
 
   if (ppLoading) return <PageTransition><div className="flex items-center justify-center h-64"><div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" /></div></PageTransition>;
 
@@ -362,30 +356,12 @@ export default function MoodPage() {
         </>
         )}
 
-        {/* Weekly Harmony */}
-        <div className="bg-card rounded-2xl p-5 shadow-card border border-border mb-5">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-bold text-foreground">{t("mood.weeklyHarmony")}</p>
-            <Sparkles size={16} className="text-muted-foreground" />
-          </div>
-          <p className="text-xs text-muted-foreground mb-4">{t("mood.moodOverWeek")}</p>
-          <div className="flex items-end justify-between h-24 gap-1 px-1">
-            {last7.map((day, i) => {
-              const h = day.me ? moodToHeight[day.me.mood] || 50 : 30;
-              return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="w-full rounded-t-lg bg-primary/30 transition-all" style={{ height: `${h}%` }} />
-                  <span className="text-[10px] text-muted-foreground">{day.day}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+
 
         <GatedAiMoodTip
           myMood={todayLog?.mood || null}
           partnerMood={partnerLog?.mood || null}
-          weekHistory={last7.map(d => d.me?.mood || "none").join(", ")}
+          weekHistory={todayLog?.mood || "none"}
         />
       </motion.div>
     </PageTransition>
