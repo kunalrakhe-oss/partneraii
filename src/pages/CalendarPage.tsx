@@ -1081,16 +1081,6 @@ function WeekView({ currentDate, selectedDate, events, onSelectDate, onEditEvent
         </div>
       )}
 
-      {/* Upcoming Events */}
-      <div className="mt-4">
-        <p className="px-5 text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Upcoming Events</p>
-        <ListView
-          events={upcomingEvents}
-          onEditEvent={onEditEvent}
-          onToggle={onToggle}
-          onAddEvent={onAddEvent}
-        />
-      </div>
     </div>
   );
 }
