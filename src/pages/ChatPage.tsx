@@ -326,7 +326,7 @@ export default function ChatPage() {
 
         {activeTab === "ai" ? (
           canAccess("lovebot") ? (
-            <AIChatbot embedded />
+            <AIChatbot embedded initialContext={moodContext} />
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center p-8">
