@@ -219,18 +219,22 @@ function DietFormModal({
             ))}
           </div>
 
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Assigned To</label>
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {ASSIGN_OPTIONS.map(a => (
-              <button key={a.value} onClick={() => setAssignedTo(a.value)}
-                className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  assignedTo === a.value ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
-                }`}>
-                <a.icon size={14} />
-                {a.label}
-              </button>
-            ))}
-          </div>
+          {!isSingle && (
+            <>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Assigned To</label>
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {ASSIGN_OPTIONS.map(a => (
+                  <button key={a.value} onClick={() => setAssignedTo(a.value)}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                      assignedTo === a.value ? "bg-primary/20 ring-2 ring-primary text-foreground" : "bg-muted text-muted-foreground"
+                    }`}>
+                    <a.icon size={14} />
+                    {a.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
           <div className="grid grid-cols-2 gap-3 mb-5">
             <div>
