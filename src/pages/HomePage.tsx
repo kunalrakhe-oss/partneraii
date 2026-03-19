@@ -222,6 +222,11 @@ export default function HomePage() {
               </div>
             </motion.div>
           )}
+
+          {/* AI Coach — inline chat at bottom */}
+          <motion.div variants={item}>
+            <AICoachStrip greeting={greeting} firstName={firstName} />
+          </motion.div>
         </motion.div>
       </div>
 
