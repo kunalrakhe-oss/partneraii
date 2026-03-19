@@ -258,7 +258,7 @@ export default function AICoachStrip({ greeting, firstName }: AICoachStripProps)
                           <p className="text-[10px] text-muted-foreground">+{m.planData.phases.length - 2} more phases</p>
                         )}
                         {m.planData.plan_id && (
-                          <p className="text-[10px] text-green-600 font-medium flex items-center gap-1">
+                          <p className="text-[10px] text-primary font-medium flex items-center gap-1">
                             <CheckCircle2 size={10} /> Saved & tracking
                           </p>
                         )}
