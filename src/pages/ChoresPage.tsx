@@ -16,6 +16,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { useDemo } from "@/contexts/DemoContext";
 import { DEMO_CHORES, DEMO_PARTNER1, DEMO_PARTNER2 } from "@/lib/demoData";
 import { useNavigate } from "react-router-dom";
+import { useAppMode } from "@/hooks/useAppMode";
 
 type GroceryRow = Tables<"grocery_items">;
 
