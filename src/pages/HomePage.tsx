@@ -377,50 +377,36 @@ export default function HomePage() {
 
 
           {/* ❤️ Make it Real - Getting Started (couple mode demo) */}
-          {isDemoMode && !isSingle && (
+          {isDemoMode && !isSingle && !localStorage.getItem("lovelist-onboard-dismissed") && (
             <motion.div variants={item}>
-              <div className="bg-gradient-to-br from-primary/10 via-secondary/5 to-primary/10 rounded-2xl p-5 border border-primary/20 shadow-soft">
-                <div className="flex items-center gap-2 mb-1">
-                  <Heart size={16} className="text-primary" fill="currentColor" />
-                   <p className="text-sm font-bold text-foreground">{t("home.makeItReal")}</p>
-                 </div>
-                 <p className="text-xs text-muted-foreground mb-4">{t("home.startJourney")}</p>
-
-                <div className="space-y-3 mb-5">
+              <div className="bg-gradient-to-br from-primary/10 via-secondary/5 to-primary/10 rounded-2xl p-4 border border-primary/20 shadow-soft relative">
+                <button
+                  onClick={() => { localStorage.setItem("lovelist-onboard-dismissed", "true"); }}
+                  className="absolute top-3 right-3 w-7 h-7 rounded-full bg-muted/60 flex items-center justify-center"
+                >
+                  <X size={12} className="text-muted-foreground" />
+                </button>
+                <div className="flex items-center gap-2 mb-2">
+                  <Heart size={14} className="text-primary" fill="currentColor" />
+                  <p className="text-sm font-bold text-foreground">{t("home.makeItReal")}</p>
+                </div>
+                <div className="flex flex-wrap gap-2 mb-3">
                   {[
-                    { step: 1, label: t("home.connectWithPartner"), icon: Users, done: false },
-                    { step: 2, label: t("home.addFirstMemory"), icon: Camera, done: false },
-                    { step: 3, label: t("home.startLoveJourney"), icon: Rocket, done: false },
+                    { label: t("home.connectWithPartner"), icon: Users },
+                    { label: t("home.addFirstMemory"), icon: Camera },
+                    { label: t("home.startLoveJourney"), icon: Rocket },
                   ].map(s => (
-                    <div key={s.step} className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                        s.done ? "bg-success/20" : "bg-primary/15"
-                      }`}>
-                        {s.done ? (
-                          <Check size={14} className="text-success" />
-                        ) : (
-                          <s.icon size={14} className="text-primary" />
-                        )}
-                      </div>
-                      <p className={`text-sm font-medium ${s.done ? "text-muted-foreground line-through" : "text-foreground"}`}>{s.label}</p>
-                    </div>
+                    <span key={s.label} className="inline-flex items-center gap-1.5 bg-card/60 px-2.5 py-1.5 rounded-full text-xs font-medium text-foreground">
+                      <s.icon size={11} className="text-primary" /> {s.label}
+                    </span>
                   ))}
                 </div>
-
                 <div className="flex gap-2">
-                  <Link
-                    to="/connect"
-                    className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 shadow-soft"
-                  >
-                    <Users size={13} />
-                     {t("home.connectPartner")}
-                   </Link>
-                   <Link
-                     to="/memories"
-                     className="flex-1 h-10 rounded-xl bg-card border border-border text-foreground text-xs font-bold flex items-center justify-center gap-1.5 shadow-card"
-                   >
-                     <Camera size={13} />
-                     {t("home.addMemory")}
+                  <Link to="/connect" className="flex-1 h-9 rounded-xl bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5">
+                    <Users size={12} /> {t("home.connectPartner")}
+                  </Link>
+                  <Link to="/memories" className="flex-1 h-9 rounded-xl bg-card border border-border text-foreground text-xs font-bold flex items-center justify-center gap-1.5">
+                    <Camera size={12} /> {t("home.addMemory")}
                   </Link>
                 </div>
               </div>
