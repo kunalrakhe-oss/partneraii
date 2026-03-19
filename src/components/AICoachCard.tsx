@@ -109,6 +109,11 @@ export default function AICoachCard({ preferences, activePlans }: AICoachCardPro
           ...prev,
           { role: "assistant", content: `I've created your "${action.data.title}" plan! It's been added to your home screen. Tap below to get started. 🎯` },
         ]);
+      } else if (action.action === "modify_plan") {
+        setMessages(prev => [
+          ...prev,
+          { role: "assistant", content: `Done! I've updated your plan. ${action.data.modifications} ✅` },
+        ]);
       }
     } catch (err: any) {
       console.error("Coach error:", err);
