@@ -1,7 +1,7 @@
 import { Sparkles, Users, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import onboardingHero from "@/assets/onboarding-hero.jpg";
+
 
 interface WelcomePageProps {
   onComplete: () => void;
