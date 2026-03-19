@@ -1086,6 +1086,41 @@ export default function ChoresPage() {
                             ))}
                           </div>
 
+                          {/* Select All toggle */}
+                          {(() => {
+                            const filteredItems = allListItems.filter(item => listPickerFilter === "all" || item.list_type === listPickerFilter);
+                            const filteredIds = filteredItems.map(i => i.id);
+                            const allSelected = filteredIds.length > 0 && filteredIds.every(id => selectedLinkedItems.includes(id));
+                            const someSelected = filteredIds.some(id => selectedLinkedItems.includes(id));
+                            const listLabel = listPickerFilter === "all" ? "all" : (LIST_TYPE_LABELS[listPickerFilter]?.label || listPickerFilter);
+                            if (filteredIds.length === 0) return null;
+                            return (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (allSelected) {
+                                    setSelectedLinkedItems(prev => prev.filter(id => !filteredIds.includes(id)));
+                                  } else {
+                                    setSelectedLinkedItems(prev => [...new Set([...prev, ...filteredIds])]);
+                                  }
+                                }}
+                                className={`mx-4 mb-1 flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition-all ${
+                                  allSelected ? "bg-primary/10 border border-primary/20" : "bg-muted/50 border border-transparent hover:border-border"
+                                }`}
+                              >
+                                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${
+                                  allSelected ? "border-primary bg-primary" : someSelected ? "border-primary/50 bg-primary/20" : "border-border"
+                                }`}>
+                                  {allSelected && <Check size={12} className="text-primary-foreground" />}
+                                  {someSelected && !allSelected && <div className="w-2 h-0.5 bg-primary rounded-full" />}
+                                </div>
+                                <span className="text-xs font-semibold text-foreground">
+                                  {allSelected ? `Unselect` : `Select`} {listLabel} items ({filteredIds.length})
+                                </span>
+                              </button>
+                            );
+                          })()}
+
                           {/* Item list */}
                           <div className="max-h-48 overflow-y-auto px-4 pb-3 space-y-1">
                             {allListItems
