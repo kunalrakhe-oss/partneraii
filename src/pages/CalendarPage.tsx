@@ -311,6 +311,21 @@ export default function CalendarPage() {
   const [showViewMenu, setShowViewMenu] = useState(false);
   const [showDietForm, setShowDietForm] = useState(false);
   const [dietSaving, setDietSaving] = useState(false);
+  const [choreLinkedItems, setChoreLinkedItems] = useState<Record<string, any[]>>({});
+  const [expandedChores, setExpandedChores] = useState<Set<string>>(new Set());
+
+  const toggleChoreExpand = (choreId: string) => {
+    setExpandedChores(prev => {
+      const next = new Set(prev);
+      if (next.has(choreId)) next.delete(choreId); else next.add(choreId);
+      return next;
+    });
+  };
+
+  const toggleLinkedItem = async (itemId: string, currentChecked: boolean) => {
+    await supabase.from("grocery_items").update({ is_checked: !currentChecked }).eq("id", itemId);
+    await refreshEvents();
+  };
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
