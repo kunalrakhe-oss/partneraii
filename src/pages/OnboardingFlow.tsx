@@ -401,14 +401,6 @@ export default function OnboardingFlow() {
                 Your life, organized.
               </motion.p>
 
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 }}
-                className="w-48 h-48 rounded-full overflow-hidden mt-10 shadow-elevated border-4 border-card"
-              >
-                <img src={onboardingHero} alt="Get Started" className="w-full h-full object-cover" />
-              </motion.div>
             </div>
 
             <motion.div
