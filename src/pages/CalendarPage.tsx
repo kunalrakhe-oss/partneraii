@@ -671,6 +671,14 @@ export default function CalendarPage() {
           <p className="text-[10px] text-primary font-semibold uppercase tracking-wider mt-0.5 ml-9">
             {isToday(selectedDate) ? "Today" : format(selectedDate, "EEEE")}
           </p>
+
+          {/* Dynamic Mini Calendar */}
+          <DynamicMiniCalendar
+            currentDate={currentDate}
+            selectedDate={selectedDate}
+            events={events}
+            onSelectDate={(d) => setSelectedDate(d)}
+          />
         </div>
 
         {/* Content area */}
