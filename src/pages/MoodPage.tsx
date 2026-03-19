@@ -283,6 +283,8 @@ export default function MoodPage() {
           className="w-full px-4 py-3 rounded-2xl bg-card shadow-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none border border-border mb-3" />
         <button onClick={updateNote} className="w-full h-11 rounded-btn love-gradient text-primary-foreground font-semibold text-sm shadow-soft mb-6">{t("mood.updateMood")}</button>
 
+        {!isSingle && (
+        <>
         {/* Partner's Status with Reaction */}
         <div className="flex items-center gap-2 mb-3">
           <Users size={16} className="text-foreground" />
@@ -327,6 +329,8 @@ export default function MoodPage() {
             </>
           )}
         </div>
+        </>
+        )}
 
         {/* Weekly Harmony */}
         <div className="bg-card rounded-2xl p-5 shadow-card border border-border mb-5">
