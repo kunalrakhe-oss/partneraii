@@ -236,11 +236,11 @@ export default function HomePage() {
     if (!user) return;
     supabase
       .from("user_preferences")
-      .select("priorities, morning_routine")
+      .select("priorities, morning_routine, daily_goals")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
-        if (data) setUserPreferences(data as any);
+        if (data) setUserPreferences({ ...(data as any), life_goals: (data as any).life_goals || [] });
       });
   }, [user]);
 
