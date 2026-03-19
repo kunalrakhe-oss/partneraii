@@ -66,7 +66,7 @@ export default function AppLayout() {
   const tabs = visibleTabs.map(id => tabMeta[id]).filter(Boolean);
 
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-background relative">
+    <div className="flex flex-col h-[100dvh] overflow-hidden bg-background relative">
       <DemoBanner />
       <PushPermissionPrompt />
       {!isSingle && <PartnerNotifications />}
