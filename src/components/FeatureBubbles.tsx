@@ -81,7 +81,7 @@ export default function FeatureBubbles({ isSingle }: FeatureBubblesProps) {
     },
     {
       id: "successful",
-      label: "Stay Successful",
+      label: "Successful",
       icon: Target,
       color: "text-primary",
       bgGradient: "from-primary/20 to-primary/5",
