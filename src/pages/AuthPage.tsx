@@ -122,6 +122,7 @@ export default function AuthPage() {
         </p>
 
         {/* Sign in / Sign up toggle */}
+        {mode !== "forgot" && (
         <div className="flex gap-0.5 bg-muted/60 backdrop-blur-sm rounded-full p-0.5 w-full mb-5">
           {([
             { value: "signin" as const, label: "Sign In" },
