@@ -1,23 +1,42 @@
 import { useState } from "react";
-import { Sparkles, Mail, Lock, ArrowRight, Loader2, User, Users, ShieldCheck, Eye, EyeOff, Phone, UserCircle } from "lucide-react";
+import { Sparkles, Mail, Lock, ArrowRight, Loader2, User, Users, ShieldCheck, Eye, EyeOff, Phone, UserCircle, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function AuthPage() {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const [appMode, setAppMode] = useState<"single" | "couple">(
     () => (localStorage.getItem("lovelist-app-mode") as "single" | "couple") || "single"
   );
   const { toast } = useToast();
   const { t, language, setLanguage } = useLanguage();
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setResetSent(true);
+      toast({ title: "Check your email", description: "We sent a password reset link to your inbox." });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +60,6 @@ export default function AuthPage() {
         });
         if (error) throw error;
 
-        // Update profile with name & phone after sign-up
         if (data?.user) {
           await supabase.from("profiles").update({
             display_name: fullName.trim(),
@@ -97,13 +115,14 @@ export default function AuthPage() {
         </motion.div>
 
         <h1 className="text-2xl font-bold text-foreground text-center mb-1">
-          {mode === "signin" ? "Welcome Back" : "Create Account"}
+          {mode === "forgot" ? "Reset Password" : mode === "signin" ? "Welcome Back" : "Create Account"}
         </h1>
         <p className="text-sm text-muted-foreground text-center mb-6">
-          {mode === "signin" ? "Sign in to continue your journey" : "Start your AI-powered life journey"}
+          {mode === "forgot" ? "Enter your email to receive a reset link" : mode === "signin" ? "Sign in to continue your journey" : "Start your AI-powered life journey"}
         </p>
 
         {/* Sign in / Sign up toggle */}
+        {mode !== "forgot" && (
         <div className="flex gap-0.5 bg-muted/60 backdrop-blur-sm rounded-full p-0.5 w-full mb-5">
           {([
             { value: "signin" as const, label: "Sign In" },
@@ -123,6 +142,7 @@ export default function AuthPage() {
             </button>
           ))}
         </div>
+        )}
 
         {/* Mode toggle - only on sign up */}
         {mode === "signup" && (
@@ -152,6 +172,53 @@ export default function AuthPage() {
         )}
 
         <AnimatePresence mode="wait">
+          {mode === "forgot" ? (
+            <motion.div
+              key="forgot"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="w-full space-y-3"
+            >
+              {resetSent ? (
+                <div className="text-center space-y-3 py-4">
+                  <Mail size={40} className="mx-auto text-primary" />
+                  <p className="text-sm text-muted-foreground">
+                    We sent a reset link to <strong className="text-foreground">{email}</strong>. Check your inbox and follow the link to set a new password.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleForgotPassword} className="space-y-3">
+                  <div className="relative">
+                    <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      required
+                      autoFocus
+                      className={inputClass}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading || !email.trim()}
+                    className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-soft disabled:opacity-60 transition-all"
+                  >
+                    {loading ? <Loader2 size={18} className="animate-spin" /> : <>Send Reset Link <ArrowRight size={16} /></>}
+                  </button>
+                </form>
+              )}
+              <button
+                type="button"
+                onClick={() => { setMode("signin"); setResetSent(false); }}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mx-auto mt-2"
+              >
+                <ArrowLeft size={14} /> Back to Sign In
+              </button>
+            </motion.div>
+          ) : (
           <motion.form
             key={mode}
             initial={{ opacity: 0, x: mode === "signin" ? -20 : 20 }}
@@ -217,6 +284,15 @@ export default function AuthPage() {
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+            {mode === "signin" && (
+              <button
+                type="button"
+                onClick={() => setMode("forgot")}
+                className="text-xs text-muted-foreground hover:text-primary transition-colors ml-1"
+              >
+                Forgot password?
+              </button>
+            )}
             <button
               type="submit"
               disabled={loading || !email.trim() || !password.trim() || (mode === "signup" && !fullName.trim())}
@@ -231,6 +307,7 @@ export default function AuthPage() {
               )}
             </button>
           </motion.form>
+          )}
         </AnimatePresence>
 
         <div className="mt-6 flex items-center gap-2 text-[11px] text-muted-foreground">
