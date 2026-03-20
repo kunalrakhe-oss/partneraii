@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sparkles, Mail, Lock, ArrowRight, Loader2, User, Users, ShieldCheck, Eye, EyeOff, Phone, UserCircle } from "lucide-react";
+import { Sparkles, Mail, Lock, ArrowRight, Loader2, User, Users, ShieldCheck, Eye, EyeOff, Phone, UserCircle, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
