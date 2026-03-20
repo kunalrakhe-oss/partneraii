@@ -109,16 +109,18 @@ function AppRoutes() {
   // Not authenticated — check if onboarding is done (demo mode)
   const onboardingDone = localStorage.getItem("lovelist-onboarding-done") === "true";
 
+  // Unauthenticated + no demo → show auth first
   if (!user && !onboardingDone) {
     return (
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/onboarding" element={<OnboardingFlow />} />
-        <Route path="*" element={<Navigate to="/onboarding" replace />} />
+        <Route path="*" element={<Navigate to="/auth" replace />} />
       </Routes>
     );
   }
 
+  // Unauthenticated + demo mode → allow app access
   if (!user && onboardingDone) {
     return (
       <Routes>
