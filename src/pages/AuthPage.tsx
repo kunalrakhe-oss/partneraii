@@ -20,6 +20,24 @@ export default function AuthPage() {
   const { toast } = useToast();
   const { t, language, setLanguage } = useLanguage();
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setResetSent(true);
+      toast({ title: "Check your email", description: "We sent a password reset link to your inbox." });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
@@ -42,7 +60,6 @@ export default function AuthPage() {
         });
         if (error) throw error;
 
-        // Update profile with name & phone after sign-up
         if (data?.user) {
           await supabase.from("profiles").update({
             display_name: fullName.trim(),
