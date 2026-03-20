@@ -16,6 +16,12 @@ export default function AuthPage() {
   );
   const { toast } = useToast();
   const { t, language, setLanguage } = useLanguage();
+  const navigate = useNavigate();
+
+  const handleTryDemo = () => {
+    localStorage.setItem("lovelist-onboarding-done", "true");
+    navigate("/onboarding");
+  };
 
   useEffect(() => {
     if (countdown <= 0) return;
