@@ -168,7 +168,7 @@ export default function HomePage() {
   return (
     <PageTransition className="h-full">
       <div className="flex h-full flex-col overflow-hidden">
-        <div className="shrink-0 bg-background px-5 pt-10 pb-3 flex items-center justify-between">
+        <div className="shrink-0 bg-background px-5 pt-safe pb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ProfileButton />
             <div>
