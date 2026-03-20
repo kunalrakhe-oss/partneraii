@@ -142,6 +142,7 @@ export default function AuthPage() {
             </button>
           ))}
         </div>
+        )}
 
         {/* Mode toggle - only on sign up */}
         {mode === "signup" && (
