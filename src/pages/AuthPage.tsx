@@ -115,10 +115,10 @@ export default function AuthPage() {
         </motion.div>
 
         <h1 className="text-2xl font-bold text-foreground text-center mb-1">
-          {mode === "signin" ? "Welcome Back" : "Create Account"}
+          {mode === "forgot" ? "Reset Password" : mode === "signin" ? "Welcome Back" : "Create Account"}
         </h1>
         <p className="text-sm text-muted-foreground text-center mb-6">
-          {mode === "signin" ? "Sign in to continue your journey" : "Start your AI-powered life journey"}
+          {mode === "forgot" ? "Enter your email to receive a reset link" : mode === "signin" ? "Sign in to continue your journey" : "Start your AI-powered life journey"}
         </p>
 
         {/* Sign in / Sign up toggle */}
