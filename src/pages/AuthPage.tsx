@@ -6,13 +6,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function AuthPage() {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
   const [appMode, setAppMode] = useState<"single" | "couple">(
     () => (localStorage.getItem("lovelist-app-mode") as "single" | "couple") || "single"
   );
