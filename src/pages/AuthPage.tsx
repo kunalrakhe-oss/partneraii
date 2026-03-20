@@ -172,6 +172,53 @@ export default function AuthPage() {
         )}
 
         <AnimatePresence mode="wait">
+          {mode === "forgot" ? (
+            <motion.div
+              key="forgot"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="w-full space-y-3"
+            >
+              {resetSent ? (
+                <div className="text-center space-y-3 py-4">
+                  <Mail size={40} className="mx-auto text-primary" />
+                  <p className="text-sm text-muted-foreground">
+                    We sent a reset link to <strong className="text-foreground">{email}</strong>. Check your inbox and follow the link to set a new password.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleForgotPassword} className="space-y-3">
+                  <div className="relative">
+                    <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      required
+                      autoFocus
+                      className={inputClass}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading || !email.trim()}
+                    className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-soft disabled:opacity-60 transition-all"
+                  >
+                    {loading ? <Loader2 size={18} className="animate-spin" /> : <>Send Reset Link <ArrowRight size={16} /></>}
+                  </button>
+                </form>
+              )}
+              <button
+                type="button"
+                onClick={() => { setMode("signin"); setResetSent(false); }}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mx-auto mt-2"
+              >
+                <ArrowLeft size={14} /> Back to Sign In
+              </button>
+            </motion.div>
+          ) : (
           <motion.form
             key={mode}
             initial={{ opacity: 0, x: mode === "signin" ? -20 : 20 }}
@@ -237,6 +284,15 @@ export default function AuthPage() {
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
+            {mode === "signin" && (
+              <button
+                type="button"
+                onClick={() => setMode("forgot")}
+                className="text-xs text-muted-foreground hover:text-primary transition-colors ml-1"
+              >
+                Forgot password?
+              </button>
+            )}
             <button
               type="submit"
               disabled={loading || !email.trim() || !password.trim() || (mode === "signup" && !fullName.trim())}
@@ -251,6 +307,7 @@ export default function AuthPage() {
               )}
             </button>
           </motion.form>
+          )}
         </AnimatePresence>
 
         <div className="mt-6 flex items-center gap-2 text-[11px] text-muted-foreground">
