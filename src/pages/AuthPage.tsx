@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Sparkles, Mail, Lock, ArrowRight, Loader2, User, Users, ShieldCheck, Play, Eye, EyeOff } from "lucide-react";
+import { Sparkles, Mail, Lock, ArrowRight, Loader2, User, Users, ShieldCheck, Eye, EyeOff, Phone, UserCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -10,6 +9,8 @@ export default function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [appMode, setAppMode] = useState<"single" | "couple">(
@@ -17,26 +18,41 @@ export default function AuthPage() {
   );
   const { toast } = useToast();
   const { t, language, setLanguage } = useLanguage();
-  const navigate = useNavigate();
-
-  const handleTryDemo = () => {
-    localStorage.setItem("lovelist-onboarding-done", "true");
-    navigate("/onboarding");
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) return;
+    if (mode === "signup" && !fullName.trim()) return;
 
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
-          options: { emailRedirectTo: window.location.origin },
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: {
+              full_name: fullName.trim(),
+              display_name: fullName.trim(),
+              phone: phone.trim() || undefined,
+            },
+          },
         });
         if (error) throw error;
+
+        // Update profile with name & phone after sign-up
+        if (data?.user) {
+          await supabase.from("profiles").update({
+            display_name: fullName.trim(),
+            phone: phone.trim() || null,
+            app_mode: appMode,
+          }).eq("user_id", data.user.id);
+
+          localStorage.setItem("lovelist-setup-done", "true");
+          localStorage.setItem("lovelist-app-mode", appMode);
+        }
+
         toast({
           title: "Account created!",
           description: "Check your email to verify your account, then sign in.",
@@ -87,31 +103,6 @@ export default function AuthPage() {
           {mode === "signin" ? "Sign in to continue your journey" : "Start your AI-powered life journey"}
         </p>
 
-        {/* Mode toggle */}
-        <div className="flex gap-0.5 bg-muted/60 backdrop-blur-sm rounded-full p-0.5 w-fit mx-auto mb-5">
-          {([
-            { value: "single" as const, label: "Me Mode", icon: User },
-            { value: "couple" as const, label: "We Mode", icon: Users },
-          ]).map(({ value, label, icon: Icon }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => {
-                setAppMode(value);
-                localStorage.setItem("lovelist-app-mode", value);
-              }}
-              className={`flex items-center justify-center gap-1 text-[11px] font-medium px-4 py-1.5 rounded-full transition-colors ${
-                appMode === value
-                  ? "bg-card/70 backdrop-blur-sm text-foreground shadow-sm"
-                  : "text-muted-foreground"
-              }`}
-            >
-              <Icon size={12} />
-              {label}
-            </button>
-          ))}
-        </div>
-
         {/* Sign in / Sign up toggle */}
         <div className="flex gap-0.5 bg-muted/60 backdrop-blur-sm rounded-full p-0.5 w-full mb-5">
           {([
@@ -133,6 +124,33 @@ export default function AuthPage() {
           ))}
         </div>
 
+        {/* Mode toggle - only on sign up */}
+        {mode === "signup" && (
+          <div className="flex gap-0.5 bg-muted/60 backdrop-blur-sm rounded-full p-0.5 w-fit mx-auto mb-5">
+            {([
+              { value: "single" as const, label: "Me Mode", icon: User },
+              { value: "couple" as const, label: "We Mode", icon: Users },
+            ]).map(({ value, label, icon: Icon }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => {
+                  setAppMode(value);
+                  localStorage.setItem("lovelist-app-mode", value);
+                }}
+                className={`flex items-center justify-center gap-1 text-[11px] font-medium px-4 py-1.5 rounded-full transition-colors ${
+                  appMode === value
+                    ? "bg-card/70 backdrop-blur-sm text-foreground shadow-sm"
+                    : "text-muted-foreground"
+                }`}
+              >
+                <Icon size={12} />
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
         <AnimatePresence mode="wait">
           <motion.form
             key={mode}
@@ -142,6 +160,32 @@ export default function AuthPage() {
             onSubmit={handleSubmit}
             className="w-full space-y-3"
           >
+            {mode === "signup" && (
+              <>
+                <div className="relative">
+                  <UserCircle size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Your full name"
+                    required
+                    autoFocus
+                    className={inputClass}
+                  />
+                </div>
+                <div className="relative">
+                  <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Phone number (optional)"
+                    className={inputClass}
+                  />
+                </div>
+              </>
+            )}
             <div className="relative">
               <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
@@ -150,7 +194,7 @@ export default function AuthPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
-                autoFocus
+                autoFocus={mode === "signin"}
                 className={inputClass}
               />
             </div>
@@ -175,7 +219,7 @@ export default function AuthPage() {
             </div>
             <button
               type="submit"
-              disabled={loading || !email.trim() || !password.trim()}
+              disabled={loading || !email.trim() || !password.trim() || (mode === "signup" && !fullName.trim())}
               className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-soft disabled:opacity-60 transition-all"
             >
               {loading ? (
@@ -195,15 +239,7 @@ export default function AuthPage() {
         </div>
       </div>
 
-      <div className="px-6 pb-8 pt-4 space-y-4">
-        <button
-          type="button"
-          onClick={handleTryDemo}
-          className="w-full h-11 rounded-xl bg-muted/60 backdrop-blur-sm border border-border/40 text-foreground font-medium text-sm flex items-center justify-center gap-2 hover:bg-muted transition-colors"
-        >
-          <Play size={14} />
-          Try Demo First
-        </button>
+      <div className="px-6 pb-8 pt-4">
         <p className="text-[10px] text-muted-foreground text-center">
           {t("auth.termsText")} <span className="underline">{t("auth.termsOfService")}</span>
           {" & "}
