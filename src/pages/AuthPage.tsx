@@ -212,7 +212,15 @@ export default function AuthPage() {
         </div>
       </div>
 
-      <div className="px-6 pb-8 pt-4">
+      <div className="px-6 pb-8 pt-4 space-y-4">
+        <button
+          type="button"
+          onClick={handleTryDemo}
+          className="w-full h-11 rounded-xl bg-muted/60 backdrop-blur-sm border border-border/40 text-foreground font-medium text-sm flex items-center justify-center gap-2 hover:bg-muted transition-colors"
+        >
+          <Play size={14} />
+          Try Demo First
+        </button>
         <p className="text-[10px] text-muted-foreground text-center">
           {t("auth.termsText")} <span className="underline">{t("auth.termsOfService")}</span>
           {" & "}
