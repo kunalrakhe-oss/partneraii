@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Sparkles, Mail, ArrowRight, Loader2, User, Users, ShieldCheck } from "lucide-react";
+import { Sparkles, Mail, ArrowRight, Loader2, User, Users, ShieldCheck, Play } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
