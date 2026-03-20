@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Sparkles, Mail, ArrowRight, Loader2, User, Users, ShieldCheck, Play } from "lucide-react";
+import { useState } from "react";
+import { Sparkles, Mail, Lock, ArrowRight, Loader2, User, Users, ShieldCheck, Play, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,10 +7,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function AuthPage() {
-  const [step, setStep] = useState<"email" | "sent">("email");
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [countdown, setCountdown] = useState(0);
   const [appMode, setAppMode] = useState<"single" | "couple">(
     () => (localStorage.getItem("lovelist-app-mode") as "single" | "couple") || "single"
   );
@@ -23,52 +24,40 @@ export default function AuthPage() {
     navigate("/onboarding");
   };
 
-  useEffect(() => {
-    if (countdown <= 0) return;
-    const timer = setTimeout(() => setCountdown((current) => current - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [countdown]);
-
-  const sendMagicLink = async () => {
-    if (!email.trim()) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) return;
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
-        options: {
-          shouldCreateUser: true,
-          emailRedirectTo: window.location.origin,
-        },
-      });
-
-      if (error) throw error;
-
-      setStep("sent");
-      setCountdown(60);
-      toast({
-        title: "Sign-in link sent!",
-        description: `Open the email we sent to ${email.trim()} and tap the link to continue.`,
-      });
+      if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: { emailRedirectTo: window.location.origin },
+        });
+        if (error) throw error;
+        toast({
+          title: "Account created!",
+          description: "Check your email to verify your account, then sign in.",
+        });
+        setMode("signin");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (error) throw error;
+      }
     } catch (err: any) {
       toast({
-        title: "Could not send email",
+        title: mode === "signup" ? "Sign up failed" : "Sign in failed",
         description: err.message || "Please try again.",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSendMagicLink = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await sendMagicLink();
-  };
-
-  const handleResend = async () => {
-    if (countdown > 0) return;
-    await sendMagicLink();
   };
 
   const inputClass =
@@ -91,124 +80,118 @@ export default function AuthPage() {
           <span className="text-xl font-bold text-foreground font-sans">PAI</span>
         </motion.div>
 
-        <h1 className="text-2xl font-bold text-foreground text-center mb-1">Welcome to PAI</h1>
+        <h1 className="text-2xl font-bold text-foreground text-center mb-1">
+          {mode === "signin" ? "Welcome Back" : "Create Account"}
+        </h1>
         <p className="text-sm text-muted-foreground text-center mb-6">
-          {step === "email"
-            ? "Sign in with a secure email link — no password needed"
-            : `We sent a sign-in link to ${email.trim()}`}
+          {mode === "signin" ? "Sign in to continue your journey" : "Start your AI-powered life journey"}
         </p>
 
-        {step === "email" && (
-          <div className="flex gap-0.5 bg-muted/60 backdrop-blur-sm rounded-full p-0.5 w-fit mx-auto mb-5">
-            {([
-              { value: "single" as const, label: "Me Mode", icon: User },
-              { value: "couple" as const, label: "We Mode", icon: Users },
-            ]).map(({ value, label, icon: Icon }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => {
-                  setAppMode(value);
-                  localStorage.setItem("lovelist-app-mode", value);
-                }}
-                className={`flex items-center justify-center gap-1 text-[11px] font-medium px-4 py-1.5 rounded-full transition-colors ${
-                  appMode === value
-                    ? "bg-card/70 backdrop-blur-sm text-foreground shadow-sm"
-                    : "text-muted-foreground"
-                }`}
-              >
-                <Icon size={12} />
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Mode toggle */}
+        <div className="flex gap-0.5 bg-muted/60 backdrop-blur-sm rounded-full p-0.5 w-fit mx-auto mb-5">
+          {([
+            { value: "single" as const, label: "Me Mode", icon: User },
+            { value: "couple" as const, label: "We Mode", icon: Users },
+          ]).map(({ value, label, icon: Icon }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => {
+                setAppMode(value);
+                localStorage.setItem("lovelist-app-mode", value);
+              }}
+              className={`flex items-center justify-center gap-1 text-[11px] font-medium px-4 py-1.5 rounded-full transition-colors ${
+                appMode === value
+                  ? "bg-card/70 backdrop-blur-sm text-foreground shadow-sm"
+                  : "text-muted-foreground"
+              }`}
+            >
+              <Icon size={12} />
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Sign in / Sign up toggle */}
+        <div className="flex gap-0.5 bg-muted/60 backdrop-blur-sm rounded-full p-0.5 w-full mb-5">
+          {([
+            { value: "signin" as const, label: "Sign In" },
+            { value: "signup" as const, label: "Sign Up" },
+          ]).map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setMode(value)}
+              className={`flex-1 text-sm font-medium py-2 rounded-full transition-colors ${
+                mode === value
+                  ? "bg-card/70 backdrop-blur-sm text-foreground shadow-sm"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
         <AnimatePresence mode="wait">
-          {step === "email" ? (
-            <motion.form
-              key="email-step"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              onSubmit={handleSendMagicLink}
-              className="w-full space-y-4"
-            >
-              <div className="relative">
-                <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  required
-                  autoFocus
-                  className={inputClass}
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading || !email.trim()}
-                className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-soft disabled:opacity-60 transition-all"
-              >
-                {loading ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : (
-                  <>
-                    Send Sign-In Link <ArrowRight size={16} />
-                  </>
-                )}
-              </button>
-            </motion.form>
-          ) : (
-            <motion.div
-              key="sent-step"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="w-full space-y-5"
-            >
-              <div className="rounded-2xl border border-border/40 bg-card/50 backdrop-blur-sm p-5 text-center space-y-3">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <Mail size={20} />
-                </div>
-                <div className="space-y-1">
-                  <h2 className="text-lg font-semibold text-foreground">Check your inbox</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Tap the sign-in link in the email to continue. Once you open it, you’ll be signed in automatically.
-                  </p>
-                </div>
-              </div>
-
+          <motion.form
+            key={mode}
+            initial={{ opacity: 0, x: mode === "signin" ? -20 : 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: mode === "signin" ? 20 : -20 }}
+            onSubmit={handleSubmit}
+            className="w-full space-y-3"
+          >
+            <div className="relative">
+              <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                required
+                autoFocus
+                className={inputClass}
+              />
+            </div>
+            <div className="relative">
+              <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={mode === "signup" ? "Create a password" : "Enter your password"}
+                required
+                minLength={6}
+                className={`${inputClass} pr-11`}
+              />
               <button
                 type="button"
-                onClick={handleResend}
-                disabled={countdown > 0 || loading}
-                className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-soft disabled:opacity-60 transition-all"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
-                {loading ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : countdown > 0 ? (
-                  `Resend link in ${countdown}s`
-                ) : (
-                  "Resend Sign-In Link"
-                )}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
-
-              <button
-                type="button"
-                onClick={() => setStep("email")}
-                className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                ← Change email address
-              </button>
-            </motion.div>
-          )}
+            </div>
+            <button
+              type="submit"
+              disabled={loading || !email.trim() || !password.trim()}
+              className="w-full h-12 rounded-xl love-gradient text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 shadow-soft disabled:opacity-60 transition-all"
+            >
+              {loading ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <>
+                  {mode === "signin" ? "Sign In" : "Create Account"} <ArrowRight size={16} />
+                </>
+              )}
+            </button>
+          </motion.form>
         </AnimatePresence>
 
-        <div className="mt-8 flex items-center gap-2 text-[11px] text-muted-foreground">
+        <div className="mt-6 flex items-center gap-2 text-[11px] text-muted-foreground">
           <ShieldCheck size={14} />
-          <span>Passwordless login — secure, fast, no password to remember</span>
+          <span>Your data is encrypted and secure</span>
         </div>
       </div>
 
