@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Sparkles, Mail, Lock, ArrowRight, Loader2, User, Users, ShieldCheck, Eye, EyeOff, Phone, UserCircle, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 
